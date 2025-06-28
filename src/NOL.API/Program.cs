@@ -97,6 +97,7 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
 builder.Services.AddScoped<ILocalizationService, NOL.API.Services.LocalizationService>();
 builder.Services.AddScoped<LocalizedApiResponseService>();
 builder.Services.AddScoped<IAuthService, NOL.Infrastructure.Services.AuthService>();
+builder.Services.AddScoped<IEmailService, NOL.Infrastructure.Services.EmailService>();
 
 // Repository Layer
 builder.Services.AddScoped(typeof(IRepository<>), typeof(NOL.Infrastructure.Repositories.Repository<>));

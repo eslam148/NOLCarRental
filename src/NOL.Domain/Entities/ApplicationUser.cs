@@ -15,6 +15,13 @@ public class ApplicationUser : IdentityUser
     public int LifetimePointsEarned { get; set; } = 0;
     public int LifetimePointsRedeemed { get; set; } = 0;
     public DateTime? LastPointsEarnedDate { get; set; }
+    
+    // OTP Properties
+    public string? EmailVerificationOtp { get; set; }
+    public DateTime? EmailVerificationOtpExpiry { get; set; }
+    public string? PasswordResetOtp { get; set; }
+    public DateTime? PasswordResetOtpExpiry { get; set; }
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
