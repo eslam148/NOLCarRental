@@ -22,11 +22,11 @@ public class CarService : ICarService
         _localizationService = localizationService;
     }
 
-    public async Task<ApiResponse<List<CarDto>>> GetCarsAsync(CarStatus? status = null, int? categoryId = null, int page = 1, int pageSize = 10)
+    public async Task<ApiResponse<List<CarDto>>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10)
     {
         try
         {
-            var cars = await _carRepository.GetCarsAsync(status, categoryId, page, pageSize);
+            var cars = await _carRepository.GetCarsAsync(sortByCost, page, pageSize);
             var carDtos = cars.Select(MapToCarDto).ToList();
             return _responseService.Success(carDtos, "CarsRetrieved");
         }

@@ -12,21 +12,32 @@ public class CarRepository : Repository<Car>, ICarRepository
     {
     }
 
-    public async Task<IEnumerable<Car>> GetCarsAsync(CarStatus? status = null, int? categoryId = null, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<Car>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10)
     {
         var query = _dbSet.AsQueryable();
 
-        // Apply filters
-        if (status.HasValue)
-            query = query.Where(c => c.Status == status.Value);
-
-        if (categoryId.HasValue)
-            query = query.Where(c => c.CategoryId == categoryId.Value);
-
-        // Include related entities and apply pagination
-        return await query
+        // Include related entities
+        query = query
             .Include(c => c.Category)
             .Include(c => c.Branch)
+            .Where(c => c.IsActive);
+
+        // Apply cost sorting
+        if (!string.IsNullOrEmpty(sortByCost))
+        {
+            if (sortByCost.ToLower() == "asc")
+                query = query.OrderBy(c => c.DailyRate);
+            else if (sortByCost.ToLower() == "desc")
+                query = query.OrderByDescending(c => c.DailyRate);
+        }
+        else
+        {
+            // Default sorting by ID if no sort specified
+            query = query.OrderBy(c => c.Id);
+        }
+
+        // Apply pagination
+        return await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

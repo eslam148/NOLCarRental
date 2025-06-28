@@ -5,7 +5,11 @@ using NOL.Application.DTOs;
 using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers;
-
+public enum sortCar
+{
+    asc,
+    desc
+}
 [ApiController]
 [Route("api/[controller]")]
 public class CarsController : ControllerBase
@@ -19,12 +23,11 @@ public class CarsController : ControllerBase
 
     [HttpGet]
     public async Task<ActionResult<ApiResponse<List<CarDto>>>> GetCars(
-        [FromQuery] CarStatus? status = null,
-        [FromQuery] int? categoryId = null,
+        [FromQuery] sortCar sortByCost = sortCar.asc, // "asc" or "desc"
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 10)
     {
-        var result = await _carService.GetCarsAsync(status, categoryId, page, pageSize);
+        var result = await _carService.GetCarsAsync(sortByCost.ToString(), page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 

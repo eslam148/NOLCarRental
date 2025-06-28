@@ -5,7 +5,7 @@ namespace NOL.Application.Common.Interfaces;
 
 public interface ICarRepository : IRepository<Car>
 {
-    Task<IEnumerable<Car>> GetCarsAsync(CarStatus? status = null, int? categoryId = null, int page = 1, int pageSize = 10);
+    Task<IEnumerable<Car>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10);
     Task<IEnumerable<Car>> GetAvailableCarsAsync(DateTime startDate, DateTime endDate);
     Task<IEnumerable<Car>> GetCarsByCategoryAsync(int categoryId);
     Task<IEnumerable<Car>> GetCarsByBranchAsync(int branchId);
