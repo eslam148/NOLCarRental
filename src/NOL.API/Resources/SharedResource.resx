@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="OperationSuccessful" xml:space="preserve">
+    <value>Operation completed successfully</value>
+  </data>
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>Resource not found</value>
+  </data>
+  <data name="UnauthorizedAccess" xml:space="preserve">
+    <value>Unauthorized access</value>
+  </data>
+  <data name="AccessForbidden" xml:space="preserve">
+    <value>Access forbidden</value>
+  </data>
+  <data name="ValidationError" xml:space="preserve">
+    <value>Validation error</value>
+  </data>
+  <data name="CarNotAvailable" xml:space="preserve">
+    <value>Car is not available</value>
+  </data>
+  <data name="BookingCreated" xml:space="preserve">
+    <value>Booking created successfully</value>
+  </data>
+  <data name="BookingCanceled" xml:space="preserve">
+    <value>Booking canceled successfully</value>
+  </data>
+  <data name="PaymentProcessed" xml:space="preserve">
+    <value>Payment processed successfully</value>
+  </data>
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>Payment failed</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid credentials</value>
+  </data>
+  <data name="UserRegistered" xml:space="preserve">
+    <value>User registered successfully</value>
+  </data>
+  <data name="EmailAlreadyExists" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Internal server error</value>
+  </data>
+  <data name="LoginSuccessful" xml:space="preserve">
+    <value>Login successful</value>
+  </data>
+  <data name="CarsRetrieved" xml:space="preserve">
+    <value>Cars retrieved successfully</value>
+  </data>
+  <data name="CarRetrieved" xml:space="preserve">
+    <value>Car retrieved successfully</value>
+  </data>
+  <data name="CarNotFound" xml:space="preserve">
+    <value>Car not found</value>
+  </data>
+  <data name="BranchesRetrieved" xml:space="preserve">
+    <value>Branches retrieved successfully</value>
+  </data>
+  <data name="BranchRetrieved" xml:space="preserve">
+    <value>Branch retrieved successfully</value>
+  </data>
+  <data name="CategoriesRetrieved" xml:space="preserve">
+    <value>Categories retrieved successfully</value>
+  </data>
+  <data name="CategoryRetrieved" xml:space="preserve">
+    <value>Category retrieved successfully</value>
+  </data>
+  <data name="BookingsRetrieved" xml:space="preserve">
+    <value>Bookings retrieved successfully</value>
+  </data>
+  <data name="BookingRetrieved" xml:space="preserve">
+    <value>Booking retrieved successfully</value>
+  </data>
+  <data name="BookingNotFound" xml:space="preserve">
+    <value>Booking not found</value>
+  </data>
+  <data name="ExtrasRetrieved" xml:space="preserve">
+    <value>Extras retrieved successfully</value>
+  </data>
+  <data name="ExtraRetrieved" xml:space="preserve">
+    <value>Extra retrieved successfully</value>
+  </data>
+</root> 

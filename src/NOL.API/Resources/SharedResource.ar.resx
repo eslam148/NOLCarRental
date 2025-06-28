@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="OperationSuccessful" xml:space="preserve">
+    <value>تمت العملية بنجاح</value>
+  </data>
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>المورد غير موجود</value>
+  </data>
+  <data name="UnauthorizedAccess" xml:space="preserve">
+    <value>وصول غير مخول</value>
+  </data>
+  <data name="AccessForbidden" xml:space="preserve">
+    <value>الوصول محظور</value>
+  </data>
+  <data name="ValidationError" xml:space="preserve">
+    <value>خطأ في التحقق من البيانات</value>
+  </data>
+  <data name="CarNotAvailable" xml:space="preserve">
+    <value>السيارة غير متاحة</value>
+  </data>
+  <data name="BookingCreated" xml:space="preserve">
+    <value>تم إنشاء الحجز بنجاح</value>
+  </data>
+  <data name="BookingCanceled" xml:space="preserve">
+    <value>تم إلغاء الحجز بنجاح</value>
+  </data>
+  <data name="PaymentProcessed" xml:space="preserve">
+    <value>تمت معالجة الدفع بنجاح</value>
+  </data>
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>فشلت عملية الدفع</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>بيانات اعتماد غير صحيحة</value>
+  </data>
+  <data name="UserRegistered" xml:space="preserve">
+    <value>تم تسجيل المستخدم بنجاح</value>
+  </data>
+  <data name="EmailAlreadyExists" xml:space="preserve">
+    <value>البريد الإلكتروني موجود بالفعل</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>خطأ داخلي في الخادم</value>
+  </data>
+  <data name="LoginSuccessful" xml:space="preserve">
+    <value>تم تسجيل الدخول بنجاح</value>
+  </data>
+  <data name="CarsRetrieved" xml:space="preserve">
+    <value>تم استرداد السيارات بنجاح</value>
+  </data>
+  <data name="CarRetrieved" xml:space="preserve">
+    <value>تم استرداد السيارة بنجاح</value>
+  </data>
+  <data name="CarNotFound" xml:space="preserve">
+    <value>السيارة غير موجودة</value>
+  </data>
+  <data name="BranchesRetrieved" xml:space="preserve">
+    <value>تم استرداد الفروع بنجاح</value>
+  </data>
+  <data name="BranchRetrieved" xml:space="preserve">
+    <value>تم استرداد الفرع بنجاح</value>
+  </data>
+  <data name="CategoriesRetrieved" xml:space="preserve">
+    <value>تم استرداد الفئات بنجاح</value>
+  </data>
+  <data name="CategoryRetrieved" xml:space="preserve">
+    <value>تم استرداد الفئة بنجاح</value>
+  </data>
+  <data name="BookingsRetrieved" xml:space="preserve">
+    <value>تم استرداد الحجوزات بنجاح</value>
+  </data>
+  <data name="BookingRetrieved" xml:space="preserve">
+    <value>تم استرداد الحجز بنجاح</value>
+  </data>
+  <data name="BookingNotFound" xml:space="preserve">
+    <value>لم يتم العثور على الحجز</value>
+  </data>
+  <data name="ExtrasRetrieved" xml:space="preserve">
+    <value>تم استرداد الخدمات الإضافية بنجاح</value>
+  </data>
+  <data name="ExtraRetrieved" xml:space="preserve">
+    <value>تم استرداد الخدمة الإضافية بنجاح</value>
+  </data>
+</root> 

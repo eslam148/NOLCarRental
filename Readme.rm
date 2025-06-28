@@ -1,0 +1,1042 @@
+# NOL Car Rental System - Complete Development Instructions
+
+## Project Overview
+Create a comprehensive car rental mobile application backend using ASP.NET Core Web API with the following specifications:
+
+## Technology Stack
+- **Framework**: ASP.NET Core 8.0 Web API
+- **Database**: SQL Server with Entity Framework Core
+- **Authentication**: Microsoft Identity (ASP.NET Core Identity)
+- **Localization**: Arabic and English support only
+- **Architecture**: Clean Architecture pattern
+- **Response Pattern**: Generic API Response with localization
+
+## Required NuGet Packages
+```xml
+<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
+<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
+<PackageReference Include="AutoMapper" Version="12.0.1" />
+<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+<PackageReference Include="FluentValidation" Version="11.8.0" />
+<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.0" />
+<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+<PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.0" />
+<PackageReference Include="Microsoft.AspNetCore.Localization" Version="2.2.0" />
+```
+
+## Project Structure Requirements
+```
+src/
+├── NOL.API/
+│   ├── Controllers/
+│   ├── Middleware/
+│   ├── Extensions/
+│   ├── Resources/
+│   │   ├── SharedResource.ar.resx
+│   │   └── SharedResource.en.resx
+│   └── Program.cs
+├── NOL.Application/
+│   ├── Common/
+│   │   ├── Interfaces/
+│   │   ├── Models/
+│   │   ├── Responses/
+│   │   ├── Enums/
+│   │   └── Extensions/
+│   ├── Features/
+│   │   ├── Authentication/
+│   │   ├── Bookings/
+│   │   ├── Cars/
+│   │   ├── Branches/
+│   │   ├── Extras/
+│   │   ├── Payments/
+│   │   ├── Users/
+│   │   └── Notifications/
+│   └── DTOs/
+├── NOL.Domain/
+│   ├── Entities/
+│   └── Enums/
+└── NOL.Infrastructure/
+    ├── Data/
+    ├── Services/
+    ├── Repositories/
+    └── Migrations/
+```
+
+## Enums to Create
+
+### 1. ApiStatusCode (Required for Generic Response)
+```csharp
+namespace NOL.Application.Common.Enums;
+
+public enum ApiStatusCode
+{
+    Success = 200,
+    Created = 201,
+    NoContent = 204,
+    BadRequest = 400,
+    Unauthorized = 401,
+    Forbidden = 403,
+    NotFound = 404,
+    Conflict = 409,
+    UnprocessableEntity = 422,
+    InternalServerError = 500,
+    ServiceUnavailable = 503
+}
+```
+
+### 2. CarStatus
+```csharp
+public enum CarStatus
+{
+    Available = 1,
+    Rented = 2,
+    Maintenance = 3,
+    OutOfService = 4
+}
+```
+
+### 3. TransmissionType
+```csharp
+public enum TransmissionType
+{
+    Manual = 1,
+    Automatic = 2,
+    CVT = 3
+}
+```
+
+### 4. FuelType
+```csharp
+public enum FuelType
+{
+    Gasoline = 1,
+    Diesel = 2,
+    Hybrid = 3,
+    Electric = 4,
+    PluginHybrid = 5
+}
+```
+
+### 5. BookingStatus
+```csharp
+public enum BookingStatus
+{
+    Open = 1,
+    Confirmed = 2,
+    InProgress = 3,
+    Completed = 4,
+    Canceled = 5,
+    Closed = 6
+}
+```
+
+### 6. PaymentMethod
+```csharp
+public enum PaymentMethod
+{
+    Cash = 1,
+    CreditCard = 2,
+    DebitCard = 3,
+    BankTransfer = 4,
+    DigitalWallet = 5,
+    ApplePay = 6,
+    GooglePay = 7,
+    STCPay = 8
+}
+```
+
+### 7. PaymentStatus
+```csharp
+public enum PaymentStatus
+{
+    Pending = 1,
+    Processing = 2,
+    Success = 3,
+    Failed = 4,
+    Canceled = 5,
+    Refunded = 6,
+    PartiallyRefunded = 7
+}
+```
+
+### 8. Language
+```csharp
+public enum Language
+{
+    Arabic = 1,
+    English = 2
+}
+```
+
+### 9. NotificationType
+```csharp
+public enum NotificationType
+{
+    Booking = 1,
+    Payment = 2,
+    General = 3,
+    Promotion = 4,
+    Maintenance = 5,
+    Security = 6
+}
+```
+
+### 10. SettingType
+```csharp
+public enum SettingType
+{
+    String = 1,
+    Number = 2,
+    Boolean = 3,
+    Decimal = 4,
+    Json = 5
+}
+```
+
+### 11. ExtraType
+```csharp
+public enum ExtraType
+{
+    GPS = 1,
+    ChildSeat = 2,
+    AdditionalDriver = 3,
+    Insurance = 4,
+    WifiHotspot = 5,
+    PhoneCharger = 6,
+    Bluetooth = 7,
+    RoofRack = 8,
+    SkiRack = 9,
+    BikeRack = 10
+}
+```
+
+### 12. UserRole
+```csharp
+public enum UserRole
+{
+    Customer = 1,
+    Employee = 2,
+    BranchManager = 3,
+    Admin = 4,
+    SuperAdmin = 5
+}
+```
+
+## Generic API Response Pattern
+
+### ApiResponse Class (Required Implementation)
+```csharp
+using NOL.Application.Common.Enums;
+
+namespace NOL.Application.Common.Responses;
+
+public class ApiResponse<T>
+{
+    public bool Succeeded { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public string? InternalMessage { get; set; }
+    public List<string> Errors { get; set; } = new();
+    public string? StackTrace { get; set; }
+    public T? Data { get; set; }
+    public ApiStatusCode StatusCode { get; set; }
+    public int StatusCodeValue => (int)StatusCode;
+
+    public static ApiResponse<T> Success(T data, string message = "Operation completed successfully", ApiStatusCode statusCode = ApiStatusCode.Success)
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = true,
+            Message = message,
+            Data = data,
+            StatusCode = statusCode
+        };
+    }
+
+    public static ApiResponse<T> Error(string message, List<string>? errors = null, ApiStatusCode statusCode = ApiStatusCode.BadRequest)
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = false,
+            Message = message,
+            Errors = errors ?? new List<string>(),
+            StatusCode = statusCode
+        };
+    }
+
+    public static ApiResponse<T> Error(string message, string error, ApiStatusCode statusCode = ApiStatusCode.BadRequest)
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = false,
+            Message = message,
+            Errors = new List<string> { error },
+            StatusCode = statusCode
+        };
+    }
+
+    public static ApiResponse<T> NotFound(string message = "Resource not found")
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.NotFound
+        };
+    }
+
+    public static ApiResponse<T> Unauthorized(string message = "Unauthorized access")
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.Unauthorized
+        };
+    }
+
+    public static ApiResponse<T> Forbidden(string message = "Access forbidden")
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.Forbidden
+        };
+    }
+
+    public static ApiResponse<T> InternalServerError(string message = "Internal server error")
+    {
+        return new ApiResponse<T>
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.InternalServerError
+        };
+    }
+}
+
+public class ApiResponse : ApiResponse<object>
+{
+    public static ApiResponse Success(string message = "Operation completed successfully", ApiStatusCode statusCode = ApiStatusCode.Success)
+    {
+        return new ApiResponse
+        {
+            Succeeded = true,
+            Message = message,
+            StatusCode = statusCode
+        };
+    }
+
+    public static new ApiResponse Error(string message, List<string>? errors = null, ApiStatusCode statusCode = ApiStatusCode.BadRequest)
+    {
+        return new ApiResponse
+        {
+            Succeeded = false,
+            Message = message,
+            Errors = errors ?? new List<string>(),
+            StatusCode = statusCode
+        };
+    }
+
+    public static new ApiResponse Error(string message, string error, ApiStatusCode statusCode = ApiStatusCode.BadRequest)
+    {
+        return new ApiResponse
+        {
+            Succeeded = false,
+            Message = message,
+            Errors = new List<string> { error },
+            StatusCode = statusCode
+        };
+    }
+
+    public static new ApiResponse NotFound(string message = "Resource not found")
+    {
+        return new ApiResponse
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.NotFound
+        };
+    }
+
+    public static new ApiResponse Unauthorized(string message = "Unauthorized access")
+    {
+        return new ApiResponse
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.Unauthorized
+        };
+    }
+
+    public static new ApiResponse Forbidden(string message = "Access forbidden")
+    {
+        return new ApiResponse
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.Forbidden
+        };
+    }
+
+    public static new ApiResponse InternalServerError(string message = "Internal server error")
+    {
+        return new ApiResponse
+        {
+            Succeeded = false,
+            Message = message,
+            StatusCode = ApiStatusCode.InternalServerError
+        };
+    }
+}
+```
+
+## Localization Configuration
+
+### 1. Localization Service Interface
+```csharp
+namespace NOL.Application.Common.Interfaces;
+
+public interface ILocalizationService
+{
+    string GetLocalizedString(string key);
+    string GetLocalizedString(string key, params object[] args);
+    void SetCulture(string culture);
+    string GetCurrentCulture();
+}
+```
+
+### 2. Localization Service Implementation
+```csharp
+using Microsoft.Extensions.Localization;
+using NOL.Application.Common.Interfaces;
+using System.Globalization;
+
+namespace NOL.Infrastructure.Services;
+
+public class LocalizationService : ILocalizationService
+{
+    private readonly IStringLocalizer _localizer;
+
+    public LocalizationService(IStringLocalizer localizer)
+    {
+        _localizer = localizer;
+    }
+
+    public string GetLocalizedString(string key)
+    {
+        return _localizer[key];
+    }
+
+    public string GetLocalizedString(string key, params object[] args)
+    {
+        return _localizer[key, args];
+    }
+
+    public void SetCulture(string culture)
+    {
+        var cultureInfo = new CultureInfo(culture);
+        Thread.CurrentThread.CurrentCulture = cultureInfo;
+        Thread.CurrentThread.CurrentUICulture = cultureInfo;
+    }
+
+    public string GetCurrentCulture()
+    {
+        return Thread.CurrentThread.CurrentUICulture.Name;
+    }
+}
+```
+
+### 3. Localized API Response Service
+```csharp
+using NOL.Application.Common.Enums;
+using NOL.Application.Common.Interfaces;
+using NOL.Application.Common.Responses;
+
+namespace NOL.Application.Common.Services;
+
+public class LocalizedApiResponseService
+{
+    private readonly ILocalizationService _localizationService;
+
+    public LocalizedApiResponseService(ILocalizationService localizationService)
+    {
+        _localizationService = localizationService;
+    }
+
+    public ApiResponse<T> Success<T>(T data, string messageKey = "OperationSuccessful", params object[] args)
+    {
+        var message = _localizationService.GetLocalizedString(messageKey, args);
+        return ApiResponse<T>.Success(data, message);
+    }
+
+    public ApiResponse<T> Error<T>(string messageKey, List<string>? errors = null, ApiStatusCode statusCode = ApiStatusCode.BadRequest, params object[] args)
+    {
+        var message = _localizationService.GetLocalizedString(messageKey, args);
+        return ApiResponse<T>.Error(message, errors, statusCode);
+    }
+
+    public ApiResponse<T> NotFound<T>(string messageKey = "ResourceNotFound", params object[] args)
+    {
+        var message = _localizationService.GetLocalizedString(messageKey, args);
+        return ApiResponse<T>.NotFound(message);
+    }
+
+    public ApiResponse<T> Unauthorized<T>(string messageKey = "UnauthorizedAccess", params object[] args)
+    {
+        var message = _localizationService.GetLocalizedString(messageKey, args);
+        return ApiResponse<T>.Unauthorized(message);
+    }
+
+    public ApiResponse<T> Forbidden<T>(string messageKey = "AccessForbidden", params object[] args)
+    {
+        var message = _localizationService.GetLocalizedString(messageKey, args);
+        return ApiResponse<T>.Forbidden(message);
+    }
+}
+```
+
+### 4. Resource Files Content
+
+#### SharedResource.ar.resx (Arabic)
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OperationSuccessful" xml:space="preserve">
+    <value>تمت العملية بنجاح</value>
+  </data>
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>المورد غير موجود</value>
+  </data>
+  <data name="UnauthorizedAccess" xml:space="preserve">
+    <value>وصول غير مخول</value>
+  </data>
+  <data name="AccessForbidden" xml:space="preserve">
+    <value>الوصول محظور</value>
+  </data>
+  <data name="ValidationError" xml:space="preserve">
+    <value>خطأ في التحقق من البيانات</value>
+  </data>
+  <data name="CarNotAvailable" xml:space="preserve">
+    <value>السيارة غير متاحة</value>
+  </data>
+  <data name="BookingCreated" xml:space="preserve">
+    <value>تم إنشاء الحجز بنجاح</value>
+  </data>
+  <data name="BookingCanceled" xml:space="preserve">
+    <value>تم إلغاء الحجز بنجاح</value>
+  </data>
+  <data name="PaymentProcessed" xml:space="preserve">
+    <value>تمت معالجة الدفع بنجاح</value>
+  </data>
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>فشلت عملية الدفع</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>بيانات اعتماد غير صحيحة</value>
+  </data>
+  <data name="UserRegistered" xml:space="preserve">
+    <value>تم تسجيل المستخدم بنجاح</value>
+  </data>
+  <data name="EmailAlreadyExists" xml:space="preserve">
+    <value>البريد الإلكتروني موجود بالفعل</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>خطأ داخلي في الخادم</value>
+  </data>
+</root>
+```
+
+#### SharedResource.en.resx (English)
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="OperationSuccessful" xml:space="preserve">
+    <value>Operation completed successfully</value>
+  </data>
+  <data name="ResourceNotFound" xml:space="preserve">
+    <value>Resource not found</value>
+  </data>
+  <data name="UnauthorizedAccess" xml:space="preserve">
+    <value>Unauthorized access</value>
+  </data>
+  <data name="AccessForbidden" xml:space="preserve">
+    <value>Access forbidden</value>
+  </data>
+  <data name="ValidationError" xml:space="preserve">
+    <value>Validation error</value>
+  </data>
+  <data name="CarNotAvailable" xml:space="preserve">
+    <value>Car is not available</value>
+  </data>
+  <data name="BookingCreated" xml:space="preserve">
+    <value>Booking created successfully</value>
+  </data>
+  <data name="BookingCanceled" xml:space="preserve">
+    <value>Booking canceled successfully</value>
+  </data>
+  <data name="PaymentProcessed" xml:space="preserve">
+    <value>Payment processed successfully</value>
+  </data>
+  <data name="PaymentFailed" xml:space="preserve">
+    <value>Payment failed</value>
+  </data>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid credentials</value>
+  </data>
+  <data name="UserRegistered" xml:space="preserve">
+    <value>User registered successfully</value>
+  </data>
+  <data name="EmailAlreadyExists" xml:space="preserve">
+    <value>Email already exists</value>
+  </data>
+  <data name="InternalServerError" xml:space="preserve">
+    <value>Internal server error</value>
+  </data>
+</root>
+```
+
+## Microsoft Identity Configuration
+
+### 1. ApplicationUser (extends IdentityUser)
+```csharp
+using Microsoft.AspNetCore.Identity;
+
+public class ApplicationUser : IdentityUser
+{
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public Language PreferredLanguage { get; set; } = Language.Arabic;
+    public UserRole UserRole { get; set; } = UserRole.Customer;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation Properties
+    public virtual ICollection<Booking> Bookings { get; set; }
+    public virtual ICollection<Favorite> Favorites { get; set; }
+    public virtual ICollection<Review> Reviews { get; set; }
+    public virtual ICollection<Notification> Notifications { get; set; }
+}
+```
+
+### 2. JWT Configuration
+```csharp
+public class JwtSettings
+{
+    public string SecretKey { get; set; }
+    public string Issuer { get; set; }
+    public string Audience { get; set; }
+    public int ExpiryInMinutes { get; set; }
+}
+```
+
+### 3. Identity & JWT Service
+```csharp
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+
+public interface IAuthService
+{
+    Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto loginDto);
+    Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterDto registerDto);
+    Task<ApiResponse> LogoutAsync();
+}
+
+public class AuthService : IAuthService
+{
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly JwtSettings _jwtSettings;
+    private readonly LocalizedApiResponseService _responseService;
+
+    public AuthService(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        JwtSettings jwtSettings,
+        LocalizedApiResponseService responseService)
+    {
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _jwtSettings = jwtSettings;
+        _responseService = responseService;
+    }
+
+    public async Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto loginDto)
+    {
+        var user = await _userManager.FindByEmailAsync(loginDto.Email);
+        if (user == null)
+        {
+            return _responseService.Error<AuthResponseDto>("InvalidCredentials");
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded)
+        {
+            return _responseService.Error<AuthResponseDto>("InvalidCredentials");
+        }
+
+        var token = GenerateJwtToken(user);
+        var response = new AuthResponseDto
+        {
+            Token = token,
+            User = new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                PreferredLanguage = user.PreferredLanguage
+            }
+        };
+
+        return _responseService.Success(response, "LoginSuccessful");
+    }
+
+    private string GenerateJwtToken(ApplicationUser user)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
+        
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+            new Claim("preferredLanguage", user.PreferredLanguage.ToString()),
+            new Claim(ClaimTypes.Role, user.UserRole.ToString())
+        };
+
+        var tokenDescriptor = new SecurityTokenDescriptor
+        {
+            Subject = new ClaimsIdentity(claims),
+            Expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryInMinutes),
+            Issuer = _jwtSettings.Issuer,
+            Audience = _jwtSettings.Audience,
+            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+        };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+        return tokenHandler.WriteToken(token);
+    }
+}
+```
+
+## Database Design - Core Entities
+
+### Complete Entity Classes with Enums
+
+[All previous entity classes from Branch, Category, Car, Booking, ExtraTypePrice, BookingExtra, Payment, Favorite, Review, Notification, SystemSettings - same as previous specification]
+
+## Program.cs Configuration
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Database Configuration
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Identity Configuration
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// JWT Configuration
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+builder.Services.AddSingleton(jwtSettings);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+    };
+});
+
+// Localization Configuration
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "ar", "en" };
+    options.DefaultRequestCulture = new RequestCulture("ar");
+    options.SupportedCultures = supportedCultures.Select(c => new CultureInfo(c)).ToList();
+    options.SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList();
+    
+    options.RequestCultureProviders = new List<IRequestCultureProvider>
+    {
+        new QueryStringRequestCultureProvider(),
+        new CookieRequestCultureProvider(),
+        new AcceptLanguageHeaderRequestCultureProvider()
+    };
+});
+
+// Services Registration
+builder.Services.AddScoped<ILocalizationService, LocalizationService>();
+builder.Services.AddScoped<LocalizedApiResponseService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+// Controllers
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+// Localization Middleware
+app.UseRequestLocalization();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+```
+
+## API Controller Example with Localization
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class CarsController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+    private readonly LocalizedApiResponseService _responseService;
+    private readonly ILocalizationService _localizationService;
+
+    public CarsController(
+        ApplicationDbContext context,
+        LocalizedApiResponseService responseService,
+        ILocalizationService localizationService)
+    {
+        _context = context;
+        _responseService = responseService;
+        _localizationService = localizationService;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<List<CarDto>>>> GetCars(
+        [FromQuery] CarStatus? status = null,
+        [FromQuery] int? categoryId = null,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            var query = _context.Cars.AsQueryable();
+
+            if (status.HasValue)
+                query = query.Where(c => c.Status == status.Value);
+
+            if (categoryId.HasValue)
+                query = query.Where(c => c.CategoryId == categoryId.Value);
+
+            var cars = await query
+                .Include(c => c.Category)
+                .Include(c => c.Branch)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var carDtos = cars.Select(c => new CarDto
+            {
+                Id = c.Id,
+                Model = _localizationService.GetCurrentCulture() == "ar" ? c.ModelAr : c.ModelEn,
+                Brand = _localizationService.GetCurrentCulture() == "ar" ? c.BrandAr : c.BrandEn,
+                DailyRate = c.DailyRate,
+                Status = c.Status,
+                // ... other properties
+            }).ToList();
+
+            return Ok(_responseService.Success(carDtos, "CarsRetrieved"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, _responseService.Error<List<CarDto>>("InternalServerError"));
+        }
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<CarDto>>> GetCar(int id)
+    {
+        var car = await _context.Cars
+            .Include(c => c.Category)
+            .Include(c => c.Branch)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (car == null)
+        {
+            return NotFound(_responseService.NotFound<CarDto>("CarNotFound"));
+        }
+
+        var carDto = new CarDto
+        {
+            Id = car.Id,
+            Model = _localizationService.GetCurrentCulture() == "ar" ? car.ModelAr : car.ModelEn,
+            Brand = _localizationService.GetCurrentCulture() == "ar" ? car.BrandAr : car.BrandEn,
+            // ... other properties
+        };
+
+        return Ok(_responseService.Success(carDto, "CarRetrieved"));
+    }
+}
+```
+
+## Middleware for Language Detection
+
+```csharp
+public class LanguageMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public LanguageMiddleware(RequestDelegate next)
+    {
+        _next = next;
+    }
+
+    public async Task InvokeAsync(HttpContext context, ILocalizationService localizationService)
+    {
+        // Check if user is authenticated and has preferred language
+        if (context.User.Identity.IsAuthenticated)
+        {
+            var preferredLanguage = context.User.FindFirst("preferredLanguage")?.Value;
+            if (!string.IsNullOrEmpty(preferredLanguage))
+            {
+                var culture = preferredLanguage == "Arabic" ? "ar" : "en";
+                localizationService.SetCulture(culture);
+            }
+        }
+        else
+        {
+            // Default to Accept-Language header or Arabic
+            var acceptLanguage = context.Request.Headers["Accept-Language"].FirstOrDefault();
+            var culture = acceptLanguage?.Contains("en") == true ? "en" : "ar";
+            localizationService.SetCulture(culture);
+        }
+
+        await _next(context);
+    }
+}
+```
+
+## Configuration Files
+
+### appsettings.json
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=NOLCarRentalDB;Trusted_Connection=true;MultipleActiveResultSets=true"
+  },
+  "JwtSettings": {
+    "SecretKey": "YourSuperSecretKeyThatIsAtLeast32CharactersLong!",
+    "Issuer": "NOLCarRentalAPI",
+    "Audience": "NOLCarRentalApp",
+    "ExpiryInMinutes": 60
+  },
+  "Localization": {
+    "DefaultCulture": "ar",
+    "SupportedCultures": ["ar", "en"]
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*"
+}
+```
+
+## Instructions for AI Implementation:
+
+### **Required Implementation Steps:**
+
+1. **Create Project Structure**: Set up clean architecture with proper folder structure
+2. **Implement All Enums**: Create all enum classes including ApiStatusCode
+3. **Create Generic Response**: Implement the exact ApiResponse pattern provided
+4. **Set up Localization**: 
+   - Configure Arabic and English support only
+   - Create resource files with comprehensive translations
+   - Implement localization service and middleware
+5. **Configure Microsoft Identity**: 
+   - Set up ASP.NET Core Identity with JWT
+   - Implement authentication service with localized responses
+6. **Create Entity Classes**: All entities with proper enum usage
+7. **Configure DbContext**: EF Core with enum conversions and relationships
+8. **Implement Controllers**: All controllers using localized API responses
+9. **Add Validation**: FluentValidation with localized error messages
+10. **Set up Middleware**: Language detection and global exception handling
+11. **Configure Services**: Dependency injection for all services
+12. **Create Migrations**: Database setup with seed data
+13. **Add AutoMapper**: Entity to DTO mapping with localization
+14. **Configure Swagger**: API documentation with enum descriptions
+
+### **Critical Requirements:**
+- ✅ **Arabic & English Only**: No other languages supported
+- ✅ **Enum-Based Architecture**: All status/type fields use enums
+- ✅ **Generic API Response**: Use exact pattern provided
+- ✅ **Microsoft Identity**: ASP.NET Core Identity with JWT
+- ✅ **Localized Messages**: All responses localized based on user preference
+- ✅ **Type Safety**: Compile-time checking with enums
+- ✅ **Clean Architecture**: Proper separation of concerns
+- ✅ **Production Ready**: Security, validation, error handling, logging
+
+### **Language Support Details:**
+- **Default Language**: Arabic (ar)
+- **Supported Languages**: Arabic (ar), English (en)
+- **Detection Order**: User preference → Accept-Language header → Default (Arabic)
+- **Response Messages**: All API responses must be localized
+- **Entity Content**: Bilingual fields for user-facing content
+- **Enum Display**: Localized names for all enum values
+
+This system provides a robust, type-safe, and fully localized car rental platform with comprehensive Arabic and English support using Microsoft Identity for authentication.

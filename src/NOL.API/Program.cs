@@ -1,0 +1,202 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Localization;
+using Microsoft.Extensions.Localization;
+using System.Globalization;
+using System.Text;
+using System.Reflection;
+using FluentValidation;
+using NOL.Application.Common.Interfaces;
+using NOL.Application.Common.Models;
+using NOL.Application.Common.Services;
+using NOL.Domain.Entities;
+using NOL.Infrastructure.Data;
+using NOL.Infrastructure.Services;
+using NOL.API.Services;
+using NOL.API.Middleware;
+using NOL.API.Resources;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Database Configuration
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Identity Configuration
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireLowercase = true;
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// JWT Configuration
+var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>();
+builder.Services.AddSingleton(jwtSettings!);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings!.Issuer,
+        ValidAudience = jwtSettings.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+    };
+});
+
+// Localization Configuration
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.Configure<RequestLocalizationOptions>(options =>
+{
+    var supportedCultures = new[] { "en", "ar" };
+    options.DefaultRequestCulture = new RequestCulture("en");
+    options.SupportedCultures = supportedCultures.Select(c => new CultureInfo(c)).ToList();
+    options.SupportedUICultures = supportedCultures.Select(c => new CultureInfo(c)).ToList();
+    
+    // Configure culture providers with proper fallback
+    options.RequestCultureProviders.Clear();
+    
+    // Query string provider (culture=ar, ui-culture=ar)
+    options.RequestCultureProviders.Add(new QueryStringRequestCultureProvider
+    {
+        QueryStringKey = "culture",
+        UIQueryStringKey = "ui-culture"
+    });
+    
+    // Custom header provider
+    options.RequestCultureProviders.Add(new AcceptLanguageHeaderRequestCultureProvider());
+    options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+});
+
+// Services Registration  
+builder.Services.AddScoped<ILocalizationService, NOL.API.Services.LocalizationService>();
+builder.Services.AddScoped<LocalizedApiResponseService>();
+builder.Services.AddScoped<IAuthService, NOL.Infrastructure.Services.AuthService>();
+
+// Repository Layer
+builder.Services.AddScoped(typeof(IRepository<>), typeof(NOL.Infrastructure.Repositories.Repository<>));
+builder.Services.AddScoped<ICarRepository, NOL.Infrastructure.Repositories.CarRepository>();
+builder.Services.AddScoped<IBranchRepository, NOL.Infrastructure.Repositories.BranchRepository>();
+builder.Services.AddScoped<ICategoryRepository, NOL.Infrastructure.Repositories.CategoryRepository>();
+builder.Services.AddScoped<IExtraRepository, NOL.Infrastructure.Repositories.ExtraRepository>();
+
+// Application Layer Services
+builder.Services.AddScoped<ICarService, NOL.Application.Features.Cars.CarService>();
+builder.Services.AddScoped<IBranchService, NOL.Application.Features.Branches.BranchService>();
+builder.Services.AddScoped<ICategoryService, NOL.Application.Features.Categories.CategoryService>();
+builder.Services.AddScoped<IExtraService, NOL.Application.Features.Extras.ExtraService>();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
+// FluentValidation
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+// Controllers
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "NOL Car Rental API",
+        Version = "v1",
+        Description = "A comprehensive car rental system API with Arabic and English localization support"
+    });
+
+    // Add JWT authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement()
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            },
+            new List<string>()
+        }
+    });
+});
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "NOL Car Rental API V1");
+        c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
+    });
+}
+
+app.UseHttpsRedirection();
+
+// CORS
+app.UseCors("AllowAll");
+
+// Custom Culture Middleware
+app.UseMiddleware<CultureMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+
+// Ensure database is created, migrated, and seeded
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    
+    await context.Database.EnsureCreatedAsync();
+    
+    // Seed the database with initial data
+    await DataSeeder.SeedAsync(context, userManager, roleManager);
+}
+
+app.Run(); 
