@@ -22,6 +22,7 @@ using NOL.Application.Features.Extras;
 using NOL.Application.Features.Bookings;
 using NOL.Application.Features.Advertisements;
 using NOL.Application.Features.LoyaltyPoints;
+using NOL.Application.Features.Favorites;
 using NOL.API.Services;
 using NOL.API.Middleware;
 using NOL.API.Resources;
@@ -106,6 +107,7 @@ builder.Services.AddScoped<IExtraRepository, NOL.Infrastructure.Repositories.Ext
 builder.Services.AddScoped<IBookingRepository, NOL.Infrastructure.Repositories.BookingRepository>();
 builder.Services.AddScoped<IAdvertisementRepository, NOL.Infrastructure.Repositories.AdvertisementRepository>();
 builder.Services.AddScoped<ILoyaltyPointRepository, NOL.Infrastructure.Repositories.LoyaltyPointRepository>();
+builder.Services.AddScoped<IFavoriteRepository, NOL.Infrastructure.Repositories.FavoriteRepository>();
 
 // Application Layer Services
 builder.Services.AddScoped<ICarService, NOL.Application.Features.Cars.CarService>();
@@ -115,6 +117,7 @@ builder.Services.AddScoped<IExtraService, NOL.Application.Features.Extras.ExtraS
 builder.Services.AddScoped<IBookingService, NOL.Application.Features.Bookings.BookingService>();
 builder.Services.AddScoped<IAdvertisementService, NOL.Application.Features.Advertisements.AdvertisementService>();
 builder.Services.AddScoped<ILoyaltyPointService, NOL.Application.Features.LoyaltyPoints.LoyaltyPointService>();
+builder.Services.AddScoped<IFavoriteService, NOL.Application.Features.Favorites.FavoriteService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
