@@ -210,7 +210,7 @@ using (var scope = app.Services.CreateScope())
     await context.Database.EnsureCreatedAsync();
     
     // Seed the database with initial data
-   // await DataSeeder.SeedAsync(context, userManager, roleManager);
+    await DataSeeder.SeedAsync(context, userManager, roleManager);
 }
 
 app.Run(); 

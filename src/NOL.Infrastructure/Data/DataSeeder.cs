@@ -33,6 +33,8 @@ public static class DataSeeder
             await SeedReviewsAsync(context);
             await SeedNotificationsAsync(context);
             await SeedFavoritesAsync(context);
+            // Temporarily disabled - will fix after app starts
+            // await SeedLoyaltyPointsAsync(context);
 
             await context.SaveChangesAsync();
         }
@@ -486,6 +488,7 @@ public static class DataSeeder
         {
             var users = await context.Users.Where(u => u.UserRole == UserRole.Customer).ToListAsync();
             var cars = await context.Cars.Where(c => c.IsActive).ToListAsync();
+            var branches = await context.Branches.Where(b => b.IsActive).ToListAsync();
             var random = new Random();
 
             var bookings = new List<Booking>();
@@ -494,26 +497,35 @@ public static class DataSeeder
             {
                 var user = users[random.Next(users.Count)];
                 var car = cars[random.Next(cars.Count)];
+                var receivingBranch = branches[random.Next(branches.Count)];
+                var deliveryBranch = branches[random.Next(branches.Count)];
                 
                 var startDate = DateTime.UtcNow.AddDays(-random.Next(0, 90)).AddDays(random.Next(1, 30));
                 var endDate = startDate.AddDays(random.Next(1, 14));
                 var totalDays = (decimal)(endDate - startDate).TotalDays;
                 var carRentalCost = totalDays * car.DailyRate;
                 
+                // Ensure some bookings are completed for loyalty points
+                var status = i < 5 ? BookingStatus.Completed : (BookingStatus)random.Next(1, 6);
+                var extrasCost = random.Next(0, 200);
+                var totalCost = carRentalCost + extrasCost;
+                
                 bookings.Add(new Booking
                 {
                     BookingNumber = $"NOL-{DateTime.UtcNow:yyyyMMdd}-{i + 1:D4}",
                     UserId = user.Id,
                     CarId = car.Id,
+                    ReceivingBranchId = receivingBranch.Id,
+                    DeliveryBranchId = deliveryBranch.Id,
                     StartDate = startDate,
                     EndDate = endDate,
                     TotalDays = totalDays,
                     CarRentalCost = carRentalCost,
-                    ExtrasCost = random.Next(0, 200),
-                    TotalCost = carRentalCost + random.Next(0, 200),
+                    ExtrasCost = extrasCost,
+                    TotalCost = totalCost,
                     DiscountAmount = 0,
-                    FinalAmount = carRentalCost + random.Next(0, 200),
-                    Status = (BookingStatus)random.Next(1, 6),
+                    FinalAmount = totalCost,
+                    Status = status,
                     Notes = $"Booking #{i + 1} - Sample booking notes",
                     CreatedAt = DateTime.UtcNow.AddDays(-random.Next(1, 100)),
                     UpdatedAt = DateTime.UtcNow
@@ -645,30 +657,137 @@ public static class DataSeeder
     {
         if (!await context.Favorites.AnyAsync())
         {
-            var users = await context.Users.Where(u => u.UserRole == UserRole.Customer).ToListAsync();
-            var cars = await context.Cars.Where(c => c.IsActive).ToListAsync();
-            var random = new Random();
-
+            var users = await context.Users.Take(10).ToListAsync();
+            var cars = await context.Cars.Take(15).ToListAsync();
+            
             var favorites = new List<Favorite>();
-
-            for (int i = 0; i < 25; i++)
+            var random = new Random();
+            
+            // Create some random favorites
+            foreach (var user in users)
             {
-                var user = users[random.Next(users.Count)];
-                var car = cars[random.Next(cars.Count)];
-
-                // Avoid duplicates
-                if (!favorites.Any(f => f.UserId == user.Id && f.CarId == car.Id))
+                var userFavorites = cars.OrderBy(x => random.Next()).Take(random.Next(1, 4));
+                foreach (var car in userFavorites)
                 {
                     favorites.Add(new Favorite
                     {
                         UserId = user.Id,
                         CarId = car.Id,
-                        CreatedAt = DateTime.UtcNow.AddDays(-random.Next(1, 60))
+                        CreatedAt = DateTime.UtcNow.AddDays(-random.Next(1, 90))
                     });
                 }
             }
-
+            
             context.Favorites.AddRange(favorites);
+        }
+    }
+
+    private static async Task SeedLoyaltyPointsAsync(ApplicationDbContext context)
+    {
+        if (!await context.LoyaltyPointTransactions.AnyAsync())
+        {
+            var users = await context.Users.Where(u => u.UserRole == UserRole.Customer).Take(10).ToListAsync();
+            var bookings = await context.Bookings.Where(b => b.Status == BookingStatus.Completed).ToListAsync();
+            
+            var loyaltyTransactions = new List<LoyaltyPointTransaction>();
+            var random = new Random();
+            
+            foreach (var user in users)
+            {
+                // Welcome bonus for each customer
+                loyaltyTransactions.Add(new LoyaltyPointTransaction
+                {
+                    UserId = user.Id,
+                    Points = 100,
+                    TransactionType = LoyaltyPointTransactionType.Earned,
+                    EarnReason = LoyaltyPointEarnReason.Registration,
+                    Description = "Welcome bonus for new registration",
+                    TransactionDate = user.CreatedAt.AddHours(1),
+                    ExpiryDate = user.CreatedAt.AddMonths(24),
+                    IsExpired = false,
+                    CreatedAt = user.CreatedAt.AddHours(1)
+                });
+
+                // Some booking completion points
+                var userBookings = bookings.Where(b => b.UserId == user.Id).Take(2);
+                foreach (var booking in userBookings)
+                {
+                    var pointsEarned = (int)Math.Floor(booking.FinalAmount);
+                    loyaltyTransactions.Add(new LoyaltyPointTransaction
+                    {
+                        UserId = user.Id,
+                        BookingId = booking.Id,
+                        Points = pointsEarned,
+                        TransactionType = LoyaltyPointTransactionType.Earned,
+                        EarnReason = LoyaltyPointEarnReason.BookingCompleted,
+                        Description = $"Points earned for booking completion - ${booking.FinalAmount:F2}",
+                        TransactionDate = booking.EndDate.AddHours(2),
+                        ExpiryDate = booking.EndDate.AddMonths(24),
+                        IsExpired = false,
+                        CreatedAt = booking.EndDate.AddHours(2)
+                    });
+                }
+
+                // Some review points
+                if (random.Next(1, 3) == 1) // 33% chance of review points
+                {
+                    loyaltyTransactions.Add(new LoyaltyPointTransaction
+                    {
+                        UserId = user.Id,
+                        Points = 50,
+                        TransactionType = LoyaltyPointTransactionType.Earned,
+                        EarnReason = LoyaltyPointEarnReason.Review,
+                        Description = "Points for writing a review",
+                        TransactionDate = DateTime.UtcNow.AddDays(-random.Next(1, 30)),
+                        ExpiryDate = DateTime.UtcNow.AddMonths(24),
+                        IsExpired = false,
+                        CreatedAt = DateTime.UtcNow.AddDays(-random.Next(1, 30))
+                    });
+                }
+
+                // Some redemptions for a few users
+                if (random.Next(1, 4) == 1) // 25% chance of redemption
+                {
+                    loyaltyTransactions.Add(new LoyaltyPointTransaction
+                    {
+                        UserId = user.Id,
+                        Points = -100, // Negative for redemption
+                        TransactionType = LoyaltyPointTransactionType.Redeemed,
+                        Description = "Points redeemed for booking discount",
+                        TransactionDate = DateTime.UtcNow.AddDays(-random.Next(1, 15)),
+                        IsExpired = false,
+                        CreatedAt = DateTime.UtcNow.AddDays(-random.Next(1, 15))
+                    });
+                }
+            }
+            
+            context.LoyaltyPointTransactions.AddRange(loyaltyTransactions);
+
+            // Update user loyalty point totals
+            foreach (var user in users)
+            {
+                var userTransactions = loyaltyTransactions.Where(lt => lt.UserId == user.Id).ToList();
+                
+                var totalEarned = userTransactions
+                    .Where(t => t.TransactionType == LoyaltyPointTransactionType.Earned || 
+                               t.TransactionType == LoyaltyPointTransactionType.Bonus)
+                    .Sum(t => t.Points);
+                
+                var totalRedeemed = userTransactions
+                    .Where(t => t.TransactionType == LoyaltyPointTransactionType.Redeemed)
+                    .Sum(t => Math.Abs(t.Points));
+                
+                var availablePoints = totalEarned - totalRedeemed;
+                
+                user.TotalLoyaltyPoints = totalEarned;
+                user.AvailableLoyaltyPoints = availablePoints;
+                user.LifetimePointsEarned = totalEarned;
+                user.LifetimePointsRedeemed = totalRedeemed;
+                user.LastPointsEarnedDate = userTransactions
+                    .Where(t => t.TransactionType == LoyaltyPointTransactionType.Earned)
+                    .OrderByDescending(t => t.TransactionDate)
+                    .FirstOrDefault()?.TransactionDate;
+            }
         }
     }
 } 
