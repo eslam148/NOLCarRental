@@ -16,12 +16,14 @@ public class RegisterDto
     [Required]
     [Compare("Password")]
     public string ConfirmPassword { get; set; } = string.Empty;
+    [Required]
+    [Phone]
+    public string PhoneNumber { get; set; } = null;
 
     [Required]
-    public string FirstName { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
 
-    [Required]
-    public string LastName { get; set; } = string.Empty;
+     
 
     public Language PreferredLanguage { get; set; } = Language.Arabic;
 } 

@@ -302,12 +302,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 
         // Configure string lengths
         modelBuilder.Entity<ApplicationUser>()
-            .Property(u => u.FirstName)
+            .Property(u => u.FullName)
             .HasMaxLength(100);
 
-        modelBuilder.Entity<ApplicationUser>()
-            .Property(u => u.LastName)
-            .HasMaxLength(100);
+       
 
         modelBuilder.Entity<Booking>()
             .Property(b => b.BookingNumber)

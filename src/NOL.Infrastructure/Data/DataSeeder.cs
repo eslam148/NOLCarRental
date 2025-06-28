@@ -33,8 +33,7 @@ public static class DataSeeder
             await SeedReviewsAsync(context);
             await SeedNotificationsAsync(context);
             await SeedFavoritesAsync(context);
-            // Temporarily disabled - will fix after app starts
-            // await SeedLoyaltyPointsAsync(context);
+            await SeedLoyaltyPointsAsync(context);
 
             await context.SaveChangesAsync();
         }
@@ -68,8 +67,8 @@ public static class DataSeeder
             UserName = "admin@nolrental.com",
             Email = "admin@nolrental.com",
             EmailConfirmed = true,
-            FirstName = "System",
-            LastName = "Administrator",
+            FullName = "System Administrator",
+            
             PhoneNumber = "+971501234567",
             PreferredLanguage = Language.Arabic,
             UserRole = UserRole.Admin,
@@ -82,8 +81,8 @@ public static class DataSeeder
             UserName = "manager@nolrental.com",
             Email = "manager@nolrental.com",
             EmailConfirmed = true,
-            FirstName = "أحمد",
-            LastName = "المدير",
+            FullName = " المدير أحمد",
+          
             PhoneNumber = "+971502345678",
             PreferredLanguage = Language.Arabic,
             UserRole = UserRole.Admin,
@@ -97,8 +96,8 @@ public static class DataSeeder
             UserName = "employee1@nolrental.com",
             Email = "employee1@nolrental.com",
             EmailConfirmed = true,
-            FirstName = "سارة",
-            LastName = "موظفة",
+            FullName = "سارة موظفة",
+        
             PhoneNumber = "+971503456789",
             PreferredLanguage = Language.Arabic,
             UserRole = UserRole.Employee,
@@ -111,8 +110,8 @@ public static class DataSeeder
             UserName = "employee2@nolrental.com",
             Email = "employee2@nolrental.com",
             EmailConfirmed = true,
-            FirstName = "Omar",
-            LastName = "Hassan",
+            FullName = "Omar Hassan",
+          
             PhoneNumber = "+971504567890",
             PreferredLanguage = Language.English,
             UserRole = UserRole.Employee,
@@ -123,27 +122,27 @@ public static class DataSeeder
         // Customer users (16 customers to make ~20 total)
         var customerData = new[]
         {
-            ("محمد", "أحمد", "+971509876543", Language.Arabic),
-            ("فاطمة", "علي", "+971508765432", Language.Arabic),
-            ("خالد", "محمود", "+971507654321", Language.Arabic),
-            ("عائشة", "حسن", "+971506543210", Language.Arabic),
-            ("John", "Smith", "+971505432109", Language.English),
-            ("Emily", "Johnson", "+971504321098", Language.English),
-            ("David", "Brown", "+971503210987", Language.English),
-            ("Sarah", "Davis", "+971502109876", Language.English),
-            ("عبدالله", "القاسم", "+971501098765", Language.Arabic),
-            ("مريم", "الزهراني", "+971500987654", Language.Arabic),
-            ("أحمد", "السعيد", "+971509987654", Language.Arabic),
-            ("نورا", "العتيبي", "+971508987654", Language.Arabic),
-            ("Michael", "Wilson", "+971507987654", Language.English),
-            ("Jessica", "Taylor", "+971506987654", Language.English),
-            ("Daniel", "Anderson", "+971505987654", Language.English),
-            ("Lisa", "Thomas", "+971504987654", Language.English)
+            ("محمد", "+971509876543", Language.Arabic),
+            ("فاطمة", "+971508765432", Language.Arabic),
+            ("خالد", "+971507654321", Language.Arabic),
+            ("عائشة", "+971506543210", Language.Arabic),
+            ("John", "+971505432109", Language.English),
+            ("Emily", "+971504321098", Language.English),
+            ("David", "+971503210987", Language.English),
+            ("Sarah", "+971502109876", Language.English),
+            ("عبدالله", "+971501098765", Language.Arabic),
+            ("مريم", "+971500987654", Language.Arabic),
+            ("أحمد", "+971509987654", Language.Arabic),
+            ("نورا", "+971508987654", Language.Arabic),
+            ("Michael" , "+971507987654", Language.English),
+            ("Jessica", "+971506987654", Language.English),
+            ("Daniel", "+971505987654", Language.English),
+            ("Lisa", "+971504987654", Language.English)
         };
 
         for (int i = 0; i < customerData.Length; i++)
         {
-            var (firstName, lastName, phone, language) = customerData[i];
+            var (firstName, phone, language) = customerData[i];
             var email = $"customer{i + 1}@example.com";
             
             users.Add((new ApplicationUser
@@ -151,8 +150,8 @@ public static class DataSeeder
                 UserName = email,
                 Email = email,
                 EmailConfirmed = true,
-                FirstName = firstName,
-                LastName = lastName,
+                FullName = firstName,
+               
                 PhoneNumber = phone,
                 PreferredLanguage = language,
                 UserRole = UserRole.Customer,

@@ -5,8 +5,8 @@ namespace NOL.Domain.Entities;
 
 public class ApplicationUser : IdentityUser
 {
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
+    
     public UserRole UserRole { get; set; } = UserRole.Customer;
     public Language PreferredLanguage { get; set; } = Language.English;
     public bool IsActive { get; set; } = true;

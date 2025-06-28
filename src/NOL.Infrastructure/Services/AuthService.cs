@@ -47,7 +47,10 @@ public class AuthService : IAuthService
         {
             return _responseService.Error<AuthResponseDto>("InvalidCredentials");
         }
-
+        if(!user.EmailConfirmed)
+        {
+            return _responseService.Error<AuthResponseDto>("EmailNotVerified");
+        }
         var token = GenerateJwtToken(user);
         var response = new AuthResponseDto
         {
@@ -56,31 +59,33 @@ public class AuthService : IAuthService
             {
                 Id = user.Id,
                 Email = user.Email ?? string.Empty,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber ?? string.Empty,
+                loyaltyPoints = user.TotalLoyaltyPoints,
                 PreferredLanguage = user.PreferredLanguage,
-                UserRole = user.UserRole
+                UserRole = user.UserRole,
+                emailVerified = user.EmailConfirmed
             }
         };
 
         return _responseService.Success(response, "LoginSuccessful");
     }
 
-    public async Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterDto registerDto)
+    public async Task<ApiResponse<AuthRegisterResponseDto>> RegisterAsync(RegisterDto registerDto)
     {
         var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
         if (existingUser != null)
         {
-            return _responseService.Error<AuthResponseDto>("EmailAlreadyExists");
+            return _responseService.Error<AuthRegisterResponseDto>("EmailAlreadyExists");
         }
 
         var user = new ApplicationUser
         {
             UserName = registerDto.Email,
             Email = registerDto.Email,
-            FirstName = registerDto.FirstName,
-            LastName = registerDto.LastName,
+            FullName = registerDto.FullName,
             PreferredLanguage = registerDto.PreferredLanguage,
+            PhoneNumber = registerDto.PhoneNumber,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -89,22 +94,20 @@ public class AuthService : IAuthService
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            return _responseService.Error<AuthResponseDto>("ValidationError", errors);
+            return _responseService.Error<AuthRegisterResponseDto>("ValidationError", errors);
         }
-
-        var token = GenerateJwtToken(user);
-        var response = new AuthResponseDto
+       var responseResult =  await SendEmailVerificationAsync(new SendEmailVerificationDto
         {
-            Token = token,
-            User = new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                PreferredLanguage = user.PreferredLanguage,
-                UserRole = user.UserRole
-            }
+            Email = user.Email!
+        });
+        if(!responseResult.Succeeded)
+        {
+            return _responseService.Error<AuthRegisterResponseDto>(responseResult.Message, responseResult.Errors);
+        }
+        
+        var response = new AuthRegisterResponseDto
+        {
+             Message = "RegistrationSuccessful",
         };
 
         return _responseService.Success(response, "UserRegistered");
@@ -120,12 +123,12 @@ public class AuthService : IAuthService
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(_jwtSettings.SecretKey);
-        
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Email, user.Email ?? string.Empty),
-            new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
+            new(ClaimTypes.Name, $"{user.FullName}"),
             new("preferredLanguage", user.PreferredLanguage.ToString()),
             new(ClaimTypes.Role, user.UserRole.ToString())
         };
@@ -167,7 +170,7 @@ public class AuthService : IAuthService
             return ApiResponse.Error("InternalServerError", (string?)null);
         }
 
-        var emailSent = await _emailService.SendEmailVerificationOtpAsync(user.Email!, user.FirstName, otpCode);
+        var emailSent = await _emailService.SendEmailVerificationOtpAsync(user.Email!, user.FullName, otpCode);
         if (!emailSent)
         {
             return ApiResponse.Error("EmailSendingFailed", (string?)null);
@@ -189,8 +192,8 @@ public class AuthService : IAuthService
             return ApiResponse.Error("EmailAlreadyConfirmed", (string?)null);
         }
 
-        if (string.IsNullOrEmpty(user.EmailVerificationOtp) || 
-            user.EmailVerificationOtpExpiry == null || 
+        if (string.IsNullOrEmpty(user.EmailVerificationOtp) ||
+            user.EmailVerificationOtpExpiry == null ||
             user.EmailVerificationOtpExpiry < DateTime.UtcNow)
         {
             return ApiResponse.Error("OtpExpired", (string?)null);
@@ -239,7 +242,7 @@ public class AuthService : IAuthService
             return ApiResponse.Error("InternalServerError", (string?)null);
         }
 
-        var emailSent = await _emailService.SendPasswordResetOtpAsync(user.Email!, user.FirstName, otpCode);
+        var emailSent = await _emailService.SendPasswordResetOtpAsync(user.Email!, user.FullName , otpCode);
         if (!emailSent)
         {
             return ApiResponse.Error("EmailSendingFailed", (string?)null);
@@ -261,8 +264,8 @@ public class AuthService : IAuthService
             return ApiResponse.NotFound("UserNotFound");
         }
 
-        if (string.IsNullOrEmpty(user.PasswordResetOtp) || 
-            user.PasswordResetOtpExpiry == null || 
+        if (string.IsNullOrEmpty(user.PasswordResetOtp) ||
+            user.PasswordResetOtpExpiry == null ||
             user.PasswordResetOtpExpiry < DateTime.UtcNow)
         {
             return ApiResponse.Error("OtpExpired", (string?)null);
@@ -317,4 +320,4 @@ public class AuthService : IAuthService
         var random = new Random();
         return random.Next(100000, 999999).ToString();
     }
-} 
+}

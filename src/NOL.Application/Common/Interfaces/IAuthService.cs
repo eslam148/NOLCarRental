@@ -7,7 +7,7 @@ public interface IAuthService
 {
     // Authentication
     Task<ApiResponse<AuthResponseDto>> LoginAsync(LoginDto loginDto);
-    Task<ApiResponse<AuthResponseDto>> RegisterAsync(RegisterDto registerDto);
+    Task<ApiResponse<AuthRegisterResponseDto>> RegisterAsync(RegisterDto registerDto);
     Task<ApiResponse> LogoutAsync();
     
     // Email Verification

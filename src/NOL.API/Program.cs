@@ -42,6 +42,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
     options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedEmail = true; // Require email confirmation for sign-in
+     
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
