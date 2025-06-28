@@ -180,6 +180,54 @@ public class BookingService : IBookingService
         }
     }
 
+    public async Task<ApiResponse<BookingDto>> CancelBookingAsync(int bookingId, string userId)
+    {
+        try
+        {
+            // Get the booking with all related data
+            var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
+            if (booking == null)
+            {
+                return _responseService.NotFound<BookingDto>("BookingNotFound");
+            }
+
+            // Check if the user owns this booking
+            if (booking.UserId != userId)
+            {
+                return _responseService.Forbidden<BookingDto>("UnauthorizedToModifyBooking");
+            }
+
+            // Check if booking can be canceled
+            var cancellableStatuses = new[] { BookingStatus.Open, BookingStatus.Confirmed };
+            if (!cancellableStatuses.Contains(booking.Status))
+            {
+                return _responseService.Error<BookingDto>("BookingCannotBeCanceled");
+            }
+
+            // Check cancellation policy (can't cancel if already started)
+            if (booking.StartDate <= DateTime.UtcNow)
+            {
+                return _responseService.Error<BookingDto>("CannotCancelStartedBooking");
+            }
+
+            // Update booking status and add cancellation reason
+            booking.Status = BookingStatus.Canceled;
+            booking.CancellationReason =  "string";
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            // Update the booking in the database
+            var updatedBooking = await _bookingRepository.UpdateBookingAsync(booking);
+
+            // Map to DTO and return
+            var bookingDto = MapToBookingDto(updatedBooking);
+            return _responseService.Success(bookingDto, "BookingCanceledSuccessfully");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error<BookingDto>("InternalServerError");
+        }
+    }
+
     private decimal CalculateRentalCost(Car car, int totalDays)
     {
         if (totalDays >= 30) // Monthly rate
@@ -263,6 +311,7 @@ public class BookingService : IBookingService
             FinalAmount = booking.FinalAmount,
             Status = booking.Status,
             Notes = booking.Notes,
+            CancellationReason = booking.CancellationReason,
             CreatedAt = booking.CreatedAt,
             Car = new CarDto
             {

@@ -165,4 +165,16 @@
   <data name="ExtraRetrieved" xml:space="preserve">
     <value>Extra service retrieved successfully</value>
   </data>
+  <data name="BookingCanceledSuccessfully" xml:space="preserve">
+    <value>Booking canceled successfully</value>
+  </data>
+  <data name="UnauthorizedToModifyBooking" xml:space="preserve">
+    <value>You are not authorized to modify this booking</value>
+  </data>
+  <data name="BookingCannotBeCanceled" xml:space="preserve">
+    <value>This booking cannot be canceled due to its current status</value>
+  </data>
+  <data name="CannotCancelStartedBooking" xml:space="preserve">
+    <value>Cannot cancel a booking that has already started</value>
+  </data>
 </root> 

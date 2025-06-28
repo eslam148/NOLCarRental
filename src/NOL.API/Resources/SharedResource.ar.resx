@@ -252,4 +252,16 @@
   <data name="AdvertisementRetrieved" xml:space="preserve">
     <value>تم استرداد الإعلان بنجاح</value>
   </data>
+  <data name="BookingCanceledSuccessfully" xml:space="preserve">
+    <value>تم إلغاء الحجز بنجاح</value>
+  </data>
+  <data name="UnauthorizedToModifyBooking" xml:space="preserve">
+    <value>غير مخول لك بتعديل هذا الحجز</value>
+  </data>
+  <data name="BookingCannotBeCanceled" xml:space="preserve">
+    <value>لا يمكن إلغاء هذا الحجز بسبب حالته الحالية</value>
+  </data>
+  <data name="CannotCancelStartedBooking" xml:space="preserve">
+    <value>لا يمكن إلغاء حجز بدأ بالفعل</value>
+  </data>
 </root>

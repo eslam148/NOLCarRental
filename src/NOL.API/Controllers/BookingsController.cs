@@ -51,4 +51,17 @@ public class BookingsController : ControllerBase
         var result = await _bookingService.CreateBookingAsync(createBookingDto, userId);
         return Ok(result);
     }
+
+    [HttpPut("{id}/cancel")]
+    public async Task<IActionResult> CancelBooking(int id)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _bookingService.CancelBookingAsync(id, userId);
+        return StatusCode(result.StatusCodeValue, result);
+    }
 } 

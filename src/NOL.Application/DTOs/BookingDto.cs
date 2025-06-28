@@ -16,6 +16,7 @@ public class BookingDto
     public decimal FinalAmount { get; set; }
     public BookingStatus Status { get; set; }
     public string? Notes { get; set; }
+    public string? CancellationReason { get; set; }
     public DateTime CreatedAt { get; set; }
     public CarDto Car { get; set; } = null!;
     public BranchDto ReceivingBranch { get; set; } = null!; // Pickup branch
@@ -47,4 +48,9 @@ public class BookingExtraRequestDto
 {
     public int ExtraTypePriceId { get; set; }
     public int Quantity { get; set; }
+}
+
+public class CancelBookingDto
+{
+    public string CancellationReason { get; set; } = string.Empty;
 } 
