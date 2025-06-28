@@ -40,6 +40,20 @@ public class BookingService : IBookingService
         }
     }
 
+    public async Task<ApiResponse<List<BookingDto>>> GetUserBookingsByStatusAsync(string userId, BookingStatus status)
+    {
+        try
+        {
+            var bookings = await _bookingRepository.GetUserBookingsByStatusAsync(userId, status);
+            var bookingDtos = bookings.Select(MapToBookingDto).ToList();
+            return _responseService.Success(bookingDtos, "BookingsRetrieved");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error<List<BookingDto>>("InternalServerError");
+        }
+    }
+
     public async Task<ApiResponse<BookingDto>> GetBookingByIdAsync(int id)
     {
         try
@@ -212,7 +226,7 @@ public class BookingService : IBookingService
 
             // Update booking status and add cancellation reason
             booking.Status = BookingStatus.Canceled;
-            booking.CancellationReason =  "string";
+            booking.CancellationReason = "Canceled by user";
             booking.UpdatedAt = DateTime.UtcNow;
 
             // Update the booking in the database

@@ -6,6 +6,7 @@ namespace NOL.Application.Common.Interfaces;
 public interface IBookingRepository
 {
     Task<List<Booking>> GetUserBookingsAsync(string userId);
+    Task<List<Booking>> GetUserBookingsByStatusAsync(string userId, BookingStatus status);
     Task<Booking?> GetUserBookingByIdAsync(int bookingId, string userId);
     Task<Booking?> GetBookingByIdAsync(int id);
     Task<Booking> CreateBookingAsync(Booking booking);

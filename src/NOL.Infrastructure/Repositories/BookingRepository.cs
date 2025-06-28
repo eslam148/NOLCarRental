@@ -29,6 +29,20 @@ public class BookingRepository : IBookingRepository
             .ToListAsync();
     }
 
+    public async Task<List<Booking>> GetUserBookingsByStatusAsync(string userId, BookingStatus status)
+    {
+        return await _context.Bookings
+            .Include(b => b.Car)
+                .ThenInclude(c => c.Category)
+            .Include(b => b.ReceivingBranch)
+            .Include(b => b.DeliveryBranch)
+            .Include(b => b.BookingExtras)
+                .ThenInclude(be => be.ExtraTypePrice)
+            .Where(b => b.UserId == userId && b.Status == status)
+            .OrderByDescending(b => b.CreatedAt)
+            .ToListAsync();
+    }
+
     public async Task<Booking?> GetUserBookingByIdAsync(int bookingId, string userId)
     {
         return await _context.Bookings

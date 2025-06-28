@@ -4,6 +4,7 @@ using System.Security.Claims;
 using NOL.Application.Common.Interfaces;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs;
+using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers;
 
@@ -20,7 +21,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetUserBookings()
+    public async Task<IActionResult> GetUserBookings([FromQuery] BookingStatus? status = null)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -28,8 +29,11 @@ public class BookingsController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _bookingService.GetUserBookingsAsync(userId);
-        return Ok(result);
+        var result = status.HasValue 
+            ? await _bookingService.GetUserBookingsByStatusAsync(userId, status.Value)
+            : await _bookingService.GetUserBookingsAsync(userId);
+        
+        return StatusCode(result.StatusCodeValue, result);
     }
 
     [HttpGet("{id}")]
