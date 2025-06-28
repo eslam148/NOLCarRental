@@ -26,6 +26,11 @@ using NOL.Application.Features.Favorites;
 using NOL.API.Services;
 using NOL.API.Middleware;
 using NOL.API.Resources;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Any;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -129,7 +134,14 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Configure JSON to serialize enums as strings
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -139,6 +151,9 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1",
         Description = "A comprehensive car rental system API with Arabic and English localization support"
     });
+
+    // Configure Swagger to show enums as strings
+    c.SchemaFilter<EnumSchemaFilter>();
 
     // Add JWT authentication to Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -219,4 +234,18 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedAsync(context, userManager, roleManager);
 }
 
-app.Run(); 
+app.Run();
+
+public class EnumSchemaFilter : ISchemaFilter
+{
+    public void Apply(OpenApiSchema schema, SchemaFilterContext context)
+    {
+        if (context.Type.IsEnum)
+        {
+            schema.Enum.Clear();
+            Enum.GetNames(context.Type)
+                .ToList()
+                .ForEach(name => schema.Enum.Add(new OpenApiString(name)));
+        }
+    }
+} 
