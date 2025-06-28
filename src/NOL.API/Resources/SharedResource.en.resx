@@ -28,7 +28,40 @@
     <value>Validation error</value>
   </data>
   <data name="CarNotAvailable" xml:space="preserve">
-    <value>Car is not available</value>
+    <value>Car is not available for the selected dates</value>
+  </data>
+  <data name="ReceivingBranchNotAvailable" xml:space="preserve">
+    <value>Receiving branch is not available</value>
+  </data>
+  <data name="DeliveryBranchNotAvailable" xml:space="preserve">
+    <value>Delivery branch is not available</value>
+  </data>
+  <data name="LoyaltyPointSummaryRetrieved" xml:space="preserve">
+    <value>Loyalty point summary retrieved successfully</value>
+  </data>
+  <data name="LoyaltyPointTransactionsRetrieved" xml:space="preserve">
+    <value>Loyalty point transactions retrieved successfully</value>
+  </data>
+  <data name="LoyaltyPointsAwarded" xml:space="preserve">
+    <value>Loyalty points awarded successfully</value>
+  </data>
+  <data name="LoyaltyPointsRedeemed" xml:space="preserve">
+    <value>Loyalty points redeemed successfully</value>
+  </data>
+  <data name="MinimumRedemptionNotMet" xml:space="preserve">
+    <value>Minimum redemption amount not met. You need at least 100 points to redeem.</value>
+  </data>
+  <data name="InsufficientLoyaltyPoints" xml:space="preserve">
+    <value>Insufficient loyalty points for this redemption</value>
+  </data>
+  <data name="BookingPointsProcessed" xml:space="preserve">
+    <value>Booking points processed successfully</value>
+  </data>
+  <data name="PointsAlreadyAwarded" xml:space="preserve">
+    <value>Points have already been awarded for this booking</value>
+  </data>
+  <data name="ExpiredPointsProcessed" xml:space="preserve">
+    <value>Expired points processed successfully</value>
   </data>
   <data name="BookingCreated" xml:space="preserve">
     <value>Booking created successfully</value>
@@ -69,6 +102,45 @@
   <data name="BranchesRetrieved" xml:space="preserve">
     <value>Branches retrieved successfully</value>
   </data>
+  <data name="AdvertisementsRetrieved" xml:space="preserve">
+    <value>Advertisements retrieved successfully</value>
+  </data>
+  <data name="FeaturedAdvertisementsRetrieved" xml:space="preserve">
+    <value>Featured advertisements retrieved successfully</value>
+  </data>
+  <data name="AdvertisementRetrieved" xml:space="preserve">
+    <value>Advertisement retrieved successfully</value>
+  </data>
+  <data name="AdvertisementNotFound" xml:space="preserve">
+    <value>Advertisement not found</value>
+  </data>
+  <data name="AdvertisementCreated" xml:space="preserve">
+    <value>Advertisement created successfully</value>
+  </data>
+  <data name="AdvertisementUpdated" xml:space="preserve">
+    <value>Advertisement updated successfully</value>
+  </data>
+  <data name="AdvertisementDeleted" xml:space="preserve">
+    <value>Advertisement deleted successfully</value>
+  </data>
+  <data name="AdvertisementStatusUpdated" xml:space="preserve">
+    <value>Advertisement status updated successfully</value>
+  </data>
+  <data name="ViewCountIncremented" xml:space="preserve">
+    <value>View count incremented successfully</value>
+  </data>
+  <data name="ClickCountIncremented" xml:space="preserve">
+    <value>Click count incremented successfully</value>
+  </data>
+  <data name="InvalidDateRange" xml:space="preserve">
+    <value>Invalid date range</value>
+  </data>
+  <data name="CannotSetBothCarAndCategory" xml:space="preserve">
+    <value>Cannot set both car and category for advertisement</value>
+  </data>
+  <data name="MustSetEitherCarOrCategory" xml:space="preserve">
+    <value>Must set either car or category for advertisement</value>
+  </data>
   <data name="BranchRetrieved" xml:space="preserve">
     <value>Branch retrieved successfully</value>
   </data>
@@ -88,9 +160,9 @@
     <value>Booking not found</value>
   </data>
   <data name="ExtrasRetrieved" xml:space="preserve">
-    <value>Extras retrieved successfully</value>
+    <value>Extra services retrieved successfully</value>
   </data>
   <data name="ExtraRetrieved" xml:space="preserve">
-    <value>Extra retrieved successfully</value>
+    <value>Extra service retrieved successfully</value>
   </data>
 </root> 

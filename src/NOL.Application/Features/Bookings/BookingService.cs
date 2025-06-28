@@ -10,15 +10,18 @@ namespace NOL.Application.Features.Bookings;
 public class BookingService : IBookingService
 {
     private readonly IBookingRepository _bookingRepository;
+    private readonly ICarRepository _carRepository;
     private readonly LocalizedApiResponseService _responseService;
     private readonly ILocalizationService _localizationService;
 
     public BookingService(
         IBookingRepository bookingRepository,
+        ICarRepository carRepository,
         LocalizedApiResponseService responseService,
         ILocalizationService localizationService)
     {
         _bookingRepository = bookingRepository;
+        _carRepository = carRepository;
         _responseService = responseService;
         _localizationService = localizationService;
     }
@@ -37,12 +40,11 @@ public class BookingService : IBookingService
         }
     }
 
-    public async Task<ApiResponse<BookingDto>> GetUserBookingByIdAsync(int bookingId, string userId)
+    public async Task<ApiResponse<BookingDto>> GetBookingByIdAsync(int id)
     {
         try
         {
-            var booking = await _bookingRepository.GetUserBookingByIdAsync(bookingId, userId);
-
+            var booking = await _bookingRepository.GetBookingByIdAsync(id);
             if (booking == null)
             {
                 return _responseService.NotFound<BookingDto>("BookingNotFound");
@@ -57,79 +59,190 @@ public class BookingService : IBookingService
         }
     }
 
-    public async Task<ApiResponse<BookingDto>> CreateBookingAsync(CreateBookingDto createBookingDto, string userId)
+    public async Task<ApiResponse<BookingDto>> CreateBookingAsync(CreateBookingDto createDto, string userId)
     {
         try
         {
-            // Validate car availability
-            var isCarAvailable = await _bookingRepository.IsCarAvailableAsync(
-                createBookingDto.CarId, 
-                createBookingDto.StartDate, 
-                createBookingDto.EndDate);
-
-            if (!isCarAvailable)
-            {
-                return _responseService.Error<BookingDto>("CarNotAvailable");
-            }
-
-            var car = await _bookingRepository.GetCarByIdAsync(createBookingDto.CarId);
+            // Validate car exists and is available
+            var car = await _carRepository.GetByIdAsync(createDto.CarId);
             if (car == null)
             {
                 return _responseService.NotFound<BookingDto>("CarNotFound");
             }
 
-            // Calculate booking cost
-            var totalDays = (decimal)(createBookingDto.EndDate - createBookingDto.StartDate).TotalDays;
+            // Check car availability for the requested dates
+            var isAvailable = await _bookingRepository.IsCarAvailableAsync(
+                createDto.CarId, 
+                createDto.StartDate, 
+                createDto.EndDate);
+
+            if (!isAvailable)
+            {
+                return _responseService.Error<BookingDto>("CarNotAvailable");
+            }
+
+            // Validate branches exist and are active
+            var isReceivingBranchAvailable = await _bookingRepository.IsBranchAvailableAsync(createDto.ReceivingBranchId);
+            if (!isReceivingBranchAvailable)
+            {
+                return _responseService.Error<BookingDto>("ReceivingBranchNotAvailable");
+            }
+
+            var isDeliveryBranchAvailable = await _bookingRepository.IsBranchAvailableAsync(createDto.DeliveryBranchId);
+            if (!isDeliveryBranchAvailable)
+            {
+                return _responseService.Error<BookingDto>("DeliveryBranchNotAvailable");
+            }
+
+            // Calculate rental period and costs
+            var totalDays = (createDto.EndDate - createDto.StartDate).Days;
             if (totalDays <= 0)
             {
                 return _responseService.Error<BookingDto>("InvalidDateRange");
             }
 
-            var carRentalCost = CalculateCarRentalCost(car, totalDays);
+            // Calculate rental cost based on daily, weekly, or monthly rates
+            var carRentalCost = CalculateRentalCost(car, totalDays);
+
+            // Process extras
+            var extrasCost = 0m;
+            var extraTypePriceIds = createDto.Extras.Select(e => e.ExtraTypePriceId).ToList();
+            var extraTypePrices = await _bookingRepository.GetExtraTypePricesAsync(extraTypePriceIds);
+
+            foreach (var extra in createDto.Extras)
+            {
+                var extraTypePrice = extraTypePrices.FirstOrDefault(etp => etp.Id == extra.ExtraTypePriceId);
+                if (extraTypePrice != null)
+                {
+                    var extraCost = CalculateExtraCost(extraTypePrice, extra.Quantity, totalDays);
+                    extrasCost += extraCost;
+                }
+            }
+
+            var totalCost = carRentalCost + extrasCost;
+
+            // Generate booking number
             var bookingNumber = GenerateBookingNumber();
 
-            // Create booking entity
             var booking = new Booking
             {
                 BookingNumber = bookingNumber,
-                StartDate = createBookingDto.StartDate,
-                EndDate = createBookingDto.EndDate,
+                UserId = userId,
+                CarId = createDto.CarId,
+                ReceivingBranchId = createDto.ReceivingBranchId,
+                DeliveryBranchId = createDto.DeliveryBranchId,
+                StartDate = createDto.StartDate,
+                EndDate = createDto.EndDate,
                 TotalDays = totalDays,
                 CarRentalCost = carRentalCost,
-                ExtrasCost = 0,
-                TotalCost = carRentalCost,
-                DiscountAmount = 0,
-                FinalAmount = carRentalCost,
+                ExtrasCost = extrasCost,
+                TotalCost = totalCost,
+                DiscountAmount = 0, // No discount logic for now
+                FinalAmount = totalCost,
                 Status = BookingStatus.Open,
-                Notes = createBookingDto.Notes,
-                UserId = userId,
-                CarId = createBookingDto.CarId,
+                Notes = createDto.Notes,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            // Create the booking
             var createdBooking = await _bookingRepository.CreateBookingAsync(booking);
 
-            // Handle extras if any
-            if (createBookingDto.Extras.Any())
+            // Create booking extras
+            foreach (var extra in createDto.Extras)
             {
-                var extrasCost = await ProcessBookingExtrasAsync(createdBooking.Id, createBookingDto.Extras, totalDays);
-                
-                createdBooking.ExtrasCost = extrasCost;
-                createdBooking.TotalCost = carRentalCost + extrasCost;
-                createdBooking.FinalAmount = createdBooking.TotalCost - createdBooking.DiscountAmount;
-                createdBooking.UpdatedAt = DateTime.UtcNow;
-
-                await _bookingRepository.UpdateBookingAsync(createdBooking);
+                var extraTypePrice = extraTypePrices.FirstOrDefault(etp => etp.Id == extra.ExtraTypePriceId);
+                if (extraTypePrice != null)
+                {
+                    var unitPrice = GetUnitPrice(extraTypePrice, totalDays);
+                    var bookingExtra = new BookingExtra
+                    {
+                        BookingId = createdBooking.Id,
+                        ExtraTypePriceId = extra.ExtraTypePriceId,
+                        Quantity = extra.Quantity,
+                        UnitPrice = unitPrice,
+                        TotalPrice = unitPrice * extra.Quantity
+                    };
+                    createdBooking.BookingExtras.Add(bookingExtra);
+                }
             }
 
-            return _responseService.Success<BookingDto>(null!, "BookingCreated");
+            await _bookingRepository.UpdateBookingAsync(createdBooking);
+
+            // Retrieve the complete booking with all relations
+            var completeBooking = await _bookingRepository.GetBookingByIdAsync(createdBooking.Id);
+            var bookingDto = MapToBookingDto(completeBooking!);
+
+            return _responseService.Success(bookingDto, "BookingCreated");
         }
         catch (Exception)
         {
             return _responseService.Error<BookingDto>("InternalServerError");
         }
+    }
+
+    private decimal CalculateRentalCost(Car car, int totalDays)
+    {
+        if (totalDays >= 30) // Monthly rate
+        {
+            var months = Math.Ceiling((decimal)totalDays / 30);
+            return car.MonthlyRate * months;
+        }
+        else if (totalDays >= 7) // Weekly rate
+        {
+            var weeks = Math.Ceiling((decimal)totalDays / 7);
+            return car.WeeklyRate * weeks;
+        }
+        else // Daily rate
+        {
+            return car.DailyRate * totalDays;
+        }
+    }
+
+    private decimal CalculateExtraCost(ExtraTypePrice extraTypePrice, int quantity, int totalDays)
+    {
+        decimal unitPrice;
+
+        if (totalDays >= 30) // Monthly rate
+        {
+            var months = Math.Ceiling((decimal)totalDays / 30);
+            unitPrice = extraTypePrice.MonthlyPrice * months;
+        }
+        else if (totalDays >= 7) // Weekly rate
+        {
+            var weeks = Math.Ceiling((decimal)totalDays / 7);
+            unitPrice = extraTypePrice.WeeklyPrice * weeks;
+        }
+        else // Daily rate
+        {
+            unitPrice = extraTypePrice.DailyPrice * totalDays;
+        }
+
+        return unitPrice * quantity;
+    }
+
+    private decimal GetUnitPrice(ExtraTypePrice extraTypePrice, int totalDays)
+    {
+        if (totalDays >= 30) // Monthly rate
+        {
+            var months = Math.Ceiling((decimal)totalDays / 30);
+            return extraTypePrice.MonthlyPrice * months;
+        }
+        else if (totalDays >= 7) // Weekly rate
+        {
+            var weeks = Math.Ceiling((decimal)totalDays / 7);
+            return extraTypePrice.WeeklyPrice * weeks;
+        }
+        else // Daily rate
+        {
+            return extraTypePrice.DailyPrice * totalDays;
+        }
+    }
+
+    private string GenerateBookingNumber()
+    {
+        var timestamp = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+        var random = new Random().Next(1000, 9999);
+        return $"BK{timestamp}{random}";
     }
 
     private BookingDto MapToBookingDto(Booking booking)
@@ -167,6 +280,34 @@ public class BookingService : IBookingService
                 Status = booking.Car.Status,
                 ImageUrl = booking.Car.ImageUrl
             },
+            ReceivingBranch = new BranchDto
+            {
+                Id = booking.ReceivingBranch.Id,
+                Name = isArabic ? booking.ReceivingBranch.NameAr : booking.ReceivingBranch.NameEn,
+                Description = isArabic ? booking.ReceivingBranch.DescriptionAr : booking.ReceivingBranch.DescriptionEn,
+                Address = booking.ReceivingBranch.Address,
+                City = booking.ReceivingBranch.City,
+                Country = booking.ReceivingBranch.Country,
+                Phone = booking.ReceivingBranch.Phone,
+                Email = booking.ReceivingBranch.Email,
+                Latitude = booking.ReceivingBranch.Latitude,
+                Longitude = booking.ReceivingBranch.Longitude,
+                WorkingHours = booking.ReceivingBranch.WorkingHours
+            },
+            DeliveryBranch = new BranchDto
+            {
+                Id = booking.DeliveryBranch.Id,
+                Name = isArabic ? booking.DeliveryBranch.NameAr : booking.DeliveryBranch.NameEn,
+                Description = isArabic ? booking.DeliveryBranch.DescriptionAr : booking.DeliveryBranch.DescriptionEn,
+                Address = booking.DeliveryBranch.Address,
+                City = booking.DeliveryBranch.City,
+                Country = booking.DeliveryBranch.Country,
+                Phone = booking.DeliveryBranch.Phone,
+                Email = booking.DeliveryBranch.Email,
+                Latitude = booking.DeliveryBranch.Latitude,
+                Longitude = booking.DeliveryBranch.Longitude,
+                WorkingHours = booking.DeliveryBranch.WorkingHours
+            },
             Extras = booking.BookingExtras.Select(be => new BookingExtraDto
             {
                 Id = be.Id,
@@ -176,67 +317,5 @@ public class BookingService : IBookingService
                 TotalPrice = be.TotalPrice
             }).ToList()
         };
-    }
-
-    private decimal CalculateCarRentalCost(Car car, decimal totalDays)
-    {
-        // Business logic for calculating rental cost
-        // Could implement weekly/monthly discounts here
-        if (totalDays >= 30)
-        {
-            return car.MonthlyRate * (totalDays / 30);
-        }
-        else if (totalDays >= 7)
-        {
-            return car.WeeklyRate * (totalDays / 7);
-        }
-        else
-        {
-            return car.DailyRate * totalDays;
-        }
-    }
-
-    private string GenerateBookingNumber()
-    {
-        return $"NOL-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
-    }
-
-    private async Task<decimal> ProcessBookingExtrasAsync(int bookingId, List<BookingExtraRequestDto> extrasRequest, decimal totalDays)
-    {
-        var extraTypePriceIds = extrasRequest.Select(e => e.ExtraTypePriceId).ToList();
-        var extraTypePrices = await _bookingRepository.GetExtraTypePricesByIdsAsync(extraTypePriceIds);
-
-        var bookingExtras = new List<BookingExtra>();
-        decimal totalExtrasCost = 0;
-
-        foreach (var extraRequest in extrasRequest)
-        {
-            var extraTypePrice = extraTypePrices.FirstOrDefault(etp => etp.Id == extraRequest.ExtraTypePriceId);
-            if (extraTypePrice != null)
-            {
-                var unitPrice = extraTypePrice.DailyPrice;
-                var totalPrice = unitPrice * extraRequest.Quantity * totalDays;
-                totalExtrasCost += totalPrice;
-
-                var bookingExtra = new BookingExtra
-                {
-                    BookingId = bookingId,
-                    ExtraTypePriceId = extraRequest.ExtraTypePriceId,
-                    Quantity = extraRequest.Quantity,
-                    UnitPrice = unitPrice,
-                    TotalPrice = totalPrice,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                bookingExtras.Add(bookingExtra);
-            }
-        }
-
-        if (bookingExtras.Any())
-        {
-            await _bookingRepository.AddBookingExtrasAsync(bookingExtras);
-        }
-
-        return totalExtrasCost;
     }
 } 

@@ -20,7 +20,7 @@ public class BookingsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<BookingDto>>>> GetUserBookings()
+    public async Task<IActionResult> GetUserBookings()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -29,24 +29,18 @@ public class BookingsController : ControllerBase
         }
 
         var result = await _bookingService.GetUserBookingsAsync(userId);
-        return StatusCode(result.StatusCodeValue, result);
+        return Ok(result);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<BookingDto>>> GetBooking(int id)
+    public async Task<IActionResult> GetBookingById(int id)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId))
-        {
-            return Unauthorized();
-        }
-
-        var result = await _bookingService.GetUserBookingByIdAsync(id, userId);
-        return StatusCode(result.StatusCodeValue, result);
+        var result = await _bookingService.GetBookingByIdAsync(id);
+        return Ok(result);
     }
 
     [HttpPost]
-    public async Task<ActionResult<ApiResponse<BookingDto>>> CreateBooking([FromBody] CreateBookingDto createBookingDto)
+    public async Task<IActionResult> CreateBooking([FromBody] CreateBookingDto createBookingDto)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -55,6 +49,6 @@ public class BookingsController : ControllerBase
         }
 
         var result = await _bookingService.CreateBookingAsync(createBookingDto, userId);
-        return StatusCode(result.StatusCodeValue, result);
+        return Ok(result);
     }
 } 

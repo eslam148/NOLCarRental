@@ -23,10 +23,14 @@ public class Booking
     // Foreign Keys
     public string UserId { get; set; } = string.Empty;
     public int CarId { get; set; }
+    public int ReceivingBranchId { get; set; } // Pickup branch
+    public int DeliveryBranchId { get; set; }  // Return branch
 
     // Navigation Properties
     public virtual ApplicationUser User { get; set; } = null!;
     public virtual Car Car { get; set; } = null!;
+    public virtual Branch ReceivingBranch { get; set; } = null!; // Pickup branch
+    public virtual Branch DeliveryBranch { get; set; } = null!;  // Return branch
     public virtual ICollection<BookingExtra> BookingExtras { get; set; } = new List<BookingExtra>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 } 

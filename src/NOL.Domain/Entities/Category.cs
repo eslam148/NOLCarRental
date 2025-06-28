@@ -15,4 +15,5 @@ public class Category
 
     // Navigation Properties
     public virtual ICollection<Car> Cars { get; set; } = new List<Car>();
+    public virtual ICollection<Advertisement> Advertisements { get; set; } = new List<Advertisement>();
 } 

@@ -38,4 +38,5 @@ public class Car
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     public virtual ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<Advertisement> Advertisements { get; set; } = new List<Advertisement>();
 } 

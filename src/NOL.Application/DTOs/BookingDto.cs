@@ -18,6 +18,8 @@ public class BookingDto
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
     public CarDto Car { get; set; } = null!;
+    public BranchDto ReceivingBranch { get; set; } = null!; // Pickup branch
+    public BranchDto DeliveryBranch { get; set; } = null!;  // Return branch
     public List<BookingExtraDto> Extras { get; set; } = new();
 }
 
@@ -35,6 +37,8 @@ public class CreateBookingDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public int CarId { get; set; }
+    public int ReceivingBranchId { get; set; } // Pickup branch
+    public int DeliveryBranchId { get; set; }  // Return branch
     public List<BookingExtraRequestDto> Extras { get; set; } = new();
     public string? Notes { get; set; }
 }

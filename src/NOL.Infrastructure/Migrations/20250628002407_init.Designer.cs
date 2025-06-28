@@ -12,8 +12,8 @@ using NOL.Infrastructure.Data;
 namespace NOL.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250627210457_InitialMigrationWithSeeds")]
-    partial class InitialMigrationWithSeeds
+    [Migration("20250628002407_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,6 +158,98 @@ namespace NOL.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("NOL.Domain.Entities.Advertisement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CarId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClickCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("DescriptionAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DescriptionEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal?>("DiscountPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TitleAr")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TitleEn")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.ToTable("Advertisements");
+                });
+
             modelBuilder.Entity("NOL.Domain.Entities.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -274,6 +366,9 @@ namespace NOL.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("DeliveryBranchId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("DiscountAmount")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
@@ -292,6 +387,9 @@ namespace NOL.Infrastructure.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ReceivingBranchId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
@@ -303,8 +401,8 @@ namespace NOL.Infrastructure.Migrations
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<decimal>("TotalDays")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -316,6 +414,10 @@ namespace NOL.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CarId");
+
+                    b.HasIndex("DeliveryBranchId");
+
+                    b.HasIndex("ReceivingBranchId");
 
                     b.HasIndex("UserId");
 
@@ -397,12 +499,12 @@ namespace NOL.Infrastructure.Migrations
                         .HasColumnType("bit");
 
                     b.Property<decimal>("Latitude")
-                        .HasPrecision(10, 8)
-                        .HasColumnType("decimal(10,8)");
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
 
                     b.Property<decimal>("Longitude")
-                        .HasPrecision(11, 8)
-                        .HasColumnType("decimal(11,8)");
+                        .HasPrecision(9, 6)
+                        .HasColumnType("decimal(9,6)");
 
                     b.Property<string>("NameAr")
                         .IsRequired()
@@ -801,7 +903,8 @@ namespace NOL.Infrastructure.Migrations
 
                     b.Property<string>("Key")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
@@ -811,7 +914,8 @@ namespace NOL.Infrastructure.Migrations
 
                     b.Property<string>("Value")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.HasKey("Id");
 
@@ -872,11 +976,47 @@ namespace NOL.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("NOL.Domain.Entities.Advertisement", b =>
+                {
+                    b.HasOne("NOL.Domain.Entities.Car", "Car")
+                        .WithMany("Advertisements")
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("NOL.Domain.Entities.Category", "Category")
+                        .WithMany("Advertisements")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("NOL.Domain.Entities.ApplicationUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Car");
+
+                    b.Navigation("Category");
+
+                    b.Navigation("CreatedByUser");
+                });
+
             modelBuilder.Entity("NOL.Domain.Entities.Booking", b =>
                 {
                     b.HasOne("NOL.Domain.Entities.Car", "Car")
                         .WithMany("Bookings")
                         .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NOL.Domain.Entities.Branch", "DeliveryBranch")
+                        .WithMany()
+                        .HasForeignKey("DeliveryBranchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("NOL.Domain.Entities.Branch", "ReceivingBranch")
+                        .WithMany()
+                        .HasForeignKey("ReceivingBranchId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -887,6 +1027,10 @@ namespace NOL.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Car");
+
+                    b.Navigation("DeliveryBranch");
+
+                    b.Navigation("ReceivingBranch");
 
                     b.Navigation("User");
                 });
@@ -1014,6 +1158,8 @@ namespace NOL.Infrastructure.Migrations
 
             modelBuilder.Entity("NOL.Domain.Entities.Car", b =>
                 {
+                    b.Navigation("Advertisements");
+
                     b.Navigation("Bookings");
 
                     b.Navigation("Favorites");
@@ -1023,6 +1169,8 @@ namespace NOL.Infrastructure.Migrations
 
             modelBuilder.Entity("NOL.Domain.Entities.Category", b =>
                 {
+                    b.Navigation("Advertisements");
+
                     b.Navigation("Cars");
                 });
 

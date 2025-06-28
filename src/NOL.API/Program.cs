@@ -14,6 +14,14 @@ using NOL.Application.Common.Services;
 using NOL.Domain.Entities;
 using NOL.Infrastructure.Data;
 using NOL.Infrastructure.Services;
+using NOL.Infrastructure.Repositories;
+using NOL.Application.Features.Branches;
+using NOL.Application.Features.Categories;
+using NOL.Application.Features.Cars;
+using NOL.Application.Features.Extras;
+using NOL.Application.Features.Bookings;
+using NOL.Application.Features.Advertisements;
+using NOL.Application.Features.LoyaltyPoints;
 using NOL.API.Services;
 using NOL.API.Middleware;
 using NOL.API.Resources;
@@ -95,12 +103,18 @@ builder.Services.AddScoped<ICarRepository, NOL.Infrastructure.Repositories.CarRe
 builder.Services.AddScoped<IBranchRepository, NOL.Infrastructure.Repositories.BranchRepository>();
 builder.Services.AddScoped<ICategoryRepository, NOL.Infrastructure.Repositories.CategoryRepository>();
 builder.Services.AddScoped<IExtraRepository, NOL.Infrastructure.Repositories.ExtraRepository>();
+builder.Services.AddScoped<IBookingRepository, NOL.Infrastructure.Repositories.BookingRepository>();
+builder.Services.AddScoped<IAdvertisementRepository, NOL.Infrastructure.Repositories.AdvertisementRepository>();
+builder.Services.AddScoped<ILoyaltyPointRepository, NOL.Infrastructure.Repositories.LoyaltyPointRepository>();
 
 // Application Layer Services
 builder.Services.AddScoped<ICarService, NOL.Application.Features.Cars.CarService>();
 builder.Services.AddScoped<IBranchService, NOL.Application.Features.Branches.BranchService>();
 builder.Services.AddScoped<ICategoryService, NOL.Application.Features.Categories.CategoryService>();
 builder.Services.AddScoped<IExtraService, NOL.Application.Features.Extras.ExtraService>();
+builder.Services.AddScoped<IBookingService, NOL.Application.Features.Bookings.BookingService>();
+builder.Services.AddScoped<IAdvertisementService, NOL.Application.Features.Advertisements.AdvertisementService>();
+builder.Services.AddScoped<ILoyaltyPointService, NOL.Application.Features.LoyaltyPoints.LoyaltyPointService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
@@ -196,7 +210,7 @@ using (var scope = app.Services.CreateScope())
     await context.Database.EnsureCreatedAsync();
     
     // Seed the database with initial data
-    await DataSeeder.SeedAsync(context, userManager, roleManager);
+   // await DataSeeder.SeedAsync(context, userManager, roleManager);
 }
 
 app.Run(); 
