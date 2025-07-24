@@ -41,13 +41,21 @@ public class AuthService : IAuthService
         {
             return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
         }
+  
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded)
+        {
+            return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
+        }
+
         if (!user.EmailConfirmed)
         {
             var responseResult = await SendEmailVerificationAsync(new SendEmailVerificationDto
             {
                 Email = user.Email!
             });
-           
+
             return _responseService.Success<AuthResponseDto>(new AuthResponseDto
             {
                 User = new UserDto
@@ -57,15 +65,9 @@ public class AuthService : IAuthService
                     emailVerified = user.EmailConfirmed
                 },
             },
-                
+
                 "EmailNotVerified");
         }
-        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-        if (!result.Succeeded)
-        {
-            return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
-        }
-       
         var token = GenerateJwtToken(user);
         var response = new AuthResponseDto
         {
