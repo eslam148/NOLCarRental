@@ -19,7 +19,22 @@ public class FavoritesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<FavoriteDto>>>> GetMyFavorites()
+    public async Task<ActionResult<ApiResponse<PaginatedFavoritesDto>>> GetMyFavorites(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _favoriteService.GetUserFavoritesPagedAsync(userId, page, pageSize);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<ApiResponse<List<FavoriteDto>>>> GetAllMyFavorites()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))

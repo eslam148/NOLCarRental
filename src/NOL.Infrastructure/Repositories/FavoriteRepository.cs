@@ -16,7 +16,7 @@ public class FavoriteRepository : Repository<Favorite>, IFavoriteRepository
         return await _dbSet
             .Include(f => f.Car)
                 .ThenInclude(c => c.Category)
-                
+
             .Include(f => f.Car)
                 .ThenInclude(c => c.Branch)
              .Include(f => f.Car)
@@ -24,6 +24,30 @@ public class FavoriteRepository : Repository<Favorite>, IFavoriteRepository
             .Where(f => f.UserId == userId)
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Favorite>> GetUserFavoritesPagedAsync(string userId, int page, int pageSize)
+    {
+        return await _dbSet
+            .Include(f => f.Car)
+                .ThenInclude(c => c.Category)
+
+            .Include(f => f.Car)
+                .ThenInclude(c => c.Branch)
+             .Include(f => f.Car)
+                .ThenInclude(c => c.Reviews)
+            .Where(f => f.UserId == userId)
+            .OrderByDescending(f => f.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetUserFavoritesCountAsync(string userId)
+    {
+        return await _dbSet
+            .Where(f => f.UserId == userId)
+            .CountAsync();
     }
 
     public async Task<Favorite?> GetFavoriteAsync(string userId, int carId)

@@ -40,6 +40,46 @@ public class FavoriteService : IFavoriteService
         }
     }
 
+    public async Task<ApiResponse<PaginatedFavoritesDto>> GetUserFavoritesPagedAsync(string userId, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100; // Limit max page size
+
+            // Get paginated favorites and total count
+            var favorites = await _favoriteRepository.GetUserFavoritesPagedAsync(userId, page, pageSize);
+            var totalCount = await _favoriteRepository.GetUserFavoritesCountAsync(userId);
+
+            // Map to DTOs
+            var favoriteDtos = favorites.Select(MapToFavoriteDto).ToList();
+
+            // Calculate pagination info
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var hasPreviousPage = page > 1;
+            var hasNextPage = page < totalPages;
+
+            var paginatedResult = new PaginatedFavoritesDto
+            {
+                Favorites = favoriteDtos,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasPreviousPage = hasPreviousPage,
+                HasNextPage = hasNextPage
+            };
+
+            return _responseService.Success(paginatedResult, "FavoritesRetrieved");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error<PaginatedFavoritesDto>("InternalServerError");
+        }
+    }
+
     public async Task<ApiResponse<FavoriteDto>> AddToFavoritesAsync(string userId, AddFavoriteDto addFavoriteDto)
     {
         try
