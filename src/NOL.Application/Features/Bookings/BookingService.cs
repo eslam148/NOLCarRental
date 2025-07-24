@@ -131,7 +131,7 @@ public class BookingService : IBookingService
                 var extraTypePrice = extraTypePrices.FirstOrDefault(etp => etp.Id == extra.ExtraTypePriceId);
                 if (extraTypePrice != null)
                 {
-                    var extraCost = CalculateExtraCost(extraTypePrice, extra.Quantity, totalDays);
+                    var extraCost = CalculateExtraCost(extraTypePrice, 1, totalDays);
                     extrasCost += extraCost;
                 }
             }
@@ -175,9 +175,9 @@ public class BookingService : IBookingService
                     {
                         BookingId = createdBooking.Id,
                         ExtraTypePriceId = extra.ExtraTypePriceId,
-                        Quantity = extra.Quantity,
+                        Quantity = 1,
                         UnitPrice = unitPrice,
-                        TotalPrice = unitPrice * extra.Quantity
+                        TotalPrice = unitPrice *1
                     };
                     createdBooking.BookingExtras.Add(bookingExtra);
                 }

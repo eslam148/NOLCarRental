@@ -118,6 +118,7 @@ builder.Services.AddScoped<IAdvertisementRepository, NOL.Infrastructure.Reposito
 builder.Services.AddScoped<ILoyaltyPointRepository, NOL.Infrastructure.Repositories.LoyaltyPointRepository>();
 builder.Services.AddScoped<IFavoriteRepository, NOL.Infrastructure.Repositories.FavoriteRepository>();
 builder.Services.AddScoped<IReviewRepository, NOL.Infrastructure.Repositories.ReviewRepository>();
+builder.Services.AddScoped<IContactUsRepository, NOL.Infrastructure.Repositories.ContactUsRepository>();
 
 // Application Layer Services
 builder.Services.AddScoped<ICarService, NOL.Application.Features.Cars.CarService>();
@@ -130,6 +131,7 @@ builder.Services.AddScoped<ILoyaltyPointService, NOL.Application.Features.Loyalt
 builder.Services.AddScoped<IFavoriteService, NOL.Application.Features.Favorites.FavoriteService>();
 builder.Services.AddScoped<IRateCalculationService, NOL.Application.Features.RateCalculation.RateCalculationService>();
 builder.Services.AddScoped<IReviewService, NOL.Application.Features.Reviews.ReviewService>();
+builder.Services.AddScoped<IContactUsService, NOL.Application.Features.ContactUs.ContactUsService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));

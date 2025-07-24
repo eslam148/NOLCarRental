@@ -24,6 +24,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<SystemSettings> SystemSettings { get; set; }
     public DbSet<Advertisement> Advertisements { get; set; }
     public DbSet<LoyaltyPointTransaction> LoyaltyPointTransactions { get; set; }
+    public DbSet<ContactUs> ContactUs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -482,5 +483,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(lpt => lpt.BookingId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure ContactUs entity
+        modelBuilder.Entity<ContactUs>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).HasMaxLength(255);
+            entity.Property(e => e.Phone).HasMaxLength(50);
+            entity.Property(e => e.WhatsApp).HasMaxLength(50);
+            entity.Property(e => e.Facebook).HasMaxLength(255);
+            entity.Property(e => e.Instagram).HasMaxLength(255);
+            entity.Property(e => e.X).HasMaxLength(255);
+            entity.Property(e => e.TikTok).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+        });
     }
 } 

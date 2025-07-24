@@ -47,7 +47,7 @@ public class CreateBookingDto
 public class BookingExtraRequestDto
 {
     public int ExtraTypePriceId { get; set; }
-    public int Quantity { get; set; }
+    //public int Quantity { get; set; }
 }
 
 public class CancelBookingDto
