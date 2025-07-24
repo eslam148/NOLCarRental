@@ -15,7 +15,25 @@ public class BranchRepository : Repository<Branch>, IBranchRepository
     {
         return await _dbSet
             .Where(b => b.IsActive)
+            .OrderBy(b => b.NameEn)
             .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Branch>> GetActiveBranchesPagedAsync(int page, int pageSize)
+    {
+        return await _dbSet
+            .Where(b => b.IsActive)
+            .OrderBy(b => b.NameEn)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<int> GetActiveBranchesCountAsync()
+    {
+        return await _dbSet
+            .Where(b => b.IsActive)
+            .CountAsync();
     }
 
     public async Task<Branch?> GetActiveBranchByIdAsync(int id)

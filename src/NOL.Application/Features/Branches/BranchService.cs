@@ -35,6 +35,46 @@ public class BranchService : IBranchService
         }
     }
 
+    public async Task<ApiResponse<PaginatedBranchesDto>> GetBranchesPagedAsync(int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100; // Limit max page size
+
+            // Get paginated branches and total count
+            var branches = await _branchRepository.GetActiveBranchesPagedAsync(page, pageSize);
+            var totalCount = await _branchRepository.GetActiveBranchesCountAsync();
+
+            // Map to DTOs
+            var branchDtos = branches.Select(MapToBranchDto).ToList();
+
+            // Calculate pagination info
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var hasPreviousPage = page > 1;
+            var hasNextPage = page < totalPages;
+
+            var paginatedResult = new PaginatedBranchesDto
+            {
+                Branches = branchDtos,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasPreviousPage = hasPreviousPage,
+                HasNextPage = hasNextPage
+            };
+
+            return _responseService.Success(paginatedResult, "BranchesRetrieved");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error<PaginatedBranchesDto>("InternalServerError");
+        }
+    }
+
     public async Task<ApiResponse<BranchDto>> GetBranchByIdAsync(int id)
     {
         try

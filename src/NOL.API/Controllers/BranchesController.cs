@@ -16,7 +16,16 @@ public class BranchesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<BranchDto>>>> GetBranches()
+    public async Task<ActionResult<ApiResponse<PaginatedBranchesDto>>> GetBranches(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var result = await _branchService.GetBranchesPagedAsync(page, pageSize);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<ApiResponse<List<BranchDto>>>> GetAllBranches()
     {
         var result = await _branchService.GetBranchesAsync();
         return StatusCode(result.StatusCodeValue, result);

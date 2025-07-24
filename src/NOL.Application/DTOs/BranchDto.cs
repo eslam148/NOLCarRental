@@ -13,4 +13,16 @@ public class BranchDto
     public decimal Latitude { get; set; }
     public decimal Longitude { get; set; }
     public string? WorkingHours { get; set; }
-} 
+}
+
+// Paginated branches response
+public class PaginatedBranchesDto
+{
+    public List<BranchDto> Branches { get; set; } = new();
+    public int CurrentPage { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public int TotalPages { get; set; }
+    public bool HasPreviousPage { get; set; }
+    public bool HasNextPage { get; set; }
+}
