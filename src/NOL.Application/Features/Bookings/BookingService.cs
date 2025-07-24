@@ -13,17 +13,20 @@ public class BookingService : IBookingService
     private readonly ICarRepository _carRepository;
     private readonly LocalizedApiResponseService _responseService;
     private readonly ILocalizationService _localizationService;
+    private readonly IRateCalculationService _rateCalculationService;
 
     public BookingService(
         IBookingRepository bookingRepository,
         ICarRepository carRepository,
         LocalizedApiResponseService responseService,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IRateCalculationService rateCalculationService)
     {
         _bookingRepository = bookingRepository;
         _carRepository = carRepository;
         _responseService = responseService;
         _localizationService = localizationService;
+        _rateCalculationService = rateCalculationService;
     }
 
     public async Task<ApiResponse<List<BookingDto>>> GetUserBookingsAsync(string userId)
@@ -115,7 +118,7 @@ public class BookingService : IBookingService
                 return _responseService.ValidationError<BookingDto>("InvalidDateRange");
             }
 
-            // Calculate rental cost based on daily, weekly, or monthly rates
+            // Calculate rental cost using the optimized rate calculation service
             var carRentalCost = CalculateRentalCost(car, totalDays);
 
             // Process extras
@@ -244,60 +247,46 @@ public class BookingService : IBookingService
 
     private decimal CalculateRentalCost(Car car, int totalDays)
     {
-        if (totalDays >= 30) // Monthly rate
+        var request = new RateCalculationRequestDto
         {
-            var months = Math.Ceiling((decimal)totalDays / 30);
-            return car.MonthlyRate * months;
-        }
-        else if (totalDays >= 7) // Weekly rate
-        {
-            var weeks = Math.Ceiling((decimal)totalDays / 7);
-            return car.WeeklyRate * weeks;
-        }
-        else // Daily rate
-        {
-            return car.DailyRate * totalDays;
-        }
+            TotalDays = totalDays,
+            DailyRate = car.DailyRate,
+            WeeklyRate = car.WeeklyRate,
+            MonthlyRate = car.MonthlyRate
+        };
+
+        var result = _rateCalculationService.CalculateOptimalRate(request);
+        return result.TotalCost;
     }
 
     private decimal CalculateExtraCost(ExtraTypePrice extraTypePrice, int quantity, int totalDays)
     {
-        decimal unitPrice;
+        var request = new ExtraRateCalculationRequestDto
+        {
+            TotalDays = totalDays,
+            Quantity = quantity,
+            DailyPrice = extraTypePrice.DailyPrice,
+            WeeklyPrice = extraTypePrice.WeeklyPrice,
+            MonthlyPrice = extraTypePrice.MonthlyPrice
+        };
 
-        if (totalDays >= 30) // Monthly rate
-        {
-            var months = Math.Ceiling((decimal)totalDays / 30);
-            unitPrice = extraTypePrice.MonthlyPrice * months;
-        }
-        else if (totalDays >= 7) // Weekly rate
-        {
-            var weeks = Math.Ceiling((decimal)totalDays / 7);
-            unitPrice = extraTypePrice.WeeklyPrice * weeks;
-        }
-        else // Daily rate
-        {
-            unitPrice = extraTypePrice.DailyPrice * totalDays;
-        }
-
-        return unitPrice * quantity;
+        var result = _rateCalculationService.CalculateExtraRate(request);
+        return result.TotalCost;
     }
 
     private decimal GetUnitPrice(ExtraTypePrice extraTypePrice, int totalDays)
     {
-        if (totalDays >= 30) // Monthly rate
+        var request = new ExtraRateCalculationRequestDto
         {
-            var months = Math.Ceiling((decimal)totalDays / 30);
-            return extraTypePrice.MonthlyPrice * months;
-        }
-        else if (totalDays >= 7) // Weekly rate
-        {
-            var weeks = Math.Ceiling((decimal)totalDays / 7);
-            return extraTypePrice.WeeklyPrice * weeks;
-        }
-        else // Daily rate
-        {
-            return extraTypePrice.DailyPrice * totalDays;
-        }
+            TotalDays = totalDays,
+            Quantity = 1, // Unit price calculation
+            DailyPrice = extraTypePrice.DailyPrice,
+            WeeklyPrice = extraTypePrice.WeeklyPrice,
+            MonthlyPrice = extraTypePrice.MonthlyPrice
+        };
+
+        var result = _rateCalculationService.CalculateExtraRate(request);
+        return result.TotalCost;
     }
 
     private string GenerateBookingNumber()

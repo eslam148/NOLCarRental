@@ -26,6 +26,11 @@ public class Car
     public int Mileage { get; set; }
     public string? Features { get; set; } // JSON string of features
     public bool IsActive { get; set; } = true;
+
+    // Rating properties
+    public decimal AverageRating { get; set; } = 0;
+    public int TotalReviews { get; set; } = 0;
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

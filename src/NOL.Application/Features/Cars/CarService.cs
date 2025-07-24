@@ -170,7 +170,8 @@ public class CarService : ICarService
                 Longitude = car.Branch.Longitude,
                 WorkingHours = car.Branch.WorkingHours
             },
-            IsFavorite = false // Default to false, will be updated below if user is authenticated
+            IsFavorite = false, // Default to false, will be updated below if user is authenticated,
+            AvrageRate  = car.AverageRating
         };
 
         // Check if car is favorite for authenticated user

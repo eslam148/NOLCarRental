@@ -127,6 +127,7 @@ builder.Services.AddScoped<IBookingService, NOL.Application.Features.Bookings.Bo
 builder.Services.AddScoped<IAdvertisementService, NOL.Application.Features.Advertisements.AdvertisementService>();
 builder.Services.AddScoped<ILoyaltyPointService, NOL.Application.Features.LoyaltyPoints.LoyaltyPointService>();
 builder.Services.AddScoped<IFavoriteService, NOL.Application.Features.Favorites.FavoriteService>();
+builder.Services.AddScoped<IRateCalculationService, NOL.Application.Features.RateCalculation.RateCalculationService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));

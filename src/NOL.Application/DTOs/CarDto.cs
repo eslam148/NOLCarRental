@@ -21,4 +21,6 @@ public class CarDto
     public CategoryDto Category { get; set; } = null!;
     public BranchDto Branch { get; set; } = null!;
     public bool IsFavorite { get; set; } = false; // Indicates if the car is a favorite for the user
+
+    public decimal AvrageRate { get; set; } = 0;
 } 
