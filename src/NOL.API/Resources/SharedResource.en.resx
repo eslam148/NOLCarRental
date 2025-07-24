@@ -276,13 +276,64 @@
   <data name="CannotCancelStartedBooking" xml:space="preserve">
     <value>Cannot cancel a booking that has already started</value>
   </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>Password and confirmation password do not match</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>Password and confirm password are required</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>Email is already confirmed</value>
+  </data>
+  <data name="EmailSendingFailed" xml:space="preserve">
+    <value>Failed to send email</value>
+  </data>
+  <data name="OtpExpired" xml:space="preserve">
+    <value>OTP code has expired</value>
+  </data>
+  <data name="InvalidOtp" xml:space="preserve">
+    <value>Invalid OTP code</value>
+  </data>
+  <data name="EmailVerified" xml:space="preserve">
+    <value>Email verified successfully</value>
+  </data>
+  <data name="EmailVerificationSent" xml:space="preserve">
+    <value>Email verification code sent successfully</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود</value>
+  </data>
+  <data name="PasswordResetEmailSent" xml:space="preserve">
+    <value>Password reset email sent successfully</value>
+  </data>
+  <data name="PasswordResetFailed" xml:space="preserve">
+    <value>Password reset failed</value>
+  </data>
+  <data name="PasswordResetSuccessful" xml:space="preserve">
+    <value>Password reset successful</value>
+  </data>
+  <data name="PasswordChanged" xml:space="preserve">
+    <value>Password changed successfully</value>
+  </data>
+  <data name="PasswordChangeFailed" xml:space="preserve">
+    <value>Password change failed</value>
+  </data>
+  <data name="EmailNotVerified" xml:space="preserve">
+    <value>Email not verified. Please check your email for verification code</value>
+  </data>
+  <data name="RegistrationSuccessful" xml:space="preserve">
+    <value>Registration successful. Please check your email for verification</value>
+  </data>
+  <data name="InvalidEmailORPassword" xml:space="preserve">
+    <value>Invalid Email Or Password</value>
+  </data>
   <data name="PointsAlreadyAwarded" xml:space="preserve">
     <value>Points have already been awarded for this booking</value>
   </data>
   <data name="UnauthorizedToModifyBooking" xml:space="preserve">
     <value>You are not authorized to modify this booking</value>
   </data>
-  <data name="InvalidEmailORPassword" xml:space="preserve">
-    <value>Invalid Email Or Password</value>
+  <data name="MustRentCarToRate" xml:space="preserve">
+    <value>Must Rent Car To Rate</value>
   </data>
 </root>

@@ -73,8 +73,41 @@ public class CarsController : ControllerBase
     {
         // Get user ID from authentication context (null if not authenticated)
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        
+
         var result = await _carService.GetCarsByBranchAsync(branchId, userId);
         return StatusCode(result.StatusCodeValue, result);
     }
-} 
+
+    /// <summary>
+    /// Get car rates for public viewing (includes all rate periods)
+    /// </summary>
+    [HttpGet("{id}/rates")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<CarRatesDto>>> GetCarRates(int id)
+    {
+        var result = await _carService.GetCarRatesAsync(id);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+
+    /// <summary>
+    /// Search cars by term
+    /// </summary>
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ApiResponse<List<CarDto>>>> SearchCars(
+        [FromQuery] string searchTerm,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        if (page < 1 || pageSize < 1 || pageSize > 100)
+        {
+            return BadRequest(new { message = "Invalid pagination parameters" });
+        }
+
+        // Get user ID from authentication context (null if not authenticated)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        var result = await _carService.SearchCarsAsync(searchTerm, page, pageSize);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+}

@@ -327,4 +327,14 @@
   <data name="InvalidEmailORPassword" xml:space="preserve">
     <value>Invalid Email Or Password</value>
   </data>
+  <data name="PointsAlreadyAwarded" xml:space="preserve">
+    <value>Points have already been awarded for this booking</value>
+  </data>
+  <data name="UnauthorizedToModifyBooking" xml:space="preserve">
+    <value>You are not authorized to modify this booking</value>
+  </data>
+  <data name="MustRentCarToRate" xml:space="preserve">
+    <value>Must Rent Car To Rate</value>
+    <comment>Must Rent Car To Rate</comment>
+  </data>
 </root>

@@ -13,4 +13,7 @@ public interface IReviewService
     Task<ApiResponse<ReviewDto>> UpdateReviewAsync(int id, string userId, UpdateReviewDto updateReviewDto);
     Task<ApiResponse<bool>> DeleteReviewAsync(int id, string userId);
     Task<ApiResponse<bool>> CanUserReviewCarAsync(string userId, int carId);
+
+    // Simple mobile rating - optimized for mobile usage with minimal payload
+    Task<ApiResponse<SimpleMobileRatingResponseDto>> RateCarSimpleAsync(string userId, int carId, SimpleMobileRatingDto ratingDto);
 }

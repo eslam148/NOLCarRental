@@ -47,3 +47,21 @@ public class CarRatingDto
     public int TotalReviews { get; set; }
     public List<ReviewDto> Reviews { get; set; } = new();
 }
+
+// Simple mobile rating DTO - minimal payload for mobile optimization
+public class SimpleMobileRatingDto
+{
+    [Required]
+    [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5 stars")]
+    public int Rating { get; set; }
+}
+
+// Simple mobile rating response DTO - optimized for mobile
+public class SimpleMobileRatingResponseDto
+{
+    public bool Success { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public int PointsAwarded { get; set; }
+    public decimal NewCarAverageRating { get; set; }
+    public int TotalCarReviews { get; set; }
+}

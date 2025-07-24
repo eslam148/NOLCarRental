@@ -511,6 +511,15 @@ namespace NOL.API.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Must Rent Car To Rate.
+        /// </summary>
+        public static string MustRentCarToRate {
+            get {
+                return ResourceManager.GetString("MustRentCarToRate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Must set either car or category for advertisement.
         /// </summary>
         public static string MustSetEitherCarOrCategory {
@@ -619,6 +628,15 @@ namespace NOL.API.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Points have already been awarded for this booking.
+        /// </summary>
+        public static string PointsAlreadyAwarded {
+            get {
+                return ResourceManager.GetString("PointsAlreadyAwarded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Receiving branch is not available.
         /// </summary>
         public static string ReceivingBranchNotAvailable {
@@ -651,6 +669,15 @@ namespace NOL.API.Resources {
         public static string UnauthorizedAccess {
             get {
                 return ResourceManager.GetString("UnauthorizedAccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You are not authorized to modify this booking.
+        /// </summary>
+        public static string UnauthorizedToModifyBooking {
+            get {
+                return ResourceManager.GetString("UnauthorizedToModifyBooking", resourceCulture);
             }
         }
         
