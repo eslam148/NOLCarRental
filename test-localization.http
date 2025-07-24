@@ -1,0 +1,47 @@
+### Test Localization - English (default)
+GET http://localhost:5000/api/cars
+Accept: application/json
+
+### Test Localization - Arabic via Query String  
+GET http://localhost:5000/api/cars?culture=ar
+Accept: application/json
+
+### Test Localization - English via Query String
+GET http://localhost:5000/api/cars?culture=en  
+Accept: application/json
+
+### Test Localization - Arabic via Header
+GET http://localhost:5000/api/cars
+Accept: application/json
+Accept-Language: ar
+
+### Test Authentication Error in Arabic
+POST http://localhost:5000/api/auth/login?culture=ar
+Content-Type: application/json
+
+{
+  "email": "invalid@test.com", 
+  "password": "wrongpassword"
+}
+
+### Test Authentication Error in English  
+POST http://localhost:5000/api/auth/login?culture=en
+Content-Type: application/json
+
+{
+  "email": "invalid@test.com",
+  "password": "wrongpassword" 
+}
+
+### Test Registration Validation in Arabic
+POST http://localhost:5000/api/auth/register?culture=ar
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Test123!",
+  "confirmPassword": "DifferentPassword123!",
+  "fullName": "Test User",
+  "phoneNumber": "+1234567890",
+  "preferredLanguage": 1
+} 

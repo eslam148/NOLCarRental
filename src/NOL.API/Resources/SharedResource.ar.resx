@@ -198,6 +198,45 @@
   <data name="ExtraRetrieved" xml:space="preserve">
     <value>تم استرداد الخدمة الإضافية بنجاح</value>
   </data>
+  <data name="AdvertisementsRetrieved" xml:space="preserve">
+    <value>تم استرداد الإعلانات بنجاح</value>
+  </data>
+  <data name="FeaturedAdvertisementsRetrieved" xml:space="preserve">
+    <value>تم استرجاع الإعلانات المميزة بنجاح</value>
+  </data>
+  <data name="AdvertisementRetrieved" xml:space="preserve">
+    <value>تم استرداد الإعلان بنجاح</value>
+  </data>
+  <data name="AdvertisementNotFound" xml:space="preserve">
+    <value>الإعلان غير موجود</value>
+  </data>
+  <data name="AdvertisementCreated" xml:space="preserve">
+    <value>تم إنشاء الإعلان بنجاح</value>
+  </data>
+  <data name="AdvertisementUpdated" xml:space="preserve">
+    <value>تم تحديث الإعلان بنجاح</value>
+  </data>
+  <data name="AdvertisementDeleted" xml:space="preserve">
+    <value>تم حذف الإعلان بنجاح</value>
+  </data>
+  <data name="AdvertisementStatusUpdated" xml:space="preserve">
+    <value>تم تحديث حالة الإعلان بنجاح</value>
+  </data>
+  <data name="ViewCountIncremented" xml:space="preserve">
+    <value>تمت زيادة عدد المشاهدات بنجاح</value>
+  </data>
+  <data name="ClickCountIncremented" xml:space="preserve">
+    <value>تم زيادة عدد النقرات بنجاح</value>
+  </data>
+  <data name="InvalidDateRange" xml:space="preserve">
+    <value>نطاق التاريخ غير صحيح</value>
+  </data>
+  <data name="CannotSetBothCarAndCategory" xml:space="preserve">
+    <value>لا يمكن تعيين كل من السيارة والفئة للإعلان</value>
+  </data>
+  <data name="MustSetEitherCarOrCategory" xml:space="preserve">
+    <value>يجب تحديد السيارة أو الفئة للإعلان</value>
+  </data>
   <data name="ReceivingBranchNotAvailable" xml:space="preserve">
     <value>فرع الاستلام غير متاح</value>
   </data>
@@ -225,43 +264,73 @@
   <data name="BookingPointsProcessed" xml:space="preserve">
     <value>تم معالجة نقاط الحجز بنجاح</value>
   </data>
-  <data name="PointsAlreadyAwarded" xml:space="preserve">
-    <value>تم منح النقاط بالفعل لهذا الحجز</value>
-  </data>
   <data name="ExpiredPointsProcessed" xml:space="preserve">
     <value>تم معالجة النقاط المنتهية الصلاحية بنجاح</value>
   </data>
-  <data name="InvalidDateRange" xml:space="preserve">
-    <value>نطاق التاريخ غير صحيح</value>
-  </data>
-  <data name="AdvertisementCreated" xml:space="preserve">
-    <value>تم إنشاء الإعلان بنجاح</value>
-  </data>
-  <data name="AdvertisementUpdated" xml:space="preserve">
-    <value>تم تحديث الإعلان بنجاح</value>
-  </data>
-  <data name="AdvertisementDeleted" xml:space="preserve">
-    <value>تم حذف الإعلان بنجاح</value>
-  </data>
-  <data name="AdvertisementNotFound" xml:space="preserve">
-    <value>الإعلان غير موجود</value>
-  </data>
-  <data name="AdvertisementsRetrieved" xml:space="preserve">
-    <value>تم استرداد الإعلانات بنجاح</value>
-  </data>
-  <data name="AdvertisementRetrieved" xml:space="preserve">
-    <value>تم استرداد الإعلان بنجاح</value>
-  </data>
   <data name="BookingCanceledSuccessfully" xml:space="preserve">
     <value>تم إلغاء الحجز بنجاح</value>
-  </data>
-  <data name="UnauthorizedToModifyBooking" xml:space="preserve">
-    <value>غير مخول لك بتعديل هذا الحجز</value>
   </data>
   <data name="BookingCannotBeCanceled" xml:space="preserve">
     <value>لا يمكن إلغاء هذا الحجز بسبب حالته الحالية</value>
   </data>
   <data name="CannotCancelStartedBooking" xml:space="preserve">
     <value>لا يمكن إلغاء حجز بدأ بالفعل</value>
+  </data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve">
+    <value>كلمة المرور وتأكيد كلمة المرور غير متطابقتان</value>
+  </data>
+  <data name="PasswordRequired" xml:space="preserve">
+    <value>كلمة المرور وتأكيد كلمة المرور مطلوبان</value>
+  </data>
+  <data name="EmailAlreadyConfirmed" xml:space="preserve">
+    <value>البريد الإلكتروني مؤكد بالفعل</value>
+  </data>
+  <data name="EmailSendingFailed" xml:space="preserve">
+    <value>فشل في إرسال البريد الإلكتروني</value>
+  </data>
+  <data name="OtpExpired" xml:space="preserve">
+    <value>انتهت صلاحية رمز التحقق</value>
+  </data>
+  <data name="InvalidOtp" xml:space="preserve">
+    <value>رمز التحقق غير صحيح</value>
+  </data>
+  <data name="EmailVerified" xml:space="preserve">
+    <value>تم تأكيد البريد الإلكتروني بنجاح</value>
+  </data>
+  <data name="EmailVerificationSent" xml:space="preserve">
+    <value>تم إرسال رمز تأكيد البريد الإلكتروني بنجاح</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>المستخدم غير موجود</value>
+  </data>
+  <data name="PasswordResetEmailSent" xml:space="preserve">
+    <value>تم إرسال بريد إعادة تعيين كلمة المرور بنجاح</value>
+  </data>
+  <data name="PasswordResetFailed" xml:space="preserve">
+    <value>فشل في إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="PasswordResetSuccessful" xml:space="preserve">
+    <value>تم إعادة تعيين كلمة المرور بنجاح</value>
+  </data>
+  <data name="PasswordChanged" xml:space="preserve">
+    <value>تم تغيير كلمة المرور بنجاح</value>
+  </data>
+  <data name="PasswordChangeFailed" xml:space="preserve">
+    <value>فشل في تغيير كلمة المرور</value>
+  </data>
+  <data name="EmailNotVerified" xml:space="preserve">
+    <value>البريد الإلكتروني غير مؤكد. يرجى التحقق من بريدك الإلكتروني للحصول على رمز التحقق</value>
+  </data>
+  <data name="RegistrationSuccessful" xml:space="preserve">
+    <value>تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني للتحقق</value>
+  </data>
+  <data name="PointsAlreadyAwarded" xml:space="preserve">
+    <value>تم منح النقاط بالفعل لهذا الحجز</value>
+  </data>
+  <data name="UnauthorizedToModifyBooking" xml:space="preserve">
+    <value>غير مخول لك بتعديل هذا الحجز</value>
+  </data>
+  <data name="InvalidEmailORPassword" xml:space="preserve">
+    <value>البريد الإلكتروني أو كلمة المرور غير صالحة</value>
   </data>
 </root>

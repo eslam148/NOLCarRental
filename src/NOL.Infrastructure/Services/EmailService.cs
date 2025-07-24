@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using NOL.Application.Common;
 using NOL.Application.Common.Interfaces;
 using System.Net;
 using System.Net.Mail;
@@ -8,29 +10,70 @@ namespace NOL.Infrastructure.Services;
 public class EmailService : IEmailService
 {
     private readonly ILogger<EmailService> _logger;
+    private readonly EmailSettings _emailSettings;
 
-    public EmailService(ILogger<EmailService> logger)
+    public EmailService(ILogger<EmailService> logger, IOptions<EmailSettings> emailSettings)
     {
         _logger = logger;
+        _emailSettings = emailSettings.Value;
+
     }
-    private void sendAsync(string email, string subject, string message)
+    private async void sendAsync(string email, string subject, string body)
     {
         //var client = new SmtpClient("sandbox.smtp.mailtrap.io", 2525)
         //{
         //    Credentials = new NetworkCredential("cae84e2257385f", "685f9ced75eb7f"),
         //    EnableSsl = true
-        //};
-        var client = new SmtpClient("sandbox.smtp.mailtrap.io", 2525)
-        {
-            Credentials = new NetworkCredential("75d7b89b800244", "b0b72ad703383e"),
-            EnableSsl = true
-        };
-
-        client.Send("Info@nol.com", email, subject, message);
+       
         // Looking to send emails in production? Check out our Email API/SMTP product!
 
 
-        System.Console.WriteLine("Sent");
+        var maxRetries = 3;
+        var retryDelay = TimeSpan.FromSeconds(2);
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                var messageSend = new MailMessage
+                {
+                    From = new MailAddress(_emailSettings.SenderEmail, _emailSettings.SenderName),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                };
+
+                messageSend.To.Add(new MailAddress(email));
+
+                using var client = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.SmtpPort)
+                {
+                    Credentials = new NetworkCredential(_emailSettings.Username, _emailSettings.Password),
+                    EnableSsl = _emailSettings.EnableSsl,
+                    Timeout = 30000 // 30 seconds timeout
+                };
+
+                await client.SendMailAsync(messageSend);
+                _logger.LogInformation("Email sent successfully to {Email} with subject: {Subject}", email, subject);
+                return; // Success
+            }
+            catch (SmtpException ex) when (attempt < maxRetries)
+            {
+                _logger.LogWarning("SMTP error on attempt {Attempt}/{MaxRetries} for {Email}: {Error}",
+                    attempt, maxRetries, email, ex.Message);
+                await Task.Delay(retryDelay);
+            }
+            catch (SmtpException ex)
+            {
+                _logger.LogError(ex, "Failed to send email to {Email} after {MaxRetries} attempts", email, maxRetries);
+                throw new InvalidOperationException($"Failed to send email to {email}: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error sending email to {Email}", email);
+                throw new InvalidOperationException($"Unexpected error sending email to {email}: {ex.Message}", ex);
+            }
+        }
+
 
     }
     public async Task<bool> SendEmailVerificationOtpAsync(string email, string firstName, string otpCode)

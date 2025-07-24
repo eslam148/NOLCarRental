@@ -10,7 +10,8 @@ public class Car
     public string ModelAr { get; set; } = string.Empty;
     public string ModelEn { get; set; } = string.Empty;
     public int Year { get; set; }
-    public string Color { get; set; } = string.Empty;
+    public string ColorAr { get; set; } = string.Empty;
+    public string ColorEn { get; set; } = string.Empty;
     public string PlateNumber { get; set; } = string.Empty;
     public int SeatingCapacity { get; set; }
     public TransmissionType TransmissionType { get; set; }

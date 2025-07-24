@@ -7,7 +7,6 @@ using System.Security.Claims;
 
 namespace NOL.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class LoyaltyPointsController : ControllerBase

@@ -3,6 +3,7 @@ using NOL.Application.Common.Responses;
 using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Entities;
+using NOL.Domain.Enums;
 
 namespace NOL.Application.Features.Favorites;
 
@@ -133,13 +134,12 @@ public class FavoriteService : IFavoriteService
                 Model = isArabic ? favorite.Car.ModelAr : favorite.Car.ModelEn,
                 Brand = isArabic ? favorite.Car.BrandAr : favorite.Car.BrandEn,
                 Year = favorite.Car.Year,
-                Color = favorite.Car.Color,
+                Color = isArabic ? favorite.Car.ColorAr : favorite.Car.ColorEn,
                 SeatingCapacity = favorite.Car.SeatingCapacity,
-                TransmissionType = favorite.Car.TransmissionType,
+                TransmissionType = GetLocalizedTransmissionType(favorite.Car.TransmissionType, isArabic),
                 FuelType = favorite.Car.FuelType,
-                DailyRate = favorite.Car.DailyRate,
-                WeeklyRate = favorite.Car.WeeklyRate,
-                MonthlyRate = favorite.Car.MonthlyRate,
+                DailyPrice = favorite.Car.DailyRate,
+                
                 Status = favorite.Car.Status,
                 ImageUrl = favorite.Car.ImageUrl,
                 Description = isArabic ? favorite.Car.DescriptionAr : favorite.Car.DescriptionEn,
@@ -166,6 +166,17 @@ public class FavoriteService : IFavoriteService
                     WorkingHours = favorite.Car.Branch.WorkingHours
                 }
             }
+        };
+    }
+
+    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
+    {
+        return transmissionType switch
+        {
+            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
+            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
+            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
+            _ => isArabic ? "غير محدد" : "Unknown"
         };
     }
 } 

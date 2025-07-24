@@ -8,7 +8,6 @@ using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class BookingsController : ControllerBase

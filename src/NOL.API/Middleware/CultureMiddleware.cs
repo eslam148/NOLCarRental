@@ -13,31 +13,16 @@ public class CultureMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var culture = "en"; // default culture
-
-        // Check query parameter
-        if (context.Request.Query.ContainsKey("culture"))
-        {
-            var requestedCulture = context.Request.Query["culture"].ToString();
-            if (!string.IsNullOrEmpty(requestedCulture) && (requestedCulture == "ar" || requestedCulture == "en"))
-            {
-                culture = requestedCulture;
-            }
-        }
-        // Check Accept-Language header
-        else if (context.Request.Headers.ContainsKey("Accept-Language"))
-        {
-            var acceptLanguage = context.Request.Headers["Accept-Language"].ToString();
-            if (acceptLanguage.Contains("ar"))
-            {
-                culture = "ar";
-            }
-        }
-
-        // Set the culture
-        var cultureInfo = new CultureInfo(culture);
-        CultureInfo.CurrentCulture = cultureInfo;
-        CultureInfo.CurrentUICulture = cultureInfo;
+        // The RequestLocalization middleware should have already set the culture
+        // This middleware can be used for additional logging or custom logic
+        
+        var currentCulture = CultureInfo.CurrentUICulture.Name;
+        
+        // Log current culture for debugging
+        Console.WriteLine($"Current culture set to: {currentCulture}");
+        
+        // Add culture info to response headers for debugging
+        context.Response.Headers.Add("X-Current-Culture", currentCulture);
 
         // Continue to next middleware
         await _next(context);

@@ -12,7 +12,7 @@ public class CarRepository : Repository<Car>, ICarRepository
     {
     }
 
-    public async Task<IEnumerable<Car>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10)
+    public async Task<IEnumerable<Car>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10, string? brand = null)
     {
         var query = _dbSet.AsQueryable();
 
@@ -21,6 +21,14 @@ public class CarRepository : Repository<Car>, ICarRepository
             .Include(c => c.Category)
             .Include(c => c.Branch)
             .Where(c => c.IsActive);
+
+        // Apply brand filtering (search in both Arabic and English brand names)
+        if (!string.IsNullOrEmpty(brand))
+        {
+            query = query.Where(c => 
+                c.BrandAr.Contains(brand) || 
+                c.BrandEn.Contains(brand));
+        }
 
         // Apply cost sorting
         if (!string.IsNullOrEmpty(sortByCost))

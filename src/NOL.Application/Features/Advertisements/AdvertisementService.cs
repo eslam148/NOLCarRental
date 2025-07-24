@@ -108,7 +108,7 @@ public class AdvertisementService : IAdvertisementService
             // Validate business rules
             if (createDto.StartDate >= createDto.EndDate)
             {
-                return _responseService.Error<AdvertisementDto>("InvalidDateRange");
+                return _responseService.ValidationError<AdvertisementDto>("InvalidDateRange");
             }
 
             if (createDto.CarId.HasValue && createDto.CategoryId.HasValue)
@@ -175,7 +175,7 @@ public class AdvertisementService : IAdvertisementService
             // Validate business rules
             if (updateDto.StartDate >= updateDto.EndDate)
             {
-                return _responseService.Error<AdvertisementDto>("InvalidDateRange");
+                return _responseService.ValidationError<AdvertisementDto>("InvalidDateRange");
             }
 
             // Calculate discount percentage if discount price is provided
@@ -304,13 +304,13 @@ public class AdvertisementService : IAdvertisementService
                 Brand = isArabic ? advertisement.Car.BrandAr : advertisement.Car.BrandEn,
                 Model = isArabic ? advertisement.Car.ModelAr : advertisement.Car.ModelEn,
                 Year = advertisement.Car.Year,
-                Color = advertisement.Car.Color,
+                Color = isArabic ? advertisement.Car.ColorAr : advertisement.Car.ColorEn,
                 SeatingCapacity = advertisement.Car.SeatingCapacity,
-                TransmissionType = advertisement.Car.TransmissionType,
+                TransmissionType = GetLocalizedTransmissionType(advertisement.Car.TransmissionType, isArabic),
                 FuelType = advertisement.Car.FuelType,
-                DailyRate = advertisement.Car.DailyRate,
-                WeeklyRate = advertisement.Car.WeeklyRate,
-                MonthlyRate = advertisement.Car.MonthlyRate,
+                DailyPrice = advertisement.Car.DailyRate,
+                //WeeklyRate = advertisement.Car.WeeklyRate,
+                //MonthlyRate = advertisement.Car.MonthlyRate,
                 Status = advertisement.Car.Status,
                 ImageUrl = advertisement.Car.ImageUrl
             } : null,
@@ -322,6 +322,17 @@ public class AdvertisementService : IAdvertisementService
                 ImageUrl = advertisement.Category.ImageUrl,
                 SortOrder = advertisement.Category.SortOrder
             } : null
+        };
+    }
+
+    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
+    {
+        return transmissionType switch
+        {
+            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
+            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
+            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
+            _ => isArabic ? "غير محدد" : "Unknown"
         };
     }
 } 

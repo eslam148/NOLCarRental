@@ -7,7 +7,6 @@ using Microsoft.Extensions.Localization;
 using System.Globalization;
 using System.Text;
 using System.Reflection;
-using FluentValidation;
 using NOL.Application.Common.Interfaces;
 using NOL.Application.Common.Models;
 using NOL.Application.Common.Services;
@@ -95,8 +94,10 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
         UIQueryStringKey = "ui-culture"
     });
     
-    // Custom header provider
+    // Header provider for Accept-Language
     options.RequestCultureProviders.Add(new AcceptLanguageHeaderRequestCultureProvider());
+    
+    // Cookie provider for persisting culture
     options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
 });
 
@@ -129,9 +130,6 @@ builder.Services.AddScoped<IFavoriteService, NOL.Application.Features.Favorites.
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
-
-// FluentValidation
-builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
 // Controllers
 builder.Services.AddControllers()
@@ -198,22 +196,25 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "NOL Car Rental API V1");
         c.RoutePrefix = string.Empty; // Set Swagger UI at the app's root
     });
-}
+//}
 
 app.UseHttpsRedirection();
 
 // CORS
 app.UseCors("AllowAll");
 
-// Custom Culture Middleware
+// Add RequestLocalization middleware (this should come before custom middleware)
+app.UseRequestLocalization();
+
+// Custom Culture Middleware (for additional logic if needed)
 app.UseMiddleware<CultureMiddleware>();
 
 app.UseAuthentication();

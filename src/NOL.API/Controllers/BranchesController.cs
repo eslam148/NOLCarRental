@@ -5,7 +5,6 @@ using NOL.Application.DTOs;
 
 namespace NOL.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
 public class BranchesController : ControllerBase
 {

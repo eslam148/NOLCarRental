@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using NOL.Application.Common.Interfaces;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs;
@@ -10,7 +12,6 @@ public enum sortCar
     asc,
     desc
 }
-[ApiController]
 [Route("api/[controller]")]
 public class CarsController : ControllerBase
 {
@@ -25,16 +26,23 @@ public class CarsController : ControllerBase
     public async Task<ActionResult<ApiResponse<List<CarDto>>>> GetCars(
         [FromQuery] sortCar sortByCost = sortCar.asc, // "asc" or "desc"
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? brand = null) // Filter by brand name
     {
-        var result = await _carService.GetCarsAsync(sortByCost.ToString(), page, pageSize);
+        // Get user ID from authentication context (null if not authenticated)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var result = await _carService.GetCarsAsync(sortByCost.ToString(), page, pageSize, brand, userId);
         return StatusCode(result.StatusCodeValue, result);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<CarDto>>> GetCar(int id)
+    public async Task<ActionResult<ApiResponse<CarDto>>> GetCarById(int id)
     {
-        var result = await _carService.GetCarByIdAsync(id);
+        // Get user ID from authentication context (null if not authenticated)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var result = await _carService.GetCarByIdAsync(id, userId);
         return StatusCode(result.StatusCodeValue, result);
     }
 
@@ -43,21 +51,30 @@ public class CarsController : ControllerBase
         [FromQuery] DateTime startDate,
         [FromQuery] DateTime endDate)
     {
-        var result = await _carService.GetAvailableCarsAsync(startDate, endDate);
+        // Get user ID from authentication context (null if not authenticated)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var result = await _carService.GetAvailableCarsAsync(startDate, endDate, userId);
         return StatusCode(result.StatusCodeValue, result);
     }
 
     [HttpGet("category/{categoryId}")]
     public async Task<ActionResult<ApiResponse<List<CarDto>>>> GetCarsByCategory(int categoryId)
     {
-        var result = await _carService.GetCarsByCategoryAsync(categoryId);
+        // Get user ID from authentication context (null if not authenticated)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var result = await _carService.GetCarsByCategoryAsync(categoryId, userId);
         return StatusCode(result.StatusCodeValue, result);
     }
 
     [HttpGet("branch/{branchId}")]
     public async Task<ActionResult<ApiResponse<List<CarDto>>>> GetCarsByBranch(int branchId)
     {
-        var result = await _carService.GetCarsByBranchAsync(branchId);
+        // Get user ID from authentication context (null if not authenticated)
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        var result = await _carService.GetCarsByBranchAsync(branchId, userId);
         return StatusCode(result.StatusCodeValue, result);
     }
 } 

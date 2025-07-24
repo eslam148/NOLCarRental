@@ -1,0 +1,109 @@
+### Test Localization Debug - English
+GET http://localhost:5000/api/test/localization?culture=en
+Accept: application/json
+
+### Test Localization Debug - Arabic  
+GET http://localhost:5000/api/test/localization?culture=ar
+Accept: application/json
+
+### Test Password Validation - English
+POST http://localhost:5000/api/test/password-validation?culture=en
+Accept: application/json
+
+### Test Password Validation - Arabic (Generic Method)
+POST http://localhost:5000/api/test/password-validation?culture=ar
+Accept: application/json
+
+### Test Multiple Validation Errors - English (Generic Method)
+POST http://localhost:5000/api/test/multiple-validation?culture=en
+Accept: application/json
+
+### Test Multiple Validation Errors - Arabic (Generic Method)
+POST http://localhost:5000/api/test/multiple-validation?culture=ar
+Accept: application/json
+
+### Test Generic Login Validation - Invalid (English)
+POST http://localhost:5000/api/test/login-validation-generic?culture=en&type=invalid
+Accept: application/json
+
+### Test Generic Login Validation - Invalid (Arabic)
+POST http://localhost:5000/api/test/login-validation-generic?culture=ar&type=invalid
+Accept: application/json
+
+### Test Generic Login Validation - Unverified (English)
+POST http://localhost:5000/api/test/login-validation-generic?culture=en&type=unverified
+Accept: application/json
+
+### Test Generic Login Validation - Multiple Errors (Arabic)
+POST http://localhost:5000/api/test/login-validation-generic?culture=ar&type=multiple
+Accept: application/json
+
+### Test DTO Validation - Auth Errors (English) [422 Status]
+POST http://localhost:5000/api/test/dto-validation?culture=en&type=auth
+Accept: application/json
+
+### Test DTO Validation - Auth Errors (Arabic) [422 Status]
+POST http://localhost:5000/api/test/dto-validation?culture=ar&type=auth
+Accept: application/json
+
+### Test DTO Validation - OTP Errors (English) [422 Status]
+POST http://localhost:5000/api/test/dto-validation?culture=en&type=otp
+Accept: application/json
+
+### Test DTO Validation - Date Errors (Arabic) [422 Status]
+POST http://localhost:5000/api/test/dto-validation?culture=ar&type=dates
+Accept: application/json
+
+### Test Business Logic - Booking Errors (English) [400 Status]
+POST http://localhost:5000/api/test/business-logic?culture=en&domain=booking
+Accept: application/json
+
+### Test Business Logic - Loyalty Errors (Arabic) [400 Status]
+POST http://localhost:5000/api/test/business-logic?culture=ar&domain=loyalty
+Accept: application/json
+
+### Test Business Logic - Advertisement Errors (English) [400 Status]
+POST http://localhost:5000/api/test/business-logic?culture=en&domain=advertisement
+Accept: application/json
+
+### Test Validation with Default Status Code (422 - Unprocessable Entity)
+POST http://localhost:5000/api/test/validation-status-codes?culture=en
+Accept: application/json
+
+### Test Validation with BadRequest Status Code (400)
+POST http://localhost:5000/api/test/validation-status-codes?culture=en&statusCode=400
+Accept: application/json
+
+### Test Validation with Conflict Status Code (409)  
+POST http://localhost:5000/api/test/validation-status-codes?culture=ar&statusCode=409
+Accept: application/json
+
+### Test Validation with Custom Status Code (422) - Arabic
+POST http://localhost:5000/api/test/validation-status-codes?culture=ar&statusCode=422
+Accept: application/json
+
+### Test Original Registration - English
+POST http://localhost:5000/api/auth/register?culture=en
+Content-Type: application/json
+
+{
+  "email": "debug@test.com",
+  "password": "Test123!",
+  "confirmPassword": "Different",
+  "fullName": "Debug User",
+  "phoneNumber": "+1234567890",
+  "preferredLanguage": 1
+}
+
+### Test Original Registration - Arabic
+POST http://localhost:5000/api/auth/register?culture=ar
+Content-Type: application/json
+
+{
+  "email": "debug2@test.com",
+  "password": "Test123!",
+  "confirmPassword": "Different",
+  "fullName": "Debug User Arabic",
+  "phoneNumber": "+1234567890",
+  "preferredLanguage": 1
+} 

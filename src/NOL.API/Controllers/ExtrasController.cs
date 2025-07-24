@@ -6,7 +6,6 @@ using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
 public class ExtrasController : ControllerBase
 {

@@ -112,7 +112,7 @@ public class BookingService : IBookingService
             var totalDays = (createDto.EndDate - createDto.StartDate).Days;
             if (totalDays <= 0)
             {
-                return _responseService.Error<BookingDto>("InvalidDateRange");
+                return _responseService.ValidationError<BookingDto>("InvalidDateRange");
             }
 
             // Calculate rental cost based on daily, weekly, or monthly rates
@@ -333,13 +333,12 @@ public class BookingService : IBookingService
                 Brand = isArabic ? booking.Car.BrandAr : booking.Car.BrandEn,
                 Model = isArabic ? booking.Car.ModelAr : booking.Car.ModelEn,
                 Year = booking.Car.Year,
-                Color = booking.Car.Color,
+                Color = isArabic ? booking.Car.ColorAr : booking.Car.ColorEn,
                 SeatingCapacity = booking.Car.SeatingCapacity,
-                TransmissionType = booking.Car.TransmissionType,
+                TransmissionType = GetLocalizedTransmissionType(booking.Car.TransmissionType, isArabic),
                 FuelType = booking.Car.FuelType,
-                DailyRate = booking.Car.DailyRate,
-                WeeklyRate = booking.Car.WeeklyRate,
-                MonthlyRate = booking.Car.MonthlyRate,
+                DailyPrice = booking.Car.DailyRate,
+               
                 Status = booking.Car.Status,
                 ImageUrl = booking.Car.ImageUrl
             },
@@ -379,6 +378,17 @@ public class BookingService : IBookingService
                 UnitPrice = be.UnitPrice,
                 TotalPrice = be.TotalPrice
             }).ToList()
+        };
+    }
+
+    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
+    {
+        return transmissionType switch
+        {
+            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
+            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
+            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
+            _ => isArabic ? "غير محدد" : "Unknown"
         };
     }
 } 

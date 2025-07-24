@@ -9,25 +9,35 @@ namespace NOL.Application.Features.Cars;
 public class CarService : ICarService
 {
     private readonly ICarRepository _carRepository;
+    private readonly IFavoriteRepository _favoriteRepository;
     private readonly LocalizedApiResponseService _responseService;
     private readonly ILocalizationService _localizationService;
 
     public CarService(
         ICarRepository carRepository,
+        IFavoriteRepository favoriteRepository,
         LocalizedApiResponseService responseService,
         ILocalizationService localizationService)
     {
         _carRepository = carRepository;
+        _favoriteRepository = favoriteRepository;
         _responseService = responseService;
         _localizationService = localizationService;
     }
 
-    public async Task<ApiResponse<List<CarDto>>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10)
+    public async Task<ApiResponse<List<CarDto>>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10, string? brand = null, string? userId = null)
     {
         try
         {
-            var cars = await _carRepository.GetCarsAsync(sortByCost, page, pageSize);
-            var carDtos = cars.Select(MapToCarDto).ToList();
+            var cars = await _carRepository.GetCarsAsync(sortByCost, page, pageSize, brand);
+            var carDtos = new List<CarDto>();
+
+            foreach (var car in cars)
+            {
+                var carDto = await MapToCarDtoAsync(car, userId);
+                carDtos.Add(carDto);
+            }
+
             return _responseService.Success(carDtos, "CarsRetrieved");
         }
         catch (Exception)
@@ -36,7 +46,7 @@ public class CarService : ICarService
         }
     }
 
-    public async Task<ApiResponse<CarDto>> GetCarByIdAsync(int id)
+    public async Task<ApiResponse<CarDto>> GetCarByIdAsync(int id, string? userId = null)
     {
         try
         {
@@ -47,7 +57,7 @@ public class CarService : ICarService
                 return _responseService.NotFound<CarDto>("CarNotFound");
             }
 
-            var carDto = MapToCarDto(car);
+            var carDto = await MapToCarDtoAsync(car, userId);
             return _responseService.Success(carDto, "CarRetrieved");
         }
         catch (Exception)
@@ -56,12 +66,19 @@ public class CarService : ICarService
         }
     }
 
-    public async Task<ApiResponse<List<CarDto>>> GetAvailableCarsAsync(DateTime startDate, DateTime endDate)
+    public async Task<ApiResponse<List<CarDto>>> GetAvailableCarsAsync(DateTime startDate, DateTime endDate, string? userId = null)
     {
         try
         {
             var cars = await _carRepository.GetAvailableCarsAsync(startDate, endDate);
-            var carDtos = cars.Select(MapToCarDto).ToList();
+            var carDtos = new List<CarDto>();
+
+            foreach (var car in cars)
+            {
+                var carDto = await MapToCarDtoAsync(car, userId);
+                carDtos.Add(carDto);
+            }
+
             return _responseService.Success(carDtos, "CarsRetrieved");
         }
         catch (Exception)
@@ -70,12 +87,19 @@ public class CarService : ICarService
         }
     }
 
-    public async Task<ApiResponse<List<CarDto>>> GetCarsByCategoryAsync(int categoryId)
+    public async Task<ApiResponse<List<CarDto>>> GetCarsByCategoryAsync(int categoryId, string? userId = null)
     {
         try
         {
             var cars = await _carRepository.GetCarsByCategoryAsync(categoryId);
-            var carDtos = cars.Select(MapToCarDto).ToList();
+            var carDtos = new List<CarDto>();
+
+            foreach (var car in cars)
+            {
+                var carDto = await MapToCarDtoAsync(car, userId);
+                carDtos.Add(carDto);
+            }
+
             return _responseService.Success(carDtos, "CarsRetrieved");
         }
         catch (Exception)
@@ -84,12 +108,19 @@ public class CarService : ICarService
         }
     }
 
-    public async Task<ApiResponse<List<CarDto>>> GetCarsByBranchAsync(int branchId)
+    public async Task<ApiResponse<List<CarDto>>> GetCarsByBranchAsync(int branchId, string? userId = null)
     {
         try
         {
             var cars = await _carRepository.GetCarsByBranchAsync(branchId);
-            var carDtos = cars.Select(MapToCarDto).ToList();
+            var carDtos = new List<CarDto>();
+
+            foreach (var car in cars)
+            {
+                var carDto = await MapToCarDtoAsync(car, userId);
+                carDtos.Add(carDto);
+            }
+
             return _responseService.Success(carDtos, "CarsRetrieved");
         }
         catch (Exception)
@@ -98,23 +129,22 @@ public class CarService : ICarService
         }
     }
 
-    private CarDto MapToCarDto(Domain.Entities.Car car)
+    private async Task<CarDto> MapToCarDtoAsync(Domain.Entities.Car car, string? userId = null)
     {
         var isArabic = _localizationService.GetCurrentCulture() == "ar";
 
-        return new CarDto
+        var carDto = new CarDto
         {
             Id = car.Id,
             Model = isArabic ? car.ModelAr : car.ModelEn,
             Brand = isArabic ? car.BrandAr : car.BrandEn,
             Year = car.Year,
-            Color = car.Color,
+            Color = isArabic ? car.ColorAr : car.ColorEn,
             SeatingCapacity = car.SeatingCapacity,
-            TransmissionType = car.TransmissionType,
+            TransmissionType = GetLocalizedTransmissionType(car.TransmissionType, isArabic),
             FuelType = car.FuelType,
-            DailyRate = car.DailyRate,
-            WeeklyRate = car.WeeklyRate,
-            MonthlyRate = car.MonthlyRate,
+            DailyPrice = car.DailyRate,
+            
             Status = car.Status,
             ImageUrl = car.ImageUrl,
             Description = isArabic ? car.DescriptionAr : car.DescriptionEn,
@@ -139,7 +169,35 @@ public class CarService : ICarService
                 Latitude = car.Branch.Latitude,
                 Longitude = car.Branch.Longitude,
                 WorkingHours = car.Branch.WorkingHours
+            },
+            IsFavorite = false // Default to false, will be updated below if user is authenticated
+        };
+
+        // Check if car is favorite for authenticated user
+        if (!string.IsNullOrEmpty(userId))
+        {
+            try
+            {
+                carDto.IsFavorite = await _favoriteRepository.IsFavoriteAsync(userId, car.Id);
             }
+            catch
+            {
+                // If there's an error checking favorites, default to false
+                carDto.IsFavorite = false;
+            }
+        }
+
+        return carDto;
+    }
+
+    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
+    {
+        return transmissionType switch
+        {
+            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
+            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
+            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
+            _ => isArabic ? "غير محدد" : "Unknown"
         };
     }
 } 

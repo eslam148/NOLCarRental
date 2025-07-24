@@ -375,10 +375,12 @@ public static class DataSeeder
                 decimal basePrice, string categoryName, int count = 3)
             {
                 var category = categories.First(c => c.NameEn == categoryName);
-                var colors = new[] { "White", "Black", "Silver", "Blue", "Red", "Gray", "Pearl White", "Metallic Gray" };
+                var colorsAr = new[] { "أبيض", "أسود", "فضي", "أزرق", "أحمر", "رمادي", "أبيض لؤلؤي", "رمادي معدني" };
+                var colorsEn = new[] { "White", "Black", "Silver", "Blue", "Red", "Gray", "Pearl White", "Metallic Gray" };
                 
                 for (int i = 0; i < count; i++)
                 {
+                    var colorIndex = random.Next(colorsAr.Length);
                     cars.Add(new Car
                     {
                         BrandAr = brandAr,
@@ -386,7 +388,8 @@ public static class DataSeeder
                         ModelAr = modelAr,
                         ModelEn = modelEn,
                         Year = 2024 - random.Next(0, 3),
-                        Color = colors[random.Next(colors.Length)],
+                        ColorAr = colorsAr[colorIndex],
+                        ColorEn = colorsEn[colorIndex],
                         PlateNumber = $"UAE-{plateCounter++}",
                         SeatingCapacity = categoryName == "Sports" ? random.Next(2, 5) : (categoryName == "SUV" ? random.Next(7, 9) : 5),
                         TransmissionType = categoryName == "Sports" && random.Next(0, 2) == 0 ? TransmissionType.Manual : TransmissionType.Automatic,

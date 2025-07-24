@@ -366,7 +366,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.Property(e => e.ModelAr).HasMaxLength(100).IsRequired();
             entity.Property(e => e.ModelEn).HasMaxLength(100).IsRequired();
             entity.Property(e => e.PlateNumber).HasMaxLength(20);
-            entity.Property(e => e.Color).HasMaxLength(50);
+            entity.Property(e => e.ColorAr).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.ColorEn).HasMaxLength(50).IsRequired();
             entity.Property(e => e.DailyRate).HasPrecision(10, 2);
             entity.Property(e => e.WeeklyRate).HasPrecision(10, 2);
             entity.Property(e => e.MonthlyRate).HasPrecision(10, 2);
