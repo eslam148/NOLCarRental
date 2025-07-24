@@ -164,7 +164,9 @@ public class FavoriteService : IFavoriteService
                     Latitude = favorite.Car.Branch.Latitude,
                     Longitude = favorite.Car.Branch.Longitude,
                     WorkingHours = favorite.Car.Branch.WorkingHours
-                }
+                },
+                IsFavorite = true // This is a favorite, so set to true
+
             }
         };
     }

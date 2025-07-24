@@ -27,7 +27,7 @@ public class CarService : ICarService
 
     public async Task<ApiResponse<List<CarDto>>> GetCarsAsync(string? sortByCost = null, int page = 1, int pageSize = 10, string? brand = null, string? userId = null)
     {
-        try
+        try 
         {
             var cars = await _carRepository.GetCarsAsync(sortByCost, page, pageSize, brand);
             var carDtos = new List<CarDto>();

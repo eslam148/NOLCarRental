@@ -7,7 +7,7 @@ public class FavoriteDto
     public int CarId { get; set; }
     public DateTime CreatedAt { get; set; }
     public CarDto Car { get; set; } = null!;
-}
+ }
 
 public class AddFavoriteDto
 {
