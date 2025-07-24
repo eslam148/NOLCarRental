@@ -26,6 +26,8 @@ public class CarDto
     public bool IsFavorite { get; set; } = false; // Indicates if the car is a favorite for the user
 
     public decimal AvrageRate { get; set; } = 0;
+
+    public int RateCount { get; set; }
 }
 
 public class CreateCarDto

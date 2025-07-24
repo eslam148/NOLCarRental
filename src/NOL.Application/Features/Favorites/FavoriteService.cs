@@ -166,7 +166,9 @@ public class FavoriteService : IFavoriteService
                     WorkingHours = favorite.Car.Branch.WorkingHours
                 },
                 IsFavorite = true, // This is a favorite, so set to true
-                AvrageRate = favorite.Car.AverageRating
+                AvrageRate = favorite.Car.AverageRating,
+                RateCount = favorite.Car.Reviews.Count,
+
             }
         };
     }

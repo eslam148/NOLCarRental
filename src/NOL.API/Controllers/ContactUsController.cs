@@ -33,7 +33,7 @@ public class ContactUsController : ControllerBase
     /// </summary>
     /// <returns>List of all contact us entries</returns>
     [HttpGet]
-   // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetAllContactUs()
     {
         var result = await _contactUsService.GetAllContactUsAsync();
@@ -64,7 +64,7 @@ public class ContactUsController : ControllerBase
     /// <param name="createContactUsDto">Contact us creation data</param>
     /// <returns>Created contact us</returns>
     [HttpPost]
-   // [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateContactUs([FromBody] CreateContactUsDto createContactUsDto)
     {
         if (!ModelState.IsValid)
@@ -83,7 +83,7 @@ public class ContactUsController : ControllerBase
     /// <param name="updateContactUsDto">Contact us update data</param>
     /// <returns>Updated contact us</returns>
     [HttpPut("{id}")]
-  //  [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateContactUs(int id, [FromBody] UpdateContactUsDto updateContactUsDto)
     {
         if (id <= 0)

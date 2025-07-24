@@ -16,8 +16,11 @@ public class FavoriteRepository : Repository<Favorite>, IFavoriteRepository
         return await _dbSet
             .Include(f => f.Car)
                 .ThenInclude(c => c.Category)
+                
             .Include(f => f.Car)
                 .ThenInclude(c => c.Branch)
+             .Include(f => f.Car)
+                .ThenInclude(c => c.Reviews)
             .Where(f => f.UserId == userId)
             .OrderByDescending(f => f.CreatedAt)
             .ToListAsync();

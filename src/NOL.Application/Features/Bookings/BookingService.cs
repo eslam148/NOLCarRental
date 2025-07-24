@@ -177,7 +177,7 @@ public class BookingService : IBookingService
                         ExtraTypePriceId = extra.ExtraTypePriceId,
                         Quantity = 1,
                         UnitPrice = unitPrice,
-                        TotalPrice = unitPrice *1
+                        TotalPrice = unitPrice * 1
                     };
                     createdBooking.BookingExtras.Add(bookingExtra);
                 }

@@ -75,70 +75,70 @@ public class ReviewsController : ControllerBase
         return StatusCode(result.StatusCodeValue, result.Data);
     }
 
-    ///// <summary>
-    ///// Get car rating summary
-    ///// </summary>
-    //[HttpGet("car/{carId}/rating")]
-    //[AllowAnonymous]
-    //public async Task<IActionResult> GetCarRating(int carId)
-    //{
-    //    var result = await _reviewService.GetCarRatingAsync(carId);
-    //    return StatusCode(result.StatusCodeValue, result);
-    //}
+    /// <summary>
+    /// Get car rating summary
+    /// </summary>
+    [HttpGet("car/{carId}/rating")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetCarRating(int carId)
+    {
+        var result = await _reviewService.GetCarRatingAsync(carId);
+        return StatusCode(result.StatusCodeValue, result);
+    }
 
-    ///// <summary>
-    ///// Get reviews for a specific car
-    ///// </summary>
-    //[HttpGet("car/{carId}")]
-    //[AllowAnonymous]
-    //public async Task<IActionResult> GetReviewsByCarId(int carId)
-    //{
-    //    var result = await _reviewService.GetReviewsByCarIdAsync(carId);
-    //    return StatusCode(result.StatusCodeValue, result);
-    //}
+    /// <summary>
+    /// Get reviews for a specific car
+    /// </summary>
+    [HttpGet("car/{carId}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReviewsByCarId(int carId)
+    {
+        var result = await _reviewService.GetReviewsByCarIdAsync(carId);
+        return StatusCode(result.StatusCodeValue, result);
+    }
 
-    ///// <summary>
-    ///// Check if user can review a specific car
-    ///// </summary>
-    //[HttpGet("can-review/{carId}")]
-    //[Authorize]
-    //public async Task<IActionResult> CanReviewCar(int carId)
-    //{
-    //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    //    if (string.IsNullOrEmpty(userId))
-    //    {
-    //        return Unauthorized(new { message = "User not authenticated" });
-    //    }
+    /// <summary>
+    /// Check if user can review a specific car
+    /// </summary>
+    [HttpGet("can-review/{carId}")]
+    [Authorize]
+    public async Task<IActionResult> CanReviewCar(int carId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { message = "User not authenticated" });
+        }
 
-    //    var result = await _reviewService.CanUserReviewCarAsync(userId, carId);
-    //    return StatusCode(result.StatusCodeValue, result);
-    //}
+        var result = await _reviewService.CanUserReviewCarAsync(userId, carId);
+        return StatusCode(result.StatusCodeValue, result);
+    }
 
-    ///// <summary>
-    ///// Get user's own reviews
-    ///// </summary>
-    //[HttpGet("my-reviews")]
-    //[Authorize]
-    //public async Task<IActionResult> GetMyReviews()
-    //{
-    //    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    //    if (string.IsNullOrEmpty(userId))
-    //    {
-    //        return Unauthorized(new { message = "User not authenticated" });
-    //    }
+    /// <summary>
+    /// Get user's own reviews
+    /// </summary>
+    [HttpGet("my-reviews")]
+    [Authorize]
+    public async Task<IActionResult> GetMyReviews()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized(new { message = "User not authenticated" });
+        }
 
-    //    var result = await _reviewService.GetReviewsByUserIdAsync(userId);
-    //    return StatusCode(result.StatusCodeValue, result);
-    //}
+        var result = await _reviewService.GetReviewsByUserIdAsync(userId);
+        return StatusCode(result.StatusCodeValue, result);
+    }
 
-    ///// <summary>
-    ///// Get a specific review by ID
-    ///// </summary>
-    //[HttpGet("{id}")]
-    //[AllowAnonymous]
-    //public async Task<IActionResult> GetReviewById(int id)
-    //{
-    //    var result = await _reviewService.GetReviewByIdAsync(id);
-    //    return StatusCode(result.StatusCodeValue, result);
-    //}
+    /// <summary>
+    /// Get a specific review by ID
+    /// </summary>
+    [HttpGet("{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetReviewById(int id)
+    {
+        var result = await _reviewService.GetReviewByIdAsync(id);
+        return StatusCode(result.StatusCodeValue, result);
+    }
 }

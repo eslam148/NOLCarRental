@@ -20,6 +20,7 @@ public class CarRepository : Repository<Car>, ICarRepository
         query = query
             .Include(c => c.Category)
             .Include(c => c.Branch)
+            .Include(c=>c.Reviews)
             .Where(c => c.IsActive);
 
         // Apply brand filtering (search in both Arabic and English brand names)
