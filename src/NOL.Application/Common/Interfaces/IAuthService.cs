@@ -19,4 +19,7 @@ public interface IAuthService
     Task<ApiResponse> ForgotPasswordAsync(ForgotPasswordDto dto);
     Task<ApiResponse> ResetPasswordAsync(ResetPasswordDto dto);
     Task<ApiResponse> ChangePasswordAsync(string userId, ChangePasswordDto dto);
-} 
+
+    // Account Management
+    Task<ApiResponse> DeleteAccountAsync(string userId, DeleteAccountDto dto);
+}

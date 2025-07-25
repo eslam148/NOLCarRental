@@ -18,4 +18,11 @@ public class ChangePasswordDto
     public string CurrentPassword { get; set; } = string.Empty;
     public string NewPassword { get; set; } = string.Empty;
     public string ConfirmPassword { get; set; } = string.Empty;
-} 
+}
+
+public class DeleteAccountDto
+{
+    public string CurrentPassword { get; set; } = string.Empty;
+    //public string ConfirmationText { get; set; } = string.Empty; // User must type "DELETE" to confirm
+    //public string? Reason { get; set; } // Optional reason for deletion
+}

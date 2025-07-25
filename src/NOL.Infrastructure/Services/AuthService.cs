@@ -344,6 +344,63 @@ public class AuthService : IAuthService
         return _responseService.Success("PasswordChanged");
     }
 
+    // Account Management Methods
+    public async Task<ApiResponse> DeleteAccountAsync(string userId, DeleteAccountDto dto)
+    {
+        //// Validate confirmation text
+        //if (dto.ConfirmationText?.Trim().ToUpper() != "DELETE")
+        //{
+        //    return _responseService.ValidationError("InvalidConfirmationText");
+        //}
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return _responseService.NotFound("UserNotFound");
+        }
+
+        // Verify current password
+        var passwordCheck = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
+        if (!passwordCheck)
+        {
+            return _responseService.ValidationError("InvalidPassword");
+        }
+
+        try
+        {
+            // Store user info for confirmation email before deletion
+            var userEmail = user.Email!;
+            var userFullName = user.FullName;
+
+            // Sign out the user from all devices first
+            await _signInManager.SignOutAsync();
+
+            // Hard delete - permanently remove the user account
+            var deleteResult = await _userManager.DeleteAsync(user);
+            if (!deleteResult.Succeeded)
+            {
+                var errors = deleteResult.Errors.Select(e => e.Description).ToList();
+                return _responseService.Error("AccountDeletionFailed", errors);
+            }
+
+            // Optional: Send account deletion confirmation email
+            try
+            {
+                await _emailService.SendAccountDeletionConfirmationAsync(userEmail, userFullName);
+            }
+            catch
+            {
+                // Don't fail the deletion if email sending fails
+            }
+
+            return _responseService.Success("AccountDeletedSuccessfully");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error("InternalServerError");
+        }
+    }
+
     private string GenerateOtpCode()
     {
         var random = new Random();

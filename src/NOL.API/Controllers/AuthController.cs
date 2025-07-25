@@ -88,4 +88,23 @@ public class AuthController : ControllerBase
         var result = await _authService.ChangePasswordAsync(userId, dto);
         return StatusCode(result.StatusCodeValue, result);
     }
-} 
+
+    /// <summary>
+    /// Delete user account permanently
+    /// </summary>
+    /// <param name="dto">Account deletion request with password confirmation</param>
+    /// <returns>Confirmation of account deletion</returns>
+    [HttpDelete("delete-account")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse>> DeleteAccount([FromBody] DeleteAccountDto dto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _authService.DeleteAccountAsync(userId, dto);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+}

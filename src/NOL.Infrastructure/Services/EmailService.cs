@@ -142,6 +142,117 @@ public class EmailService : IEmailService
         }
     }
 
+    public async Task<bool> SendAccountDeletionConfirmationAsync(string email, string firstName)
+    {
+        try
+        {
+            _logger.LogInformation($"Account deletion confirmation email sent to {email} ({firstName})");
+
+            string subject = "Account Deletion Confirmation - NOL Car Rental";
+            string body = $@"
+                <!DOCTYPE html>
+                <html lang='en'>
+                <head>
+                    <meta charset='UTF-8'>
+                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                    <title>NOL Car Rental - Account Deletion Confirmation</title>
+                    <style>
+                        body {{
+                            font-family: 'Segoe UI', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333333;
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f4f4f4;
+                        }}
+                        .container {{
+                            width: 100%;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            border-radius: 8px;
+                            overflow: hidden;
+                            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+                        }}
+                        .header {{
+                            background-color: #dc3545;
+                            padding: 20px;
+                            text-align: center;
+                        }}
+                        .header h1 {{
+                            color: #ffffff;
+                            margin: 0;
+                            font-size: 24px;
+                        }}
+                        .content {{
+                            padding: 30px 20px;
+                        }}
+                        .content h2 {{
+                            color: #dc3545;
+                            margin-bottom: 20px;
+                        }}
+                        .info {{
+                            background-color: #f8f9fa;
+                            padding: 15px;
+                            border-left: 4px solid #dc3545;
+                            margin: 20px 0;
+                        }}
+                        .footer {{
+                            background-color: #f8f9fa;
+                            padding: 20px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #666666;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>NOL Car Rental</h1>
+                        </div>
+                        <div class='content'>
+                            <h2>Account Deletion Confirmation</h2>
+                            <p>Dear {firstName},</p>
+                            <p>We're writing to confirm that your NOL Car Rental account has been successfully deleted as requested.</p>
+
+                            <div class='info'>
+                                <p><strong>What this means:</strong></p>
+                                <ul>
+                                    <li>Your account and personal information have been permanently deleted from our system</li>
+                                    <li>You will no longer receive emails from us</li>
+                                    <li>Your booking history and loyalty points have been permanently removed</li>
+                                    <li>You cannot log in to your account anymore</li>
+                                    <li>This action cannot be undone</li>
+                                </ul>
+                            </div>
+
+                            <p>If you deleted your account by mistake or would like to create a new account in the future, you can register again at any time using the same or different email address.</p>
+
+                            <p>Thank you for being part of the NOL Car Rental community. We're sorry to see you go!</p>
+
+                            <p>If you have any questions or concerns, please contact our support team.</p>
+
+                            <p>Best regards,<br>The NOL Car Rental Team</p>
+                        </div>
+                        <div class='footer'>
+                            <p>&copy; {DateTime.Now.Year} NOL Car Rental. All rights reserved.</p>
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+            sendAsync(email, subject, body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to send account deletion confirmation email to {email}");
+            return false;
+        }
+    }
+
 
 
     public   void SendOtpEmailAsync(string email, string otp, bool isPasswordReset)
