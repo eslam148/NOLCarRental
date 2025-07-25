@@ -20,9 +20,20 @@ public class ChangePasswordDto
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
-public class DeleteAccountDto
+// Three-step account deletion DTOs
+public class RequestAccountDeletionDto
 {
     public string CurrentPassword { get; set; } = string.Empty;
-    //public string ConfirmationText { get; set; } = string.Empty; // User must type "DELETE" to confirm
-    //public string? Reason { get; set; } // Optional reason for deletion
+    public string? Reason { get; set; } // Optional reason for deletion
+}
+
+public class ConfirmAccountDeletionDto
+{
+    public string OtpCode { get; set; } = string.Empty;
+    public string ConfirmationText { get; set; } = string.Empty; // User must type "DELETE" to confirm
+}
+
+public class ResendDeletionOtpDto
+{
+    // No additional fields needed - user ID comes from JWT token
 }

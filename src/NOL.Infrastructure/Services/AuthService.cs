@@ -344,15 +344,9 @@ public class AuthService : IAuthService
         return _responseService.Success("PasswordChanged");
     }
 
-    // Account Management Methods
-    public async Task<ApiResponse> DeleteAccountAsync(string userId, DeleteAccountDto dto)
+    // Account Management Methods - Three-step deletion process
+    public async Task<ApiResponse> RequestAccountDeletionAsync(string userId, RequestAccountDeletionDto dto)
     {
-        //// Validate confirmation text
-        //if (dto.ConfirmationText?.Trim().ToUpper() != "DELETE")
-        //{
-        //    return _responseService.ValidationError("InvalidConfirmationText");
-        //}
-
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
@@ -364,6 +358,64 @@ public class AuthService : IAuthService
         if (!passwordCheck)
         {
             return _responseService.ValidationError("InvalidPassword");
+        }
+
+        try
+        {
+            // Generate OTP for account deletion
+            var otpCode = GenerateOtpCode();
+            user.AccountDeletionOtp = otpCode;
+            user.AccountDeletionOtpExpiry = DateTime.UtcNow.AddMinutes(15); // 15 minutes expiry
+            user.AccountDeletionOtpResendCount = 0; // Reset resend count
+            user.LastAccountDeletionOtpResendTime = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return _responseService.Error("InternalServerError");
+            }
+
+            // Send account deletion OTP email
+            var emailSent = await _emailService.SendAccountDeletionOtpAsync(user.Email!, user.FullName, otpCode);
+            if (!emailSent)
+            {
+                return _responseService.Error("EmailSendingFailed");
+            }
+
+            return _responseService.Success("AccountDeletionOtpSent");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error("InternalServerError");
+        }
+    }
+
+    public async Task<ApiResponse> ConfirmAccountDeletionAsync(string userId, ConfirmAccountDeletionDto dto)
+    {
+        // Validate confirmation text
+        if (dto.ConfirmationText?.Trim().ToUpper() != "DELETE")
+        {
+            return _responseService.ValidationError("InvalidConfirmationText");
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return _responseService.NotFound("UserNotFound");
+        }
+
+        // Validate OTP
+        if (string.IsNullOrEmpty(user.AccountDeletionOtp) ||
+            user.AccountDeletionOtpExpiry == null ||
+            user.AccountDeletionOtpExpiry < DateTime.UtcNow)
+        {
+            return _responseService.Error("OtpExpired");
+        }
+
+        if (user.AccountDeletionOtp != dto.OtpCode)
+        {
+            return _responseService.Error("InvalidOtp");
         }
 
         try
@@ -383,7 +435,7 @@ public class AuthService : IAuthService
                 return _responseService.Error("AccountDeletionFailed", errors);
             }
 
-            // Optional: Send account deletion confirmation email
+            // Send account deletion confirmation email
             try
             {
                 await _emailService.SendAccountDeletionConfirmationAsync(userEmail, userFullName);
@@ -394,6 +446,69 @@ public class AuthService : IAuthService
             }
 
             return _responseService.Success("AccountDeletedSuccessfully");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error("InternalServerError");
+        }
+    }
+
+    public async Task<ApiResponse> ResendDeletionOtpAsync(string userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return _responseService.NotFound("UserNotFound");
+        }
+
+        // Check rate limiting - max 3 resends per hour
+        if (user.LastAccountDeletionOtpResendTime.HasValue)
+        {
+            var timeSinceLastResend = DateTime.UtcNow - user.LastAccountDeletionOtpResendTime.Value;
+            if (timeSinceLastResend.TotalHours < 1 && user.AccountDeletionOtpResendCount >= 3)
+            {
+                return _responseService.Error("TooManyResendAttempts");
+            }
+
+            // Reset count if more than an hour has passed
+            if (timeSinceLastResend.TotalHours >= 1)
+            {
+                user.AccountDeletionOtpResendCount = 0;
+            }
+        }
+
+        // Check if there's an active deletion request
+        if (string.IsNullOrEmpty(user.AccountDeletionOtp) ||
+            user.AccountDeletionOtpExpiry == null ||
+            user.AccountDeletionOtpExpiry < DateTime.UtcNow)
+        {
+            return _responseService.Error("NoDeletionRequestFound");
+        }
+
+        try
+        {
+            // Generate new OTP
+            var otpCode = GenerateOtpCode();
+            user.AccountDeletionOtp = otpCode;
+            user.AccountDeletionOtpExpiry = DateTime.UtcNow.AddMinutes(15); // 15 minutes expiry
+            user.AccountDeletionOtpResendCount++;
+            user.LastAccountDeletionOtpResendTime = DateTime.UtcNow;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                return _responseService.Error("InternalServerError");
+            }
+
+            // Send new OTP email
+            var emailSent = await _emailService.SendAccountDeletionOtpAsync(user.Email!, user.FullName, otpCode);
+            if (!emailSent)
+            {
+                return _responseService.Error("EmailSendingFailed");
+            }
+
+            return _responseService.Success("AccountDeletionOtpResent");
         }
         catch (Exception)
         {

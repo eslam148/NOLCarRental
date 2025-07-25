@@ -142,6 +142,136 @@ public class EmailService : IEmailService
         }
     }
 
+    public async Task<bool> SendAccountDeletionOtpAsync(string email, string firstName, string otpCode)
+    {
+        try
+        {
+            _logger.LogInformation($"Account deletion OTP sent to {email} ({firstName}): {otpCode}");
+
+            string subject = "Account Deletion Verification - NOL Car Rental";
+            string body = $@"
+                <!DOCTYPE html>
+                <html lang='en'>
+                <head>
+                    <meta charset='UTF-8'>
+                    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                    <title>NOL Car Rental - Account Deletion Verification</title>
+                    <style>
+                        body {{
+                            font-family: 'Segoe UI', Arial, sans-serif;
+                            line-height: 1.6;
+                            color: #333333;
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f4f4f4;
+                        }}
+                        .container {{
+                            width: 100%;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            border-radius: 8px;
+                            overflow: hidden;
+                            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+                        }}
+                        .header {{
+                            background-color: #dc3545;
+                            padding: 20px;
+                            text-align: center;
+                        }}
+                        .header h1 {{
+                            color: #ffffff;
+                            margin: 0;
+                            font-size: 24px;
+                        }}
+                        .content {{
+                            padding: 30px 20px;
+                        }}
+                        .content h2 {{
+                            color: #dc3545;
+                            margin-bottom: 20px;
+                        }}
+                        .otp-container {{
+                            background-color: #f8f9fa;
+                            padding: 20px;
+                            border-radius: 8px;
+                            text-align: center;
+                            margin: 20px 0;
+                            border-left: 4px solid #dc3545;
+                        }}
+                        .otp-code {{
+                            font-size: 32px;
+                            font-weight: bold;
+                            color: #dc3545;
+                            letter-spacing: 4px;
+                            margin: 10px 0;
+                            font-family: 'Courier New', monospace;
+                        }}
+                        .warning {{
+                            background-color: #fff3cd;
+                            padding: 15px;
+                            border-left: 4px solid #ffc107;
+                            margin: 20px 0;
+                        }}
+                        .footer {{
+                            background-color: #f8f9fa;
+                            padding: 20px;
+                            text-align: center;
+                            font-size: 12px;
+                            color: #666666;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>NOL Car Rental</h1>
+                        </div>
+                        <div class='content'>
+                            <h2>Account Deletion Verification</h2>
+                            <p>Dear {firstName},</p>
+                            <p>You have requested to permanently delete your NOL Car Rental account. To proceed with this action, please use the verification code below:</p>
+
+                            <div class='otp-container'>
+                                <p>Your account deletion verification code is:</p>
+                                <div class='otp-code'>{otpCode}</div>
+                                <p>This code will expire in <strong>15 minutes</strong>.</p>
+                            </div>
+
+                            <div class='warning'>
+                                <p><strong>⚠️ Important Warning:</strong></p>
+                                <p>This action will permanently delete your account and all associated data including:</p>
+                                <ul>
+                                    <li>Personal information and profile</li>
+                                    <li>Booking history</li>
+                                    <li>Loyalty points and rewards</li>
+                                    <li>Reviews and ratings</li>
+                                </ul>
+                                <p><strong>This action cannot be undone!</strong></p>
+                            </div>
+
+                            <p>If you did not request account deletion, please ignore this email and contact our support team immediately.</p>
+
+                            <p>Best regards,<br>The NOL Car Rental Team</p>
+                        </div>
+                        <div class='footer'>
+                            <p>&copy; {DateTime.Now.Year} NOL Car Rental. All rights reserved.</p>
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+            sendAsync(email, subject, body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to send account deletion OTP to {email}");
+            return false;
+        }
+    }
+
     public async Task<bool> SendAccountDeletionConfirmationAsync(string email, string firstName)
     {
         try

@@ -20,6 +20,8 @@ public interface IAuthService
     Task<ApiResponse> ResetPasswordAsync(ResetPasswordDto dto);
     Task<ApiResponse> ChangePasswordAsync(string userId, ChangePasswordDto dto);
 
-    // Account Management
-    Task<ApiResponse> DeleteAccountAsync(string userId, DeleteAccountDto dto);
+    // Account Management - Three-step deletion process
+    Task<ApiResponse> RequestAccountDeletionAsync(string userId, RequestAccountDeletionDto dto);
+    Task<ApiResponse> ConfirmAccountDeletionAsync(string userId, ConfirmAccountDeletionDto dto);
+    Task<ApiResponse> ResendDeletionOtpAsync(string userId);
 }

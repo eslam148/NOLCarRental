@@ -90,13 +90,13 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Delete user account permanently
+    /// Step 1: Request account deletion - Send OTP to user's email
     /// </summary>
-    /// <param name="dto">Account deletion request with password confirmation</param>
-    /// <returns>Confirmation of account deletion</returns>
-    [HttpDelete("delete-account")]
+    /// <param name="dto">Account deletion request with password verification</param>
+    /// <returns>Confirmation that OTP has been sent</returns>
+    [HttpPost("request-account-deletion")]
     [Authorize]
-    public async Task<ActionResult<ApiResponse>> DeleteAccount([FromBody] DeleteAccountDto dto)
+    public async Task<ActionResult<ApiResponse>> RequestAccountDeletion([FromBody] RequestAccountDeletionDto dto)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
@@ -104,7 +104,44 @@ public class AuthController : ControllerBase
             return Unauthorized();
         }
 
-        var result = await _authService.DeleteAccountAsync(userId, dto);
+        var result = await _authService.RequestAccountDeletionAsync(userId, dto);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+
+    /// <summary>
+    /// Step 2: Confirm account deletion - Verify OTP and permanently delete account
+    /// </summary>
+    /// <param name="dto">OTP verification and confirmation text</param>
+    /// <returns>Confirmation of account deletion</returns>
+    [HttpPost("confirm-account-deletion")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse>> ConfirmAccountDeletion([FromBody] ConfirmAccountDeletionDto dto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _authService.ConfirmAccountDeletionAsync(userId, dto);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+
+    /// <summary>
+    /// Step 3: Resend account deletion OTP if user didn't receive it
+    /// </summary>
+    /// <returns>Confirmation that new OTP has been sent</returns>
+    [HttpPost("resend-deletion-otp")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse>> ResendDeletionOtp()
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _authService.ResendDeletionOtpAsync(userId);
         return StatusCode(result.StatusCodeValue, result);
     }
 }

@@ -21,6 +21,10 @@ public class ApplicationUser : IdentityUser
     public DateTime? EmailVerificationOtpExpiry { get; set; }
     public string? PasswordResetOtp { get; set; }
     public DateTime? PasswordResetOtpExpiry { get; set; }
+    public string? AccountDeletionOtp { get; set; }
+    public DateTime? AccountDeletionOtpExpiry { get; set; }
+    public int AccountDeletionOtpResendCount { get; set; } = 0;
+    public DateTime? LastAccountDeletionOtpResendTime { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
