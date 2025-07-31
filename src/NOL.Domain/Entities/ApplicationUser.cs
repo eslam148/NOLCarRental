@@ -28,6 +28,7 @@ public class ApplicationUser : IdentityUser
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? LastLoginDate { get; set; }
 
     // Navigation Properties
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();

@@ -488,4 +488,335 @@ public class EmailService : IEmailService
           sendAsync(email, subject, body);
     }
 
+    public async Task<bool> SendPasswordChangeNotificationAsync(string email, string firstName)
+    {
+        try
+        {
+            _logger.LogInformation($"Password change notification email sent to {email} ({firstName})");
+
+            string subject = "Password Changed Successfully";
+            string body = $@"
+                <!DOCTYPE html>
+                <html lang='en'>
+                <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <title>NOL Application - Password Changed</title>
+                <style>
+                body {{
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f4;
+                }}
+                .container {{
+                    width: 100%;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+                }}
+                .header {{
+                    background-color: #28a745;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                }}
+                .content {{
+                    padding: 30px 20px;
+                }}
+                .content h2 {{
+                    color: #28a745;
+                    margin-bottom: 20px;
+                }}
+                .success-box {{
+                    background-color: #d4edda;
+                    border: 1px solid #c3e6cb;
+                    color: #155724;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    text-align: center;
+                }}
+                .footer {{
+                    background-color: #f8f9fa;
+                    padding: 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #666666;
+                }}
+                </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>NOL Car Rental</h1>
+                        </div>
+                        <div class='content'>
+                            <h2>Password Changed Successfully</h2>
+                            <p>Dear {firstName},</p>
+
+                            <div class='success-box'>
+                                <h3>✓ Password Successfully Changed</h3>
+                                <p>Your admin account password has been changed successfully.</p>
+                            </div>
+
+                            <p>This is a confirmation that your password was changed by an administrator.</p>
+
+                            <p>If you did not request this change, please contact your system administrator immediately.</p>
+
+                            <p>Best regards,<br>The NOL Car Rental Team</p>
+                        </div>
+                        <div class='footer'>
+                            <p>&copy; {DateTime.Now.Year} NOL Car Rental. All rights reserved.</p>
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+            sendAsync(email, subject, body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to send password change notification email to {email}");
+            return false;
+        }
+    }
+
+    public async Task<bool> SendTemporaryPasswordAsync(string email, string firstName, string temporaryPassword)
+    {
+        try
+        {
+            _logger.LogInformation($"Temporary password email sent to {email} ({firstName})");
+
+            string subject = "Temporary Password - NOL Car Rental";
+            string body = $@"
+                <!DOCTYPE html>
+                <html lang='en'>
+                <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <title>NOL Application - Temporary Password</title>
+                <style>
+                body {{
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f4;
+                }}
+                .container {{
+                    width: 100%;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+                }}
+                .header {{
+                    background-color: #ffc107;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    color: #212529;
+                    margin: 0;
+                    font-size: 24px;
+                }}
+                .content {{
+                    padding: 30px 20px;
+                }}
+                .content h2 {{
+                    color: #ffc107;
+                    margin-bottom: 20px;
+                }}
+                .password-box {{
+                    background-color: #fff3cd;
+                    border: 1px solid #ffeaa7;
+                    color: #856404;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    text-align: center;
+                    font-family: monospace;
+                    font-size: 18px;
+                    font-weight: bold;
+                }}
+                .warning {{
+                    background-color: #f8d7da;
+                    border: 1px solid #f5c6cb;
+                    color: #721c24;
+                    padding: 15px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                }}
+                .footer {{
+                    background-color: #f8f9fa;
+                    padding: 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #666666;
+                }}
+                </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>NOL Car Rental</h1>
+                        </div>
+                        <div class='content'>
+                            <h2>Temporary Password</h2>
+                            <p>Dear {firstName},</p>
+
+                            <p>Your password has been reset by an administrator. Please use the temporary password below to log in:</p>
+
+                            <div class='password-box'>
+                                {temporaryPassword}
+                            </div>
+
+                            <div class='warning'>
+                                <strong>Important:</strong> Please change this temporary password immediately after logging in for security reasons.
+                            </div>
+
+                            <p>If you have any questions or need assistance, please contact your system administrator.</p>
+
+                            <p>Best regards,<br>The NOL Car Rental Team</p>
+                        </div>
+                        <div class='footer'>
+                            <p>&copy; {DateTime.Now.Year} NOL Car Rental. All rights reserved.</p>
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+            sendAsync(email, subject, body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to send temporary password email to {email}");
+            return false;
+        }
+    }
+
+    public async Task<bool> SendPasswordResetEmailAsync(string email, string firstName, string resetToken)
+    {
+        try
+        {
+            _logger.LogInformation($"Password reset email sent to {email} ({firstName})");
+
+            string subject = "Password Reset Request - NOL Car Rental";
+            string body = $@"
+                <!DOCTYPE html>
+                <html lang='en'>
+                <head>
+                <meta charset='UTF-8'>
+                <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                <title>NOL Application - Password Reset</title>
+                <style>
+                body {{
+                    font-family: 'Segoe UI', Arial, sans-serif;
+                    line-height: 1.6;
+                    color: #333333;
+                    margin: 0;
+                    padding: 0;
+                    background-color: #f4f4f4;
+                }}
+                .container {{
+                    width: 100%;
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+                }}
+                .header {{
+                    background-color: #007bff;
+                    padding: 20px;
+                    text-align: center;
+                }}
+                .header h1 {{
+                    color: #ffffff;
+                    margin: 0;
+                    font-size: 24px;
+                }}
+                .content {{
+                    padding: 30px 20px;
+                }}
+                .content h2 {{
+                    color: #007bff;
+                    margin-bottom: 20px;
+                }}
+                .token-box {{
+                    background-color: #e7f3ff;
+                    border: 1px solid #b3d7ff;
+                    color: #004085;
+                    padding: 20px;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                    text-align: center;
+                    font-family: monospace;
+                    font-size: 14px;
+                    word-break: break-all;
+                }}
+                .footer {{
+                    background-color: #f8f9fa;
+                    padding: 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #666666;
+                }}
+                </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>NOL Car Rental</h1>
+                        </div>
+                        <div class='content'>
+                            <h2>Password Reset Request</h2>
+                            <p>Dear {firstName},</p>
+
+                            <p>A password reset has been requested for your admin account. Use the reset token below if needed:</p>
+
+                            <div class='token-box'>
+                                {resetToken}
+                            </div>
+
+                            <p>If you did not request this password reset, please contact your system administrator immediately.</p>
+
+                            <p>Best regards,<br>The NOL Car Rental Team</p>
+                        </div>
+                        <div class='footer'>
+                            <p>&copy; {DateTime.Now.Year} NOL Car Rental. All rights reserved.</p>
+                            <p>This is an automated message, please do not reply to this email.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+            sendAsync(email, subject, body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Failed to send password reset email to {email}");
+            return false;
+        }
+    }
+
 }

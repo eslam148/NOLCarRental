@@ -134,7 +134,7 @@ builder.Services.AddScoped<IRateCalculationService, NOL.Application.Features.Rat
 builder.Services.AddScoped<IReviewService, NOL.Application.Features.Reviews.ReviewService>();
 builder.Services.AddScoped<IContactUsService, NOL.Application.Features.ContactUs.ContactUsService>();
 builder.Services.AddScoped<ICarService, NOL.Application.Features.Cars.CarService>();
-builder.Services.AddScoped<ICarManagementService, NOL.Application.Features.ma>();
+builder.Services.AddScoped<IAdminManagementService, NOL.Infrastructure.Services.AdminManagementService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
