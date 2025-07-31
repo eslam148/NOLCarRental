@@ -135,6 +135,7 @@ builder.Services.AddScoped<IReviewService, NOL.Application.Features.Reviews.Revi
 builder.Services.AddScoped<IContactUsService, NOL.Application.Features.ContactUs.ContactUsService>();
 builder.Services.AddScoped<ICarService, NOL.Application.Features.Cars.CarService>();
 builder.Services.AddScoped<IAdminManagementService, NOL.Infrastructure.Services.AdminManagementService>();
+builder.Services.AddScoped<ICarManagementService, NOL.Infrastructure.Services.CarManagementService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
