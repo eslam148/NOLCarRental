@@ -141,6 +141,14 @@ builder.Services.AddScoped<ICustomerManagementService, NOL.Infrastructure.Servic
 builder.Services.AddScoped<IAdvertisementManagementService, NOL.Infrastructure.Services.AdvertisementManagementService>();
 builder.Services.AddScoped<IBranchManagementService, NOL.Infrastructure.Services.BranchManagementService>();
 builder.Services.AddScoped<IDashboardService, NOL.Infrastructure.Services.DashboardService>();
+builder.Services.AddScoped<ISystemManagementService, NOL.Infrastructure.Services.SystemManagementService>();
+builder.Services.AddScoped<IExtraTypePriceManagementService, NOL.Infrastructure.Services.ExtraTypePriceManagementService>();
+
+// Additional Management Services (Interfaces created, implementations can be added later)
+// builder.Services.AddScoped<INotificationManagementService, NOL.Infrastructure.Services.NotificationManagementService>();
+// builder.Services.AddScoped<IAuditLogService, NOL.Infrastructure.Services.AuditLogService>();
+// builder.Services.AddScoped<IMaintenanceManagementService, NOL.Infrastructure.Services.MaintenanceManagementService>();
+// builder.Services.AddScoped<IReportManagementService, NOL.Infrastructure.Services.ReportManagementService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
