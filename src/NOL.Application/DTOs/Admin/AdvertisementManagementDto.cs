@@ -44,7 +44,10 @@ public class AdminCreateAdvertisementDto
     
     [Required]
     public DateTime EndDate { get; set; }
-    
+
+    [Range(0, 10000)]
+    public decimal Price { get; set; } = 0;
+
     [Url]
     public string? ImageUrl { get; set; }
     

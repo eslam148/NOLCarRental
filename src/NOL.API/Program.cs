@@ -138,6 +138,7 @@ builder.Services.AddScoped<IAdminManagementService, NOL.Infrastructure.Services.
 builder.Services.AddScoped<ICarManagementService, NOL.Infrastructure.Services.CarManagementService>();
 builder.Services.AddScoped<IBookingManagementService, NOL.Infrastructure.Services.BookingManagementService>();
 builder.Services.AddScoped<ICustomerManagementService, NOL.Infrastructure.Services.CustomerManagementService>();
+builder.Services.AddScoped<IAdvertisementManagementService, NOL.Infrastructure.Services.AdvertisementManagementService>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
