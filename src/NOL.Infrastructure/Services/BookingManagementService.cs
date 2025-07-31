@@ -50,7 +50,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
@@ -80,7 +79,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .AsQueryable();
 
@@ -255,7 +253,6 @@ public class BookingManagementService : IBookingManagementService
             {
                 var extraTypePriceIds = createBookingDto.Extras.Select(e => e.ExtraTypePriceId).ToList();
                 var extraTypePrices = await _context.ExtraTypePrices
-                    .Include(etp => etp.ExtraType)
                     .Where(etp => extraTypePriceIds.Contains(etp.Id))
                     .ToListAsync();
 
@@ -318,7 +315,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .FirstOrDefaultAsync(b => b.Id == booking.Id);
 
@@ -345,7 +341,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
@@ -429,7 +424,6 @@ public class BookingManagementService : IBookingManagementService
                 // Add new extras
                 var extraTypePriceIds = modifyBookingDto.Extras.Select(e => e.ExtraTypePriceId).ToList();
                 var extraTypePrices = await _context.ExtraTypePrices
-                    .Include(etp => etp.ExtraType)
                     .Where(etp => extraTypePriceIds.Contains(etp.Id))
                     .ToListAsync();
 
@@ -492,7 +486,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
@@ -559,7 +552,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .FirstOrDefaultAsync(b => b.Id == id);
 
@@ -1345,7 +1337,6 @@ public class BookingManagementService : IBookingManagementService
                 .Include(b => b.DeliveryBranch)
                 .Include(b => b.BookingExtras)
                     .ThenInclude(be => be.ExtraTypePrice)
-                        .ThenInclude(etp => etp.ExtraType)
                 .Include(b => b.Payments)
                 .Where(b => b.UserId == customerId)
                 .AsQueryable();
