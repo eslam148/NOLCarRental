@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
 using NOL.Infrastructure.Data;
@@ -51,10 +52,13 @@ public class BranchManagementService : IBranchManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminBranchDto>>> GetBranchesAsync(BranchFilterDto filter)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetBranchesAsync(BranchFilterDto filter)
     {
         try
         {
+            // Validate and normalize pagination parameters
+            filter.ValidateAndNormalize();
+
             var query = _context.Branches
                 .Include(b => b.Cars)
                 .AsQueryable();
@@ -94,6 +98,9 @@ public class BranchManagementService : IBranchManagementService
                 _ => filter.SortOrder?.ToLower() == "asc" ? query.OrderBy(b => b.NameEn) : query.OrderByDescending(b => b.NameEn)
             };
 
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
             // Apply pagination
             var branches = await query
                 .Skip((filter.Page - 1) * filter.PageSize)
@@ -106,12 +113,19 @@ public class BranchManagementService : IBranchManagementService
                 branchDtos.Add(await MapToAdminBranchDto(branch));
             }
 
-            return ApiResponse<List<AdminBranchDto>>.Success(branchDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminBranchDto>.Create(
+                branchDtos,
+                filter.Page,
+                filter.PageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting branches with filter");
-            return ApiResponse<List<AdminBranchDto>>.Error("An error occurred while retrieving branches", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Error("An error occurred while retrieving branches", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -1007,10 +1021,15 @@ public class BranchManagementService : IBranchManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminBranchDto>>> GetBranchesNearLocationAsync(decimal latitude, decimal longitude, double radiusKm = 50)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetBranchesNearLocationAsync(decimal latitude, decimal longitude, double radiusKm = 50, int page = 1, int pageSize = 10)
     {
         try
         {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
             // Simple distance calculation (not precise for large distances)
             var branches = await _context.Branches
                 .Include(b => b.Cars)
@@ -1023,18 +1042,32 @@ public class BranchManagementService : IBranchManagementService
                 return distance <= radiusKm;
             }).ToList();
 
+            // Apply pagination
+            var totalCount = nearbyBranches.Count;
+            var paginatedBranches = nearbyBranches
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
             var branchDtos = new List<AdminBranchDto>();
-            foreach (var branch in nearbyBranches)
+            foreach (var branch in paginatedBranches)
             {
                 branchDtos.Add(await MapToAdminBranchDto(branch));
             }
 
-            return ApiResponse<List<AdminBranchDto>>.Success(branchDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminBranchDto>.Create(
+                branchDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting branches near location");
-            return ApiResponse<List<AdminBranchDto>>.Error("An error occurred while retrieving nearby branches", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Error("An error occurred while retrieving nearby branches", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -1193,24 +1226,24 @@ public class BranchManagementService : IBranchManagementService
                 StartDate = filter.CreatedDateFrom,
                 EndDate = filter.CreatedDateTo,
                 Analytics = analytics.Data!,
-                Branches = branches.Data!,
+                Branches = branches.Data!.Data,
                 Summary = new BranchReportSummaryDto
                 {
-                    TotalBranches = branches.Data!.Count,
-                    ActiveBranches = branches.Data!.Count(b => b.IsActive),
-                    InactiveBranches = branches.Data!.Count(b => !b.IsActive),
-                    NewBranches = branches.Data!.Count(b => b.CreatedAt >= DateTime.UtcNow.AddDays(-30)),
-                    TotalRevenue = branches.Data!.Sum(b => b.TotalRevenue),
-                    AverageRevenuePerBranch = branches.Data!.Any() ? branches.Data!.Average(b => b.TotalRevenue) : 0,
-                    TotalCars = branches.Data!.Sum(b => b.TotalCars),
-                    TotalBookings = branches.Data!.Sum(b => b.TotalBookings),
-                    TotalStaff = branches.Data!.Sum(b => b.TotalStaff),
-                    AverageUtilizationRate = branches.Data!.Any() ? branches.Data!.Average(b => b.CarUtilizationRate) : 0,
-                    AverageCustomerSatisfaction = branches.Data!.Any() ? branches.Data!.Average(b => b.CustomerSatisfactionRate) : 0,
-                    BestPerformingBranch = branches.Data!.OrderByDescending(b => b.TotalRevenue).FirstOrDefault()?.Name ?? "None",
-                    WorstPerformingBranch = branches.Data!.OrderBy(b => b.TotalRevenue).FirstOrDefault()?.Name ?? "None",
-                    MostPopularCity = branches.Data!.GroupBy(b => b.City).OrderByDescending(g => g.Count()).FirstOrDefault()?.Key ?? "None",
-                    MostPopularCountry = branches.Data!.GroupBy(b => b.Country).OrderByDescending(g => g.Count()).FirstOrDefault()?.Key ?? "None"
+                    TotalBranches = branches.Data!.Data.Count,
+                    ActiveBranches = branches.Data!.Data.Count(b => b.IsActive),
+                    InactiveBranches = branches.Data!.Data.Count(b => !b.IsActive),
+                    NewBranches = branches.Data!.Data.Count(b => b.CreatedAt >= DateTime.UtcNow.AddDays(-30)),
+                    TotalRevenue = branches.Data!.Data.Sum(b => b.TotalRevenue),
+                    AverageRevenuePerBranch = branches.Data!.Data.Any() ? branches.Data!.Data.Average(b => b.TotalRevenue) : 0,
+                    TotalCars = branches.Data!.Data.Sum(b => b.TotalCars),
+                    TotalBookings = branches.Data!.Data.Sum(b => b.TotalBookings),
+                    TotalStaff = branches.Data!.Data.Sum(b => b.TotalStaff),
+                    AverageUtilizationRate = branches.Data!.Data.Any() ? branches.Data!.Data.Average(b => b.CarUtilizationRate) : 0,
+                    AverageCustomerSatisfaction = branches.Data!.Data.Any() ? branches.Data!.Data.Average(b => b.CustomerSatisfactionRate) : 0,
+                    BestPerformingBranch = branches.Data!.Data.OrderByDescending(b => b.TotalRevenue).FirstOrDefault()?.Name ?? "None",
+                    WorstPerformingBranch = branches.Data!.Data.OrderBy(b => b.TotalRevenue).FirstOrDefault()?.Name ?? "None",
+                    MostPopularCity = branches.Data!.Data.GroupBy(b => b.City).OrderByDescending(g => g.Count()).FirstOrDefault()?.Key ?? "None",
+                    MostPopularCountry = branches.Data!.Data.GroupBy(b => b.Country).OrderByDescending(g => g.Count()).FirstOrDefault()?.Key ?? "None"
                 }
             };
 
@@ -1321,7 +1354,7 @@ public class BranchManagementService : IBranchManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminBranchDto>>> SearchBranchesAsync(string searchTerm, int page = 1, int pageSize = 10)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> SearchBranchesAsync(string searchTerm, int page = 1, int pageSize = 10)
     {
         try
         {
@@ -1337,18 +1370,19 @@ public class BranchManagementService : IBranchManagementService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error searching branches");
-            return ApiResponse<List<AdminBranchDto>>.Error("An error occurred while searching branches", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Error("An error occurred while searching branches", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
-    public async Task<ApiResponse<List<AdminBranchDto>>> GetActiveBranchesAsync()
+    public async Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetActiveBranchesAsync(int page = 1, int pageSize = 10)
     {
         try
         {
             var filter = new BranchFilterDto
             {
                 IsActive = true,
-                PageSize = 1000 // Get all active branches
+                Page = page,
+                PageSize = pageSize
             };
 
             return await GetBranchesAsync(filter);
@@ -1356,11 +1390,11 @@ public class BranchManagementService : IBranchManagementService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting active branches");
-            return ApiResponse<List<AdminBranchDto>>.Error("An error occurred while retrieving active branches", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Error("An error occurred while retrieving active branches", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
-    public async Task<ApiResponse<List<AdminBranchDto>>> GetBranchesByRegionAsync(string city, string country)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetBranchesByRegionAsync(string city, string country, int page = 1, int pageSize = 10)
     {
         try
         {
@@ -1368,7 +1402,8 @@ public class BranchManagementService : IBranchManagementService
             {
                 City = city,
                 Country = country,
-                PageSize = 1000
+                Page = page,
+                PageSize = pageSize
             };
 
             return await GetBranchesAsync(filter);
@@ -1376,7 +1411,7 @@ public class BranchManagementService : IBranchManagementService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting branches by region");
-            return ApiResponse<List<AdminBranchDto>>.Error("An error occurred while retrieving branches by region", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminBranchDto>>.Error("An error occurred while retrieving branches by region", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 

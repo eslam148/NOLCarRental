@@ -4,6 +4,7 @@ using System.Security.Claims;
 using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers.Admin;
@@ -37,9 +38,9 @@ public class BranchManagementController : ControllerBase
     /// <param name="sortOrder">Sort order (asc, desc)</param>
     /// <param name="page">Page number (default: 1)</param>
     /// <param name="pageSize">Page size (default: 10)</param>
-    /// <returns>List of branches with pagination</returns>
+    /// <returns>Paginated list of branches with metadata</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<AdminBranchDto>>>> GetBranches(
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminBranchDto>>>> GetBranches(
         [FromQuery] string? searchTerm = null,
         [FromQuery] bool? isActive = null,
         [FromQuery] string? city = null,
@@ -543,11 +544,13 @@ public class BranchManagementController : ControllerBase
     /// <param name="latitude">Latitude</param>
     /// <param name="longitude">Longitude</param>
     /// <param name="radiusKm">Radius in kilometers</param>
-    /// <returns>Nearby branches</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated nearby branches</returns>
     [HttpGet("nearby")]
-    public async Task<ActionResult<ApiResponse<List<AdminBranchDto>>>> GetBranchesNearLocation([FromQuery] decimal latitude, [FromQuery] decimal longitude, [FromQuery] double radiusKm = 50)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminBranchDto>>>> GetBranchesNearLocation([FromQuery] decimal latitude, [FromQuery] decimal longitude, [FromQuery] double radiusKm = 50, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _branchManagementService.GetBranchesNearLocationAsync(latitude, longitude, radiusKm);
+        var result = await _branchManagementService.GetBranchesNearLocationAsync(latitude, longitude, radiusKm, page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 
@@ -637,9 +640,9 @@ public class BranchManagementController : ControllerBase
     /// <param name="searchTerm">Search term</param>
     /// <param name="page">Page number</param>
     /// <param name="pageSize">Page size</param>
-    /// <returns>Search results</returns>
+    /// <returns>Paginated search results</returns>
     [HttpGet("search")]
-    public async Task<ActionResult<ApiResponse<List<AdminBranchDto>>>> SearchBranches([FromQuery] string searchTerm, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminBranchDto>>>> SearchBranches([FromQuery] string searchTerm, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -653,11 +656,13 @@ public class BranchManagementController : ControllerBase
     /// <summary>
     /// Get active branches only
     /// </summary>
-    /// <returns>Active branches</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated active branches</returns>
     [HttpGet("active")]
-    public async Task<ActionResult<ApiResponse<List<AdminBranchDto>>>> GetActiveBranches()
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminBranchDto>>>> GetActiveBranches([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _branchManagementService.GetActiveBranchesAsync();
+        var result = await _branchManagementService.GetActiveBranchesAsync(page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 
@@ -666,16 +671,18 @@ public class BranchManagementController : ControllerBase
     /// </summary>
     /// <param name="city">City name</param>
     /// <param name="country">Country name</param>
-    /// <returns>Branches in specified region</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated branches in specified region</returns>
     [HttpGet("by-region")]
-    public async Task<ActionResult<ApiResponse<List<AdminBranchDto>>>> GetBranchesByRegion([FromQuery] string city, [FromQuery] string country)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminBranchDto>>>> GetBranchesByRegion([FromQuery] string city, [FromQuery] string country, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         if (string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(country))
         {
             return BadRequest(new { message = "City and country are required" });
         }
 
-        var result = await _branchManagementService.GetBranchesByRegionAsync(city, country);
+        var result = await _branchManagementService.GetBranchesByRegionAsync(city, country, page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 

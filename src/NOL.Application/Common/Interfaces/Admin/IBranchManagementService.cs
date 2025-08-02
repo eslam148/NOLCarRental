@@ -1,5 +1,6 @@
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.Application.Common.Interfaces.Admin;
@@ -16,7 +17,7 @@ public interface IBranchManagementService
     /// <summary>
     /// Get branches with advanced filtering, sorting, and pagination
     /// </summary>
-    Task<ApiResponse<List<AdminBranchDto>>> GetBranchesAsync(BranchFilterDto filter);
+    Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetBranchesAsync(BranchFilterDto filter);
     
     /// <summary>
     /// Create a new branch
@@ -174,7 +175,7 @@ public interface IBranchManagementService
     /// <summary>
     /// Get branches within radius of location
     /// </summary>
-    Task<ApiResponse<List<AdminBranchDto>>> GetBranchesNearLocationAsync(decimal latitude, decimal longitude, double radiusKm = 50);
+    Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetBranchesNearLocationAsync(decimal latitude, decimal longitude, double radiusKm = 50, int page = 1, int pageSize = 10);
     
     #endregion
 
@@ -226,17 +227,17 @@ public interface IBranchManagementService
     /// <summary>
     /// Search branches by multiple criteria
     /// </summary>
-    Task<ApiResponse<List<AdminBranchDto>>> SearchBranchesAsync(string searchTerm, int page = 1, int pageSize = 10);
-    
+    Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> SearchBranchesAsync(string searchTerm, int page = 1, int pageSize = 10);
+
     /// <summary>
     /// Get active branches only
     /// </summary>
-    Task<ApiResponse<List<AdminBranchDto>>> GetActiveBranchesAsync();
-    
+    Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetActiveBranchesAsync(int page = 1, int pageSize = 10);
+
     /// <summary>
     /// Get branches by geographic region
     /// </summary>
-    Task<ApiResponse<List<AdminBranchDto>>> GetBranchesByRegionAsync(string city, string country);
+    Task<ApiResponse<PaginatedResponseDto<AdminBranchDto>>> GetBranchesByRegionAsync(string city, string country, int page = 1, int pageSize = 10);
     
     #endregion
 

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.Application.DTOs.Admin;
@@ -145,9 +146,8 @@ public class AdminUpdateBranchDto
     public string? Notes { get; set; }
 }
 
-public class BranchFilterDto
+public class BranchFilterDto : BasePaginationFilterDto
 {
-    public string? SearchTerm { get; set; }
     public bool? IsActive { get; set; }
     public string? City { get; set; }
     public string? Country { get; set; }
@@ -159,10 +159,11 @@ public class BranchFilterDto
     public decimal? MaxRevenue { get; set; }
     public double? MinUtilizationRate { get; set; }
     public double? MaxUtilizationRate { get; set; }
-    public string? SortBy { get; set; } = "name";
-    public string? SortOrder { get; set; } = "asc";
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+
+    public BranchFilterDto()
+    {
+        SortBy = "name";
+    }
 }
 
 public class BranchStaffDto
