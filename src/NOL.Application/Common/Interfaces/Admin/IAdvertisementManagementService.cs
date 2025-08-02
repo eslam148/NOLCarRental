@@ -1,5 +1,6 @@
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.Application.Common.Interfaces.Admin;
@@ -8,29 +9,29 @@ public interface IAdvertisementManagementService
 {
     // CRUD Operations
     Task<ApiResponse<AdminAdvertisementDto>> GetAdvertisementByIdAsync(int id);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsAsync(AdvertisementFilterDto filter);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsAsync(AdvertisementFilterDto filter);
     Task<ApiResponse<AdminAdvertisementDto>> CreateAdvertisementAsync(AdminCreateAdvertisementDto createAdvertisementDto, string adminId);
     Task<ApiResponse<AdminAdvertisementDto>> UpdateAdvertisementAsync(int id, AdminUpdateAdvertisementDto updateAdvertisementDto, string adminId);
     Task<ApiResponse> DeleteAdvertisementAsync(int id, string adminId);
-    
+
     // Status Management
     Task<ApiResponse<AdminAdvertisementDto>> UpdateAdvertisementStatusAsync(int id, AdvertisementStatus status, string adminId);
     Task<ApiResponse> BulkUpdateAdvertisementStatusAsync(List<int> advertisementIds, AdvertisementStatus status, string adminId);
-    
+
     // Scheduling
     Task<ApiResponse<AdminAdvertisementDto>> ScheduleAdvertisementAsync(int id, DateTime startDate, DateTime endDate, string adminId);
     Task<ApiResponse> BulkScheduleAdvertisementsAsync(AdvertisementScheduleDto scheduleDto, string adminId);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetScheduledAdvertisementsAsync(DateTime? date = null);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetExpiredAdvertisementsAsync();
-    
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetScheduledAdvertisementsAsync(DateTime? date = null, int page = 1, int pageSize = 10);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetExpiredAdvertisementsAsync(int page = 1, int pageSize = 10);
+
     // Featured Content Management
     Task<ApiResponse<AdminAdvertisementDto>> SetAdvertisementFeaturedAsync(int id, bool isFeatured, string adminId);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetFeaturedAdvertisementsAsync();
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetFeaturedAdvertisementsAsync(int page = 1, int pageSize = 10);
     Task<ApiResponse> UpdateAdvertisementSortOrderAsync(int id, int sortOrder, string adminId);
-    
+
     // Discount Management
     Task<ApiResponse<AdminAdvertisementDto>> UpdateAdvertisementDiscountAsync(int id, decimal? discountPercentage, decimal? discountPrice, string adminId);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsWithDiscountsAsync();
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsWithDiscountsAsync(int page = 1, int pageSize = 10);
     Task<ApiResponse<decimal>> CalculateDiscountedPriceAsync(int advertisementId, decimal originalPrice);
     
     // Performance Analytics
@@ -46,22 +47,22 @@ public interface IAdvertisementManagementService
     
     // Type-based Analytics
     Task<ApiResponse<List<AdvertisementTypeStatsDto>>> GetAdvertisementTypeStatsAsync(DateTime? startDate = null, DateTime? endDate = null);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsByTypeAsync(AdvertisementType type, bool activeOnly = true);
-    
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByTypeAsync(AdvertisementType type, bool activeOnly = true, int page = 1, int pageSize = 10);
+
     // Bulk Operations
     Task<ApiResponse> BulkOperationAsync(BulkAdvertisementOperationDto operationDto, string adminId);
     Task<ApiResponse> BulkDeleteAdvertisementsAsync(List<int> advertisementIds, string adminId);
     Task<ApiResponse> BulkActivateAdvertisementsAsync(List<int> advertisementIds, string adminId);
     Task<ApiResponse> BulkDeactivateAdvertisementsAsync(List<int> advertisementIds, string adminId);
-    
+
     // Copy and Template Operations
     Task<ApiResponse<AdminAdvertisementDto>> CopyAdvertisementAsync(CopyAdvertisementDto copyDto, string adminId);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementTemplatesAsync();
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementTemplatesAsync(int page = 1, int pageSize = 10);
     Task<ApiResponse<AdminAdvertisementDto>> CreateAdvertisementFromTemplateAsync(int templateId, AdminCreateAdvertisementDto createDto, string adminId);
-    
+
     // Car and Category Association
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsByCarAsync(int carId);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsByCategoryAsync(int categoryId);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByCarAsync(int carId, int page = 1, int pageSize = 10);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByCategoryAsync(int categoryId, int page = 1, int pageSize = 10);
     Task<ApiResponse> AssociateAdvertisementWithCarAsync(int advertisementId, int carId, string adminId);
     Task<ApiResponse> AssociateAdvertisementWithCategoryAsync(int advertisementId, int categoryId, string adminId);
     
@@ -81,7 +82,7 @@ public interface IAdvertisementManagementService
     Task<ApiResponse<List<string>>> ValidateAdvertisementDataAsync(AdminCreateAdvertisementDto createDto);
     
     // Search and Filter
-    Task<ApiResponse<List<AdminAdvertisementDto>>> SearchAdvertisementsAsync(string searchTerm, int page = 1, int pageSize = 10);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetActiveAdvertisementsAsync(DateTime? date = null);
-    Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsByDateRangeAsync(DateTime startDate, DateTime endDate);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> SearchAdvertisementsAsync(string searchTerm, int page = 1, int pageSize = 10);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetActiveAdvertisementsAsync(DateTime? date = null, int page = 1, int pageSize = 10);
+    Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByDateRangeAsync(DateTime startDate, DateTime endDate, int page = 1, int pageSize = 10);
 }

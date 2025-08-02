@@ -4,6 +4,7 @@ using System.Security.Claims;
 using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers.Admin;
@@ -28,9 +29,9 @@ public class AdvertisementManagementController : ControllerBase
     /// Get all advertisements with advanced filtering and pagination
     /// </summary>
     /// <param name="filter">Advertisement filter parameters</param>
-    /// <returns>Paginated list of advertisements with admin details</returns>
+    /// <returns>Paginated list of advertisements with metadata</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<AdminAdvertisementDto>>>> GetAdvertisements([FromQuery] AdvertisementFilterDto filter)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>>> GetAdvertisements([FromQuery] AdvertisementFilterDto filter)
     {
         var result = await _advertisementManagementService.GetAdvertisementsAsync(filter);
         return StatusCode(result.StatusCodeValue, result);
@@ -233,22 +234,26 @@ public class AdvertisementManagementController : ControllerBase
     /// Get scheduled advertisements
     /// </summary>
     /// <param name="date">Optional date filter</param>
-    /// <returns>List of scheduled advertisements</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated list of scheduled advertisements</returns>
     [HttpGet("scheduled")]
-    public async Task<ActionResult<ApiResponse<List<AdminAdvertisementDto>>>> GetScheduledAdvertisements([FromQuery] DateTime? date = null)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>>> GetScheduledAdvertisements([FromQuery] DateTime? date = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _advertisementManagementService.GetScheduledAdvertisementsAsync(date);
+        var result = await _advertisementManagementService.GetScheduledAdvertisementsAsync(date, page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 
     /// <summary>
     /// Get expired advertisements
     /// </summary>
-    /// <returns>List of expired advertisements</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated list of expired advertisements</returns>
     [HttpGet("expired")]
-    public async Task<ActionResult<ApiResponse<List<AdminAdvertisementDto>>>> GetExpiredAdvertisements()
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>>> GetExpiredAdvertisements([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _advertisementManagementService.GetExpiredAdvertisementsAsync();
+        var result = await _advertisementManagementService.GetExpiredAdvertisementsAsync(page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 
@@ -279,11 +284,13 @@ public class AdvertisementManagementController : ControllerBase
     /// <summary>
     /// Get featured advertisements
     /// </summary>
-    /// <returns>List of featured advertisements</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated list of featured advertisements</returns>
     [HttpGet("featured")]
-    public async Task<ActionResult<ApiResponse<List<AdminAdvertisementDto>>>> GetFeaturedAdvertisements()
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>>> GetFeaturedAdvertisements([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _advertisementManagementService.GetFeaturedAdvertisementsAsync();
+        var result = await _advertisementManagementService.GetFeaturedAdvertisementsAsync(page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 
@@ -354,11 +361,13 @@ public class AdvertisementManagementController : ControllerBase
     /// <summary>
     /// Get advertisements with discounts
     /// </summary>
-    /// <returns>List of advertisements with discounts</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated list of advertisements with discounts</returns>
     [HttpGet("with-discounts")]
-    public async Task<ActionResult<ApiResponse<List<AdminAdvertisementDto>>>> GetAdvertisementsWithDiscounts()
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>>> GetAdvertisementsWithDiscounts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _advertisementManagementService.GetAdvertisementsWithDiscountsAsync();
+        var result = await _advertisementManagementService.GetAdvertisementsWithDiscountsAsync(page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 
@@ -530,11 +539,13 @@ public class AdvertisementManagementController : ControllerBase
     /// </summary>
     /// <param name="type">Advertisement type</param>
     /// <param name="activeOnly">Filter for active advertisements only</param>
-    /// <returns>List of advertisements by type</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated list of advertisements by type</returns>
     [HttpGet("by-type/{type}")]
-    public async Task<ActionResult<ApiResponse<List<AdminAdvertisementDto>>>> GetAdvertisementsByType(AdvertisementType type, [FromQuery] bool activeOnly = true)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>>> GetAdvertisementsByType(AdvertisementType type, [FromQuery] bool activeOnly = true, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _advertisementManagementService.GetAdvertisementsByTypeAsync(type, activeOnly);
+        var result = await _advertisementManagementService.GetAdvertisementsByTypeAsync(type, activeOnly, page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 

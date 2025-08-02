@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.Application.DTOs.Admin;
@@ -118,7 +119,7 @@ public class AdminUpdateAdvertisementDto
     public string? Notes { get; set; }
 }
 
-public class AdvertisementFilterDto
+public class AdvertisementFilterDto : BasePaginationFilterDto
 {
     public AdvertisementType? Type { get; set; }
     public AdvertisementStatus? Status { get; set; }
@@ -135,11 +136,12 @@ public class AdvertisementFilterDto
     public DateTime? CreatedDateTo { get; set; }
     public decimal? MinDiscountPercentage { get; set; }
     public decimal? MaxDiscountPercentage { get; set; }
-    public string? SearchTerm { get; set; }
-    public string? SortBy { get; set; } = "CreatedAt";
-    public string? SortOrder { get; set; } = "desc";
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+
+    public AdvertisementFilterDto()
+    {
+        SortBy = "CreatedAt";
+        SortOrder = "desc";
+    }
 }
 
 public class AdvertisementMetricDto

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
 using NOL.Infrastructure.Data;
@@ -53,10 +54,13 @@ public class AdvertisementManagementService : IAdvertisementManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsAsync(AdvertisementFilterDto filter)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsAsync(AdvertisementFilterDto filter)
     {
         try
         {
+            // Validate and normalize pagination parameters
+            filter.ValidateAndNormalize();
+
             var query = _context.Advertisements
                 .Include(a => a.Car)
                 .Include(a => a.Category)
@@ -131,6 +135,9 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 _ => filter.SortOrder?.ToLower() == "asc" ? query.OrderBy(a => a.CreatedAt) : query.OrderByDescending(a => a.CreatedAt)
             };
 
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
             // Apply pagination
             var advertisements = await query
                 .Skip((filter.Page - 1) * filter.PageSize)
@@ -143,12 +150,19 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
             }
 
-            return ApiResponse<List<AdminAdvertisementDto>>.Success(advertisementDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                filter.Page,
+                filter.PageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting advertisements with filter");
-            return ApiResponse<List<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -499,19 +513,32 @@ public class AdvertisementManagementService : IAdvertisementManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminAdvertisementDto>>> GetScheduledAdvertisementsAsync(DateTime? date = null)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetScheduledAdvertisementsAsync(DateTime? date = null, int page = 1, int pageSize = 10)
     {
         try
         {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
             var targetDate = date ?? DateTime.UtcNow.Date;
 
-            var advertisements = await _context.Advertisements
+            var query = _context.Advertisements
                 .Include(a => a.Car)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedByUser)
                 .Where(a => a.StartDate.Date <= targetDate && a.EndDate.Date >= targetDate)
                 .OrderBy(a => a.SortOrder)
-                .ThenByDescending(a => a.CreatedAt)
+                .ThenByDescending(a => a.CreatedAt);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var advertisementDtos = new List<AdminAdvertisementDto>();
@@ -520,25 +547,45 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
             }
 
-            return ApiResponse<List<AdminAdvertisementDto>>.Success(advertisementDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting scheduled advertisements");
-            return ApiResponse<List<AdminAdvertisementDto>>.Error("An error occurred while retrieving scheduled advertisements", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving scheduled advertisements", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
-    public async Task<ApiResponse<List<AdminAdvertisementDto>>> GetExpiredAdvertisementsAsync()
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetExpiredAdvertisementsAsync(int page = 1, int pageSize = 10)
     {
         try
         {
-            var advertisements = await _context.Advertisements
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
                 .Include(a => a.Car)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedByUser)
                 .Where(a => a.EndDate < DateTime.UtcNow && a.Status == AdvertisementStatus.Active)
-                .OrderByDescending(a => a.EndDate)
+                .OrderByDescending(a => a.EndDate);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var advertisementDtos = new List<AdminAdvertisementDto>();
@@ -547,12 +594,19 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
             }
 
-            return ApiResponse<List<AdminAdvertisementDto>>.Success(advertisementDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting expired advertisements");
-            return ApiResponse<List<AdminAdvertisementDto>>.Error("An error occurred while retrieving expired advertisements", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving expired advertisements", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -589,17 +643,30 @@ public class AdvertisementManagementService : IAdvertisementManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminAdvertisementDto>>> GetFeaturedAdvertisementsAsync()
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetFeaturedAdvertisementsAsync(int page = 1, int pageSize = 10)
     {
         try
         {
-            var advertisements = await _context.Advertisements
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
                 .Include(a => a.Car)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedByUser)
                 .Where(a => a.IsFeatured && a.IsActive && a.Status == AdvertisementStatus.Active)
                 .OrderBy(a => a.SortOrder)
-                .ThenByDescending(a => a.CreatedAt)
+                .ThenByDescending(a => a.CreatedAt);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var advertisementDtos = new List<AdminAdvertisementDto>();
@@ -608,12 +675,19 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
             }
 
-            return ApiResponse<List<AdminAdvertisementDto>>.Success(advertisementDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting featured advertisements");
-            return ApiResponse<List<AdminAdvertisementDto>>.Error("An error occurred while retrieving featured advertisements", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving featured advertisements", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -678,17 +752,30 @@ public class AdvertisementManagementService : IAdvertisementManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminAdvertisementDto>>> GetAdvertisementsWithDiscountsAsync()
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsWithDiscountsAsync(int page = 1, int pageSize = 10)
     {
         try
         {
-            var advertisements = await _context.Advertisements
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
                 .Include(a => a.Car)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedByUser)
                 .Where(a => a.DiscountPercentage > 0 || a.DiscountPrice.HasValue)
                 .OrderByDescending(a => a.DiscountPercentage)
-                .ThenByDescending(a => a.DiscountPrice)
+                .ThenByDescending(a => a.DiscountPrice);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var advertisementDtos = new List<AdminAdvertisementDto>();
@@ -697,12 +784,19 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
             }
 
-            return ApiResponse<List<AdminAdvertisementDto>>.Success(advertisementDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting advertisements with discounts");
-            return ApiResponse<List<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements with discounts", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements with discounts", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -1517,7 +1611,7 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 return ApiResponse<AdvertisementReportDto>.Error("Failed to generate advertisement analytics", (string?)null, ApiStatusCode.InternalServerError);
             }
 
-            var advertisements = advertisementsResponse.Data ?? new List<AdminAdvertisementDto>();
+            var advertisements = advertisementsResponse.Data?.Data ?? new List<AdminAdvertisementDto>();
             var analytics = analyticsResponse.Data ?? new AdvertisementAnalyticsDto();
 
             var report = new AdvertisementReportDto
@@ -1711,18 +1805,29 @@ public class AdvertisementManagementService : IAdvertisementManagementService
 
     #region Search and Filter
 
-    public async Task<ApiResponse<List<AdminAdvertisementDto>>> SearchAdvertisementsAsync(string searchTerm, int page = 1, int pageSize = 10)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> SearchAdvertisementsAsync(string searchTerm, int page = 1, int pageSize = 10)
     {
         try
         {
-            var advertisements = await _context.Advertisements
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
                 .Include(a => a.Car)
                 .Include(a => a.Category)
                 .Include(a => a.CreatedByUser)
                 .Where(a => a.TitleAr.Contains(searchTerm) ||
                            a.TitleEn.Contains(searchTerm) ||
                            a.DescriptionAr.Contains(searchTerm) ||
-                           a.DescriptionEn.Contains(searchTerm))
+                           a.DescriptionEn.Contains(searchTerm));
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -1733,12 +1838,19 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
             }
 
-            return ApiResponse<List<AdminAdvertisementDto>>.Success(advertisementDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error searching advertisements: {SearchTerm}", searchTerm);
-            return ApiResponse<List<AdminAdvertisementDto>>.Error("An error occurred while searching advertisements", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while searching advertisements", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -2008,6 +2120,300 @@ public class AdvertisementManagementService : IAdvertisementManagementService
             return "Fixed Price Discount";
         else
             return "Mixed";
+    }
+
+    #endregion
+
+    #region Missing Paginated Methods
+
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByTypeAsync(AdvertisementType type, bool activeOnly = true, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
+                .Include(a => a.Car)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedByUser)
+                .Where(a => a.Type == type);
+
+            if (activeOnly)
+                query = query.Where(a => a.IsActive && a.Status == AdvertisementStatus.Active);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var advertisementDtos = new List<AdminAdvertisementDto>();
+            foreach (var advertisement in advertisements)
+            {
+                advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
+            }
+
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting advertisements by type: {Type}", type);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements by type", (string?)null, ApiStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementTemplatesAsync(int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
+                .Include(a => a.Car)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedByUser)
+                .Where(a => a.TitleEn.Contains("Template") || a.TitleAr.Contains("Template")); // Assuming templates have "Template" in title
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var advertisementDtos = new List<AdminAdvertisementDto>();
+            foreach (var advertisement in advertisements)
+            {
+                advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
+            }
+
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting advertisement templates");
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisement templates", (string?)null, ApiStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByCarAsync(int carId, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
+                .Include(a => a.Car)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedByUser)
+                .Where(a => a.CarId == carId);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var advertisementDtos = new List<AdminAdvertisementDto>();
+            foreach (var advertisement in advertisements)
+            {
+                advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
+            }
+
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting advertisements by car: {CarId}", carId);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements by car", (string?)null, ApiStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByCategoryAsync(int categoryId, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
+                .Include(a => a.Car)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedByUser)
+                .Where(a => a.CategoryId == categoryId);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var advertisementDtos = new List<AdminAdvertisementDto>();
+            foreach (var advertisement in advertisements)
+            {
+                advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
+            }
+
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting advertisements by category: {CategoryId}", categoryId);
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements by category", (string?)null, ApiStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetActiveAdvertisementsAsync(DateTime? date = null, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var targetDate = date ?? DateTime.UtcNow;
+
+            var query = _context.Advertisements
+                .Include(a => a.Car)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedByUser)
+                .Where(a => a.IsActive &&
+                           a.Status == AdvertisementStatus.Active &&
+                           a.StartDate <= targetDate &&
+                           a.EndDate >= targetDate);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var advertisementDtos = new List<AdminAdvertisementDto>();
+            foreach (var advertisement in advertisements)
+            {
+                advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
+            }
+
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting active advertisements");
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving active advertisements", (string?)null, ApiStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>> GetAdvertisementsByDateRangeAsync(DateTime startDate, DateTime endDate, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var query = _context.Advertisements
+                .Include(a => a.Car)
+                .Include(a => a.Category)
+                .Include(a => a.CreatedByUser)
+                .Where(a => a.CreatedAt >= startDate && a.CreatedAt <= endDate);
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var advertisements = await query
+                .OrderByDescending(a => a.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var advertisementDtos = new List<AdminAdvertisementDto>();
+            foreach (var advertisement in advertisements)
+            {
+                advertisementDtos.Add(await MapToAdminAdvertisementDto(advertisement));
+            }
+
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminAdvertisementDto>.Create(
+                advertisementDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Success(paginatedResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting advertisements by date range");
+            return ApiResponse<PaginatedResponseDto<AdminAdvertisementDto>>.Error("An error occurred while retrieving advertisements by date range", (string?)null, ApiStatusCode.InternalServerError);
+        }
     }
 
     #endregion
