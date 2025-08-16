@@ -14,6 +14,9 @@ public class Car
     public string ColorEn { get; set; } = string.Empty;
     public string PlateNumber { get; set; } = string.Empty;
     public int SeatingCapacity { get; set; }
+    public int NumberOfDoors { get; set; }
+    public int MaxSpeed { get; set; } // Maximum speed in km/h
+    public string Engine { get; set; } = string.Empty; // Engine specifications
     public TransmissionType TransmissionType { get; set; }
     public FuelType FuelType { get; set; }
     public decimal DailyRate { get; set; }

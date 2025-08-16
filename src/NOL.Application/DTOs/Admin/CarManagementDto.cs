@@ -55,6 +55,18 @@ public class AdminCreateCarDto
     public int SeatingCapacity { get; set; }
 
     [Required]
+    [Range(2, 6)]
+    public int NumberOfDoors { get; set; }
+
+    [Required]
+    [Range(80, 400)]
+    public int MaxSpeed { get; set; } // Maximum speed in km/h
+
+    [Required]
+    [StringLength(200, MinimumLength = 3)]
+    public string Engine { get; set; } = string.Empty; // Engine specifications
+
+    [Required]
     public TransmissionType TransmissionType { get; set; }
 
     [Required]
@@ -123,6 +135,15 @@ public class AdminUpdateCarDto
 
     [Range(1, 20)]
     public int? SeatingCapacity { get; set; }
+
+    [Range(2, 6)]
+    public int? NumberOfDoors { get; set; }
+
+    [Range(80, 400)]
+    public int? MaxSpeed { get; set; } // Maximum speed in km/h
+
+    [StringLength(200, MinimumLength = 3)]
+    public string? Engine { get; set; } // Engine specifications
 
     public TransmissionType? TransmissionType { get; set; }
 
@@ -233,6 +254,12 @@ public class CarImportDto
     public string PlateNumber { get; set; } = string.Empty;
     [Required]
     public int SeatingCapacity { get; set; }
+    [Required]
+    public int NumberOfDoors { get; set; }
+    [Required]
+    public int MaxSpeed { get; set; } // Maximum speed in km/h
+    [Required]
+    public string Engine { get; set; } = string.Empty; // Engine specifications
     [Required]
     public string TransmissionType { get; set; } = string.Empty;
     [Required]

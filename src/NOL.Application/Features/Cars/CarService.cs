@@ -141,6 +141,9 @@ public class CarService : ICarService
             Year = car.Year,
             Color = isArabic ? car.ColorAr : car.ColorEn,
             SeatingCapacity = car.SeatingCapacity,
+            NumberOfDoors = car.NumberOfDoors,
+            MaxSpeed = car.MaxSpeed,
+            Engine = car.Engine,
             TransmissionType = GetLocalizedTransmissionType(car.TransmissionType, isArabic),
             FuelType = car.FuelType,
             DailyPrice = car.DailyRate,
@@ -227,6 +230,9 @@ public class CarService : ICarService
                 ColorEn = createCarDto.ColorEn,
                 PlateNumber = createCarDto.PlateNumber,
                 SeatingCapacity = createCarDto.SeatingCapacity,
+                NumberOfDoors = createCarDto.NumberOfDoors,
+                MaxSpeed = createCarDto.MaxSpeed,
+                Engine = createCarDto.Engine,
                 TransmissionType = createCarDto.TransmissionType,
                 FuelType = createCarDto.FuelType,
                 DailyRate = createCarDto.DailyRate,
@@ -299,6 +305,9 @@ public class CarService : ICarService
             if (!string.IsNullOrEmpty(updateCarDto.ColorEn)) car.ColorEn = updateCarDto.ColorEn;
             if (!string.IsNullOrEmpty(updateCarDto.PlateNumber)) car.PlateNumber = updateCarDto.PlateNumber;
             if (updateCarDto.SeatingCapacity.HasValue) car.SeatingCapacity = updateCarDto.SeatingCapacity.Value;
+            if (updateCarDto.NumberOfDoors.HasValue) car.NumberOfDoors = updateCarDto.NumberOfDoors.Value;
+            if (updateCarDto.MaxSpeed.HasValue) car.MaxSpeed = updateCarDto.MaxSpeed.Value;
+            if (!string.IsNullOrEmpty(updateCarDto.Engine)) car.Engine = updateCarDto.Engine;
             if (updateCarDto.TransmissionType.HasValue) car.TransmissionType = updateCarDto.TransmissionType.Value;
             if (updateCarDto.FuelType.HasValue) car.FuelType = updateCarDto.FuelType.Value;
             if (updateCarDto.Status.HasValue) car.Status = updateCarDto.Status.Value;

@@ -371,16 +371,21 @@ public static class DataSeeder
             var random = new Random();
 
             // Helper method to create cars with variations
-            void AddCarsForModel(string brandAr, string brandEn, string modelAr, string modelEn, 
+            void AddCarsForModel(string brandAr, string brandEn, string modelAr, string modelEn,
                 decimal basePrice, string categoryName, int count = 3)
             {
                 var category = categories.First(c => c.NameEn == categoryName);
                 var colorsAr = new[] { "أبيض", "أسود", "فضي", "أزرق", "أحمر", "رمادي", "أبيض لؤلؤي", "رمادي معدني" };
                 var colorsEn = new[] { "White", "Black", "Silver", "Blue", "Red", "Gray", "Pearl White", "Metallic Gray" };
-                
+
                 for (int i = 0; i < count; i++)
                 {
                     var colorIndex = random.Next(colorsAr.Length);
+                    var seatingCapacity = categoryName == "Sports" ? random.Next(2, 5) : (categoryName == "SUV" ? random.Next(7, 9) : 5);
+                    var numberOfDoors = seatingCapacity <= 2 ? 2 : (seatingCapacity <= 5 ? 4 : 5);
+                    var maxSpeed = categoryName == "Sports" ? random.Next(250, 350) : (categoryName == "SUV" ? random.Next(180, 220) : random.Next(160, 200));
+                    var engine = GetEngineSpecification(categoryName, brandEn);
+
                     cars.Add(new Car
                     {
                         BrandAr = brandAr,
@@ -391,7 +396,10 @@ public static class DataSeeder
                         ColorAr = colorsAr[colorIndex],
                         ColorEn = colorsEn[colorIndex],
                         PlateNumber = $"UAE-{plateCounter++}",
-                        SeatingCapacity = categoryName == "Sports" ? random.Next(2, 5) : (categoryName == "SUV" ? random.Next(7, 9) : 5),
+                        SeatingCapacity = seatingCapacity,
+                        NumberOfDoors = numberOfDoors,
+                        MaxSpeed = maxSpeed,
+                        Engine = engine,
                         TransmissionType = categoryName == "Sports" && random.Next(0, 2) == 0 ? TransmissionType.Manual : TransmissionType.Automatic,
                         FuelType = FuelType.Gasoline,
                         DailyRate = basePrice + random.Next(-20, 50),
@@ -481,8 +489,75 @@ public static class DataSeeder
             }
 
             context.Cars.AddRange(cars);
-        }
+        } 
     }
+
+        private static string GetEngineSpecification(string categoryName, string brand)
+        {
+            var random = new Random();
+
+            return categoryName switch
+            {
+                "Sports" => brand switch
+                {
+                    "BMW" => "3.0L Twin-Turbo I6",
+                    "Mercedes" => "4.0L V8 BiTurbo",
+                    "Audi" => "2.9L V6 TFSI",
+                    "Porsche" => "3.8L Twin-Turbo Flat-6",
+                    "Ferrari" => "3.9L Twin-Turbo V8",
+                    "Lamborghini" => "5.2L V10",
+                    _ => "3.0L Turbo V6"
+                },
+                "SUV" => brand switch
+                {
+                    "BMW" => "3.0L TwinPower Turbo I6",
+                    "Mercedes" => "3.0L V6 Turbo",
+                    "Audi" => "3.0L TFSI V6",
+                    "Toyota" => "3.5L V6",
+                    "Lexus" => "3.5L Hybrid V6",
+                    "Range Rover" => "3.0L Supercharged V6",
+                    "Cadillac" => "6.2L V8",
+                    "Lincoln" => "3.0L Twin-Turbo V6",
+                    "Infiniti" => "3.5L V6",
+                    "Acura" => "3.5L V6",
+                    "Volvo" => "2.0L Turbo I4",
+                    "Mazda" => "2.5L Turbo I4",
+                    "Hyundai" => "3.8L V6",
+                    "Kia" => "3.8L V6",
+                    _ => "3.0L V6"
+                },
+                "Luxury" => brand switch
+                {
+                    "BMW" => "3.0L TwinPower Turbo I6",
+                    "Mercedes" => "3.0L V6 Turbo",
+                    "Audi" => "3.0L TFSI V6",
+                    "Lexus" => "3.5L V6",
+                    "Genesis" => "3.3L Twin-Turbo V6",
+                    "Cadillac" => "3.6L V6",
+                    "Lincoln" => "3.0L Twin-Turbo V6",
+                    "Infiniti" => "3.0L Twin-Turbo V6",
+                    "Acura" => "3.0L Turbo V6",
+                    "Volvo" => "2.0L Turbo I4",
+                    _ => "3.0L V6"
+                },
+                "Compact" => brand switch
+                {
+                    "BMW" => "2.0L TwinPower Turbo I4",
+                    "Mercedes" => "2.0L Turbo I4",
+                    "Audi" => "2.0L TFSI I4",
+                    "Toyota" => "2.0L I4",
+                    "Honda" => "1.5L Turbo I4",
+                    "Nissan" => "2.0L I4",
+                    "Hyundai" => "2.0L I4",
+                    "Kia" => "2.0L I4",
+                    "Mazda" => "2.5L I4",
+                    "Volkswagen" => "2.0L TSI I4",
+                    _ => "2.0L I4"
+                },
+                _ => "2.0L I4"
+            };
+        }
+ 
 
     private static async Task SeedBookingsAsync(ApplicationDbContext context)
     {

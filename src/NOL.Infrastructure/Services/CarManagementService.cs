@@ -203,6 +203,9 @@ public class CarManagementService : ICarManagementService
                 ColorEn = createCarDto.ColorEn,
                 PlateNumber = createCarDto.PlateNumber,
                 SeatingCapacity = createCarDto.SeatingCapacity,
+                NumberOfDoors = createCarDto.NumberOfDoors,
+                MaxSpeed = createCarDto.MaxSpeed,
+                Engine = createCarDto.Engine,
                 TransmissionType = createCarDto.TransmissionType,
                 FuelType = createCarDto.FuelType,
                 DailyRate = createCarDto.DailyRate,
@@ -293,6 +296,15 @@ public class CarManagementService : ICarManagementService
 
             if (updateCarDto.SeatingCapacity.HasValue)
                 car.SeatingCapacity = updateCarDto.SeatingCapacity.Value;
+
+            if (updateCarDto.NumberOfDoors.HasValue)
+                car.NumberOfDoors = updateCarDto.NumberOfDoors.Value;
+
+            if (updateCarDto.MaxSpeed.HasValue)
+                car.MaxSpeed = updateCarDto.MaxSpeed.Value;
+
+            if (!string.IsNullOrEmpty(updateCarDto.Engine))
+                car.Engine = updateCarDto.Engine;
 
             if (updateCarDto.TransmissionType.HasValue)
                 car.TransmissionType = updateCarDto.TransmissionType.Value;
@@ -667,6 +679,9 @@ public class CarManagementService : ICarManagementService
                         ColorEn = carImport.ColorEn,
                         PlateNumber = carImport.PlateNumber,
                         SeatingCapacity = carImport.SeatingCapacity,
+                        NumberOfDoors = carImport.NumberOfDoors,
+                        MaxSpeed = carImport.MaxSpeed,
+                        Engine = carImport.Engine,
                         TransmissionType = transmissionType,
                         FuelType = fuelType,
                         DailyRate = carImport.DailyRate,
@@ -1145,6 +1160,9 @@ public class CarManagementService : ICarManagementService
             Year = car.Year,
             Color = car.ColorEn,
             SeatingCapacity = car.SeatingCapacity,
+            NumberOfDoors = car.NumberOfDoors,
+            MaxSpeed = car.MaxSpeed,
+            Engine = car.Engine,
             TransmissionType = car.TransmissionType.ToString(),
             FuelType = car.FuelType,
             DailyPrice = car.DailyRate,

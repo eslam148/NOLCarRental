@@ -11,6 +11,9 @@ public class CarDto
     public int Year { get; set; }
     public string Color { get; set; } = string.Empty;
     public int SeatingCapacity { get; set; }
+    public int NumberOfDoors { get; set; }
+    public int MaxSpeed { get; set; } // Maximum speed in km/h
+    public string Engine { get; set; } = string.Empty; // Engine specifications
     public string TransmissionType { get; set; } = string.Empty;
     public FuelType FuelType { get; set; }
     public decimal DailyPrice { get; set; }
@@ -67,6 +70,18 @@ public class CreateCarDto
     [Required]
     [Range(1, 20)]
     public int SeatingCapacity { get; set; }
+
+    [Required]
+    [Range(2, 6)]
+    public int NumberOfDoors { get; set; }
+
+    [Required]
+    [Range(80, 400)]
+    public int MaxSpeed { get; set; } // Maximum speed in km/h
+
+    [Required]
+    [StringLength(200, MinimumLength = 3)]
+    public string Engine { get; set; } = string.Empty; // Engine specifications
 
     [Required]
     public TransmissionType TransmissionType { get; set; }
@@ -137,6 +152,15 @@ public class UpdateCarDto
 
     [Range(1, 20)]
     public int? SeatingCapacity { get; set; }
+
+    [Range(2, 6)]
+    public int? NumberOfDoors { get; set; }
+
+    [Range(80, 400)]
+    public int? MaxSpeed { get; set; } // Maximum speed in km/h
+
+    [StringLength(200, MinimumLength = 3)]
+    public string? Engine { get; set; } // Engine specifications
 
     public TransmissionType? TransmissionType { get; set; }
 
