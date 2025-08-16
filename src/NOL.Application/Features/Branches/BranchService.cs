@@ -123,6 +123,64 @@ public class BranchService : IBranchService
         }
     }
 
+    public async Task<ApiResponse<PaginatedBranchesDto>> GetBranchesNearbyAsync(decimal latitude, decimal longitude, double radiusKm = 50, int page = 1, int pageSize = 10)
+    {
+        try
+        {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100; // Limit max page size
+
+            // Validate coordinates
+            if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
+            {
+                return _responseService.Error<PaginatedBranchesDto>("InvalidCoordinates");
+            }
+
+            // Validate radius
+            if (radiusKm <= 0 || radiusKm > 1000) // Max 1000km radius
+            {
+                radiusKm = 50; // Default to 50km
+            }
+
+            // Get nearby branches and total count
+            var allNearbyBranches = await _branchRepository.GetActiveBranchesNearbyAsync(latitude, longitude, radiusKm);
+            var totalCount = allNearbyBranches.Count();
+
+            // Apply pagination
+            var paginatedBranches = allNearbyBranches
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Map to DTOs
+            var branchDtos = paginatedBranches.Select(MapToBranchDto).ToList();
+
+            // Calculate pagination info
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+            var hasPreviousPage = page > 1;
+            var hasNextPage = page < totalPages;
+
+            var paginatedResult = new PaginatedBranchesDto
+            {
+                Branches = branchDtos,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasPreviousPage = hasPreviousPage,
+                HasNextPage = hasNextPage
+            };
+
+            return _responseService.Success(paginatedResult, "NearbyBranchesRetrieved");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error<PaginatedBranchesDto>("InternalServerError");
+        }
+    }
+
     private BranchDto MapToBranchDto(Domain.Entities.Branch branch)
     {
         var isArabic = _localizationService.GetCurrentCulture() == "ar";

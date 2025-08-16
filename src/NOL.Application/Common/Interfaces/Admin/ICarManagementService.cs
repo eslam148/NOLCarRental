@@ -1,5 +1,6 @@
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.Application.Common.Interfaces.Admin;
@@ -8,7 +9,7 @@ public interface ICarManagementService
 {
     // CRUD Operations
     Task<ApiResponse<AdminCarDto>> GetCarByIdAsync(int id);
-    Task<ApiResponse<List<AdminCarDto>>> GetCarsAsync(CarFilterDto filter);
+    Task<ApiResponse<PaginatedResponseDto<AdminCarDto>>> GetCarsAsync(CarFilterDto filter);
     Task<ApiResponse<AdminCarDto>> CreateCarAsync(AdminCreateCarDto createCarDto, string adminId);
     Task<ApiResponse<AdminCarDto>> UpdateCarAsync(int id, AdminUpdateCarDto updateCarDto, string adminId);
     Task<ApiResponse> DeleteCarAsync(int id, string adminId);
@@ -33,7 +34,7 @@ public interface ICarManagementService
     // Maintenance
     Task<ApiResponse<List<CarMaintenanceRecordDto>>> GetCarMaintenanceHistoryAsync(int carId);
     Task<ApiResponse<CarMaintenanceRecordDto>> AddMaintenanceRecordAsync(int carId, CarMaintenanceRecordDto maintenanceRecord, string adminId);
-    Task<ApiResponse<List<AdminCarDto>>> GetCarsNeedingMaintenanceAsync();
+    Task<ApiResponse<PaginatedResponseDto<AdminCarDto>>> GetCarsNeedingMaintenanceAsync(int page = 1, int pageSize = 10);
     
     // Image Management
     Task<ApiResponse<string>> UploadCarImageAsync(int carId, Stream imageStream, string fileName, string adminId);

@@ -177,6 +177,12 @@
   <data name="BranchRetrieved" xml:space="preserve">
     <value>Branch retrieved successfully</value>
   </data>
+  <data name="InvalidCoordinates" xml:space="preserve">
+    <value>Invalid coordinates</value>
+  </data>
+  <data name="NearbyBranchesRetrieved" xml:space="preserve">
+    <value>Nearby branches retrieved successfully</value>
+  </data>
   <data name="CategoriesRetrieved" xml:space="preserve">
     <value>Categories retrieved successfully</value>
   </data>

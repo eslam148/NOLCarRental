@@ -9,6 +9,7 @@ using NOL.Application.Common.Responses;
 using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Entities;
+using NOL.Domain.Enums;
 
 namespace NOL.Infrastructure.Services;
 
@@ -51,22 +52,15 @@ public class AuthService : IAuthService
 
         if (!user.EmailConfirmed)
         {
-            var responseResult = await SendEmailVerificationAsync(new SendEmailVerificationDto
+            // Send verification email automatically
+            await SendEmailVerificationAsync(new SendEmailVerificationDto
             {
                 Email = user.Email!
             });
 
-            return _responseService.Success<AuthResponseDto>(new AuthResponseDto
-            {
-                User = new UserDto
-                {
-                    Email = user.Email ?? string.Empty,
-
-                    emailVerified = user.EmailConfirmed
-                },
-            },
-
-                "EmailNotVerified");
+            // Return error response indicating email verification is required
+            return _responseService.Error<AuthResponseDto>("EmailNotVerified",
+                statusCode: ApiStatusCode.Unauthorized);
         }
         var token = GenerateJwtToken(user);
         var response = new AuthResponseDto

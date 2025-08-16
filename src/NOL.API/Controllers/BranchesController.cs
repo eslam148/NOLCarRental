@@ -18,8 +18,19 @@ public class BranchesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<ApiResponse<PaginatedBranchesDto>>> GetBranches(
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+        [FromQuery] int pageSize = 10,
+        [FromQuery] decimal? latitude = null,
+        [FromQuery] decimal? longitude = null,
+        [FromQuery] double radiusKm = 50)
     {
+        // If coordinates are provided, return nearby branches
+        if (latitude.HasValue && longitude.HasValue)
+        {
+            var nearbyResult = await _branchService.GetBranchesNearbyAsync(latitude.Value, longitude.Value, radiusKm, page, pageSize);
+            return StatusCode(nearbyResult.StatusCodeValue, nearbyResult);
+        }
+
+        // Otherwise, return all branches with pagination
         var result = await _branchService.GetBranchesPagedAsync(page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
@@ -51,4 +62,4 @@ public class BranchesController : ControllerBase
         var result = await _branchService.GetBranchesByCityAsync(city);
         return StatusCode(result.StatusCodeValue, result);
     }
-} 
+}

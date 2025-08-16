@@ -100,7 +100,9 @@ public class LocalizationService : ILocalizationService
             "InternalServerError" => isArabic ? "خطأ داخلي في الخادم" : "Internal server error",
             "BranchesRetrieved" => isArabic ? "تم استرداد الفروع بنجاح" : "Branches retrieved successfully",
             "BranchRetrieved" => isArabic ? "تم استرداد الفرع بنجاح" : "Branch retrieved successfully",
-            
+            "InvalidCoordinates" => isArabic ? "إحداثيات غير صالحة" : "Invalid coordinates",
+            "NearbyBranchesRetrieved" => isArabic ? "تم استرداد الفروع القريبة بنجاح" : "Nearby branches retrieved successfully",
+
             _ => key // Return the key as last resort
         };
     }

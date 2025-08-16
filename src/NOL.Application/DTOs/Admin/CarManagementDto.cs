@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.Application.DTOs.Admin;
@@ -254,7 +255,7 @@ public class CarImportDto
     public string BranchName { get; set; } = string.Empty;
 }
 
-public class CarFilterDto
+public class CarFilterDto : BasePaginationFilterDto
 {
     public CarStatus? Status { get; set; }
     public int? CategoryId { get; set; }
@@ -267,8 +268,10 @@ public class CarFilterDto
     public decimal? DailyRateTo { get; set; }
     public TransmissionType? TransmissionType { get; set; }
     public FuelType? FuelType { get; set; }
-    public string? SortBy { get; set; } = "CreatedAt";
-    public string? SortOrder { get; set; } = "desc";
-    public int Page { get; set; } = 1;
-    public int PageSize { get; set; } = 10;
+
+    public CarFilterDto()
+    {
+        SortBy = "CreatedAt";
+        SortOrder = "desc";
+    }
 }

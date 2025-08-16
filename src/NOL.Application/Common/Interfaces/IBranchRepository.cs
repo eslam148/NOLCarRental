@@ -10,4 +10,6 @@ public interface IBranchRepository : IRepository<Branch>
     Task<Branch?> GetActiveBranchByIdAsync(int id);
     Task<IEnumerable<Branch>> GetBranchesByCountryAsync(string country);
     Task<IEnumerable<Branch>> GetBranchesByCityAsync(string city);
+    Task<IEnumerable<Branch>> GetActiveBranchesNearbyAsync(decimal latitude, decimal longitude, double radiusKm);
+    Task<int> GetActiveBranchesNearbyCountAsync(decimal latitude, decimal longitude, double radiusKm);
 }

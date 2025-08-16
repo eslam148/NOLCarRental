@@ -4,6 +4,7 @@ using System.Security.Claims;
 using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Enums;
 
 namespace NOL.API.Controllers.Admin;
@@ -28,9 +29,9 @@ public class CarManagementController : ControllerBase
     /// Get all cars with advanced filtering and pagination
     /// </summary>
     /// <param name="filter">Car filter parameters</param>
-    /// <returns>Paginated list of cars with admin details</returns>
+    /// <returns>Paginated list of cars with metadata</returns>
     [HttpGet]
-    public async Task<ActionResult<ApiResponse<List<AdminCarDto>>>> GetCars([FromQuery] CarFilterDto filter)
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminCarDto>>>> GetCars([FromQuery] CarFilterDto filter)
     {
         var result = await _carManagementService.GetCarsAsync(filter);
         return StatusCode(result.StatusCodeValue, result);
@@ -359,11 +360,13 @@ public class CarManagementController : ControllerBase
     /// <summary>
     /// Get cars that need maintenance
     /// </summary>
-    /// <returns>List of cars needing maintenance</returns>
+    /// <param name="page">Page number (default: 1)</param>
+    /// <param name="pageSize">Page size (default: 10)</param>
+    /// <returns>Paginated list of cars needing maintenance</returns>
     [HttpGet("maintenance/needed")]
-    public async Task<ActionResult<ApiResponse<List<AdminCarDto>>>> GetCarsNeedingMaintenance()
+    public async Task<ActionResult<ApiResponse<PaginatedResponseDto<AdminCarDto>>>> GetCarsNeedingMaintenance([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var result = await _carManagementService.GetCarsNeedingMaintenanceAsync();
+        var result = await _carManagementService.GetCarsNeedingMaintenanceAsync(page, pageSize);
         return StatusCode(result.StatusCodeValue, result);
     }
 

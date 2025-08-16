@@ -5,6 +5,7 @@ using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs;
 using NOL.Application.DTOs.Admin;
+using NOL.Application.DTOs.Common;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
 using NOL.Infrastructure.Data;
@@ -58,10 +59,13 @@ public class CarManagementService : ICarManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminCarDto>>> GetCarsAsync(CarFilterDto filter)
+    public async Task<ApiResponse<PaginatedResponseDto<AdminCarDto>>> GetCarsAsync(CarFilterDto filter)
     {
         try
         {
+            // Validate and normalize pagination parameters
+            filter.ValidateAndNormalize();
+
             var query = _context.Cars
                 .Include(c => c.Category)
                 .Include(c => c.Branch)
@@ -151,12 +155,19 @@ public class CarManagementService : ICarManagementService
                 adminCarDtos.Add(await MapToAdminCarDto(car));
             }
 
-            return ApiResponse<List<AdminCarDto>>.Success(adminCarDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminCarDto>.Create(
+                adminCarDtos,
+                filter.Page,
+                filter.PageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminCarDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting cars with filter");
-            return ApiResponse<List<AdminCarDto>>.Error("An error occurred while retrieving cars", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminCarDto>>.Error("An error occurred while retrieving cars", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 
@@ -826,7 +837,7 @@ public class CarManagementService : ICarManagementService
 
             var analyticsResults = new List<CarAnalyticsDto>();
 
-            foreach (var car in carsResponse.Data)
+            foreach (var car in carsResponse.Data.Data)
             {
                 var analyticsResponse = await GetCarAnalyticsAsync(car.Id, startDate, endDate);
                 if (analyticsResponse.Succeeded && analyticsResponse.Data != null)
@@ -938,18 +949,33 @@ public class CarManagementService : ICarManagementService
         }
     }
 
-    public async Task<ApiResponse<List<AdminCarDto>>> GetCarsNeedingMaintenanceAsync()
+    public async Task<ApiResponse<PaginatedResponseDto<AdminCarDto>>> GetCarsNeedingMaintenanceAsync(int page = 1, int pageSize = 10)
     {
         try
         {
+            // Validate pagination parameters
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
             // For this implementation, return cars with high mileage or old cars
             // In a full implementation, this would be based on maintenance schedules and records
-            var cars = await _context.Cars
+            var query = _context.Cars
                 .Include(c => c.Category)
                 .Include(c => c.Branch)
                 .Include(c => c.Bookings)
                 .Include(c => c.Reviews)
-                .Where(c => c.IsActive && (c.Mileage > 100000 || c.Year < DateTime.Now.Year - 5))
+                .Where(c => c.IsActive && (c.Mileage > 100000 || c.Year < DateTime.Now.Year - 5));
+
+            // Get total count for pagination
+            var totalCount = await query.CountAsync();
+
+            // Apply pagination
+            var cars = await query
+                .OrderByDescending(c => c.Mileage)
+                .ThenBy(c => c.Year)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
             var adminCarDtos = new List<AdminCarDto>();
@@ -958,12 +984,19 @@ public class CarManagementService : ICarManagementService
                 adminCarDtos.Add(await MapToAdminCarDto(car));
             }
 
-            return ApiResponse<List<AdminCarDto>>.Success(adminCarDtos);
+            // Create paginated response
+            var paginatedResult = PaginatedResponseDto<AdminCarDto>.Create(
+                adminCarDtos,
+                page,
+                pageSize,
+                totalCount);
+
+            return ApiResponse<PaginatedResponseDto<AdminCarDto>>.Success(paginatedResult);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error getting cars needing maintenance");
-            return ApiResponse<List<AdminCarDto>>.Error("An error occurred while retrieving cars needing maintenance", (string?)null, ApiStatusCode.InternalServerError);
+            return ApiResponse<PaginatedResponseDto<AdminCarDto>>.Error("An error occurred while retrieving cars needing maintenance", (string?)null, ApiStatusCode.InternalServerError);
         }
     }
 

@@ -10,4 +10,5 @@ public interface IBranchService
     Task<ApiResponse<BranchDto>> GetBranchByIdAsync(int id);
     Task<ApiResponse<List<BranchDto>>> GetBranchesByCountryAsync(string country);
     Task<ApiResponse<List<BranchDto>>> GetBranchesByCityAsync(string city);
+    Task<ApiResponse<PaginatedBranchesDto>> GetBranchesNearbyAsync(decimal latitude, decimal longitude, double radiusKm = 50, int page = 1, int pageSize = 10);
 }

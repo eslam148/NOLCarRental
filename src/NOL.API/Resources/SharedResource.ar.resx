@@ -177,6 +177,12 @@
   <data name="BranchRetrieved" xml:space="preserve">
     <value>تم استرداد الفرع بنجاح</value>
   </data>
+  <data name="InvalidCoordinates" xml:space="preserve">
+    <value>إحداثيات غير صالحة</value>
+  </data>
+  <data name="NearbyBranchesRetrieved" xml:space="preserve">
+    <value>تم استرداد الفروع القريبة بنجاح</value>
+  </data>
   <data name="CategoriesRetrieved" xml:space="preserve">
     <value>تم استرداد الفئات بنجاح</value>
   </data>
