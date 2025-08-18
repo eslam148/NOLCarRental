@@ -43,13 +43,6 @@ public class AuthService : IAuthService
             return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
         }
   
-
-        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
-        if (!result.Succeeded)
-        {
-            return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
-        }
-
         if (!user.EmailConfirmed)
         {
             // Send verification email automatically
@@ -62,6 +55,13 @@ public class AuthService : IAuthService
             return _responseService.Error<AuthResponseDto>("EmailNotVerified",
                 statusCode: ApiStatusCode.Unauthorized);
         }
+        var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
+        if (!result.Succeeded)
+        {
+            return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
+        }
+
+     
         var token = GenerateJwtToken(user);
         var response = new AuthResponseDto
         {
