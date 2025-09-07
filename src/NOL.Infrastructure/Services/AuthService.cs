@@ -510,6 +510,37 @@ public class AuthService : IAuthService
         }
     }
 
+    public async Task<ApiResponse> EditProfile(string userId, ProfileEditDto profileDto)
+    {
+        try
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return _responseService.NotFound("UserNotFound");
+            }
+
+            // Update user profile fields (excluding email)
+            user.FullName = profileDto.FullName;
+            user.PhoneNumber = profileDto.PhoneNumber;
+            user.PreferredLanguage = profileDto.PreferredLanguage;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                return _responseService.Error("ProfileUpdateFailed", errors);
+            }
+
+            return _responseService.Success("ProfileUpdatedSuccessfully");
+        }
+        catch (Exception)
+        {
+            return _responseService.Error("InternalServerError");
+        }
+    }
+
     private string GenerateOtpCode()
     {
         var random = new Random();

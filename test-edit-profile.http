@@ -1,0 +1,31 @@
+### Test Edit Profile API
+PUT {{baseUrl}}/api/Auth/edit-profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "John Doe Updated",
+  "phoneNumber": "+1234567890",
+  "preferredLanguage": 1
+}
+
+### Test Edit Profile API - Invalid Data
+PUT {{baseUrl}}/api/Auth/edit-profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fullName": "J",
+  "phoneNumber": "invalid-phone",
+  "preferredLanguage": 1
+}
+
+### Test Edit Profile API - Without Authorization
+PUT {{baseUrl}}/api/Auth/edit-profile
+Content-Type: application/json
+
+{
+  "fullName": "John Doe",
+  "phoneNumber": "+1234567890",
+  "preferredLanguage": 1
+}

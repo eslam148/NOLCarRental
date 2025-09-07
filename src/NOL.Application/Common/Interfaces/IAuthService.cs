@@ -1,3 +1,4 @@
+using AutoMapper;
 using NOL.Application.Common.Responses;
 using NOL.Application.DTOs;
 
@@ -24,4 +25,9 @@ public interface IAuthService
     Task<ApiResponse> RequestAccountDeletionAsync(string userId, RequestAccountDeletionDto dto);
     Task<ApiResponse> ConfirmAccountDeletionAsync(string userId, ConfirmAccountDeletionDto dto);
     Task<ApiResponse> ResendDeletionOtpAsync(string userId);
+
+
+    //Edit User Profile
+
+    Task<ApiResponse> EditProfile(string userId,ProfileEditDto profile);
 }

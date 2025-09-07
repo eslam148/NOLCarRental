@@ -138,10 +138,23 @@ public class AuthController : ControllerBase
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
         {
-            return Unauthorized();
         }
 
         var result = await _authService.ResendDeletionOtpAsync(userId);
+        return StatusCode(result.StatusCodeValue, result);
+    }
+
+    [HttpPut("edit-profile")]
+    [Authorize]
+    public async Task<ActionResult<ApiResponse>> EditProfile([FromBody] ProfileEditDto profileDto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var result = await _authService.EditProfile(userId, profileDto);
         return StatusCode(result.StatusCodeValue, result);
     }
 }
