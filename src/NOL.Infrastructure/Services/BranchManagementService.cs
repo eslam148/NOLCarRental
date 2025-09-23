@@ -1560,7 +1560,9 @@ public class BranchManagementService : IBranchManagementService
             MaintenanceRequestsCount = maintenanceCars,
             LastBookingDate = branchBookings.OrderByDescending(b => b.CreatedAt).FirstOrDefault()?.CreatedAt,
             LastMaintenanceDate = DateTime.UtcNow.AddDays(-30), // Placeholder
-            RecentActivities = new List<BranchRecentActivityDto>() // Placeholder
+            RecentActivities = new List<BranchRecentActivityDto>(), // Placeholder
+            DescriptionAr = branch.DescriptionAr,
+            DescriptionEn = branch.DescriptionEn
         };
     }
 

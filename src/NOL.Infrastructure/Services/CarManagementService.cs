@@ -1201,7 +1201,8 @@ public class CarManagementService : ICarManagementService
             UtilizationRate = utilizationRate,
             LastBookingDate = lastBookingDate,
             NextMaintenanceDate = null, // Would be calculated based on mileage/time
-            MaintenanceHistory = new List<CarMaintenanceRecordDto>() // Would be populated from maintenance records
+            MaintenanceHistory = new List<CarMaintenanceRecordDto>(),
+            PlateNumber = car.PlateNumber // Would be populated from maintenance records
         };
     }
 }

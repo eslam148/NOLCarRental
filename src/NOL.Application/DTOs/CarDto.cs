@@ -31,6 +31,7 @@ public class CarDto
     public decimal AvrageRate { get; set; } = 0;
 
     public int RateCount { get; set; }
+    public string PlateNumber {  get; set; } = string.Empty!;
 }
 
 public class CreateCarDto

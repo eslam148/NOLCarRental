@@ -11,40 +11,48 @@ public class AdminBranchDto : BranchDto
     public DateTime UpdatedAt { get; set; }
     public string CreatedByAdmin { get; set; } = string.Empty;
     public string UpdatedByAdmin { get; set; } = string.Empty;
-    
+
     // Statistics
     public int TotalCars { get; set; }
     public int AvailableCars { get; set; }
     public int RentedCars { get; set; }
     public int MaintenanceCars { get; set; }
     public double CarUtilizationRate { get; set; }
-    
+
     // Booking Statistics
     public int TotalBookings { get; set; }
     public int ActiveBookings { get; set; }
     public int CompletedBookings { get; set; }
     public int CancelledBookings { get; set; }
-    
+
     // Revenue Statistics
     public decimal MonthlyRevenue { get; set; }
     public decimal YearlyRevenue { get; set; }
     public decimal TotalRevenue { get; set; }
     public decimal AverageBookingValue { get; set; }
-    
+
     // Staff Information
     public int TotalStaff { get; set; }
     public int ActiveStaff { get; set; }
     public List<BranchStaffDto> Staff { get; set; } = new();
-    
+
     // Performance Metrics
     public double CustomerSatisfactionRate { get; set; }
     public double OnTimeDeliveryRate { get; set; }
     public int MaintenanceRequestsCount { get; set; }
-    
+
     // Recent Activity
     public DateTime? LastBookingDate { get; set; }
     public DateTime? LastMaintenanceDate { get; set; }
     public List<BranchRecentActivityDto> RecentActivities { get; set; } = new();
+
+    public string? DescriptionAr { get; set; }
+    public string? DescriptionEn { get; set; }
+
+ 
+
+ 
+
 }
 
 public class AdminCreateBranchDto
