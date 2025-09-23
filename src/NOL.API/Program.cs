@@ -26,17 +26,42 @@ using NOL.Infrastructure.Data;
 using NOL.Infrastructure.Repositories;
 using NOL.Infrastructure.Services;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Hangfire;
+using Hangfire.SqlServer;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Hangfire.Dashboard;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Database Configuration
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Hangfire Configuration
+builder.Services.AddHangfire(configuration =>
+{
+    configuration
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new SqlServerStorageOptions
+        {
+            QueuePollInterval = TimeSpan.FromSeconds(15),
+            SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+            CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+            UsePageLocksOnDequeue = true,
+            DisableGlobalLocks = true
+        });
+});
+
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = Math.Max(Environment.ProcessorCount, 2);
+    options.Queues = new[] { "default" };
+});
 
 // Identity Configuration
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -242,6 +267,15 @@ app.UseMiddleware<CultureMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Hangfire Dashboard
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireAuthorizationFilter() }
+});
+
+// Sample Recurring Job (hourly)
+RecurringJob.AddOrUpdate("sample-cleanup", () => Console.WriteLine($"Cleanup job ran at {DateTime.UtcNow:o}"), Cron.Hourly);
+
 app.MapControllers();
 
 // Ensure database is created, migrated, and seeded
@@ -272,3 +306,13 @@ public class EnumSchemaFilter : ISchemaFilter
         }
     }
 } 
+
+public class HangfireAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context)
+    {
+        // TODO: replace with proper auth integration; allow only authenticated admins
+        var httpContext = context.GetHttpContext();
+        return true; // open dashboard; tighten in production
+    }
+}
