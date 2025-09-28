@@ -70,7 +70,8 @@ public class FilesController : ControllerBase
 
             // Create upload directory
             var uploadFolder = string.IsNullOrEmpty(folder) ? "uploads" : $"uploads/{folder}";
-            var uploadPath = Path.Combine(_environment.WebRootPath, uploadFolder);
+            var webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var uploadPath = Path.Combine(webRootPath, uploadFolder);
             
             if (!Directory.Exists(uploadPath))
             {
@@ -170,7 +171,8 @@ public class FilesController : ControllerBase
 
                     // Create upload directory
                     var uploadFolder = string.IsNullOrEmpty(folder) ? "uploads" : $"uploads/{folder}";
-                    var uploadPath = Path.Combine(_environment.WebRootPath, uploadFolder);
+                    var webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                    var uploadPath = Path.Combine(webRootPath, uploadFolder);
                     
                     if (!Directory.Exists(uploadPath))
                     {
@@ -255,7 +257,8 @@ public class FilesController : ControllerBase
             }
 
             var uploadFolder = string.IsNullOrEmpty(folder) ? "uploads" : $"uploads/{folder}";
-            var filePath = Path.Combine(_environment.WebRootPath, uploadFolder, fileName);
+            var webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var filePath = Path.Combine(webRootPath, uploadFolder, fileName);
 
             if (!System.IO.File.Exists(filePath))
             {
@@ -315,7 +318,8 @@ public class FilesController : ControllerBase
             }
 
             var uploadFolder = string.IsNullOrEmpty(folder) ? "uploads" : $"uploads/{folder}";
-            var filePath = Path.Combine(_environment.WebRootPath, uploadFolder, fileName);
+            var webRootPath = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            var filePath = Path.Combine(webRootPath, uploadFolder, fileName);
 
             if (!System.IO.File.Exists(filePath))
             {
