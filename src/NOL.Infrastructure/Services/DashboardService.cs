@@ -136,11 +136,12 @@ public class DashboardService : IDashboardService
 
             var allBookings = await bookingsQuery.ToListAsync();
 
-            var todayRevenue = allBookings.Where(b => b.CreatedAt.Date == today).Sum(b => b.FinalAmount);
-            var weekRevenue = allBookings.Where(b => b.CreatedAt.Date >= weekStart).Sum(b => b.FinalAmount);
-            var monthRevenue = allBookings.Where(b => b.CreatedAt.Date >= monthStart).Sum(b => b.FinalAmount);
-            var yearRevenue = allBookings.Where(b => b.CreatedAt.Date >= yearStart).Sum(b => b.FinalAmount);
-            var previousMonthRevenue = allBookings.Where(b => b.CreatedAt.Date >= previousMonthStart && b.CreatedAt.Date <= previousMonthEnd).Sum(b => b.FinalAmount);
+            // Use StartDate for revenue calculations (when bookings actually started)
+            var todayRevenue = allBookings.Where(b => b.StartDate.Date == today).Sum(b => b.FinalAmount);
+            var weekRevenue = allBookings.Where(b => b.StartDate.Date >= weekStart).Sum(b => b.FinalAmount);
+            var monthRevenue = allBookings.Where(b => b.StartDate.Date >= monthStart).Sum(b => b.FinalAmount);
+            var yearRevenue = allBookings.Where(b => b.StartDate.Date >= yearStart).Sum(b => b.FinalAmount);
+            var previousMonthRevenue = allBookings.Where(b => b.StartDate.Date >= previousMonthStart && b.StartDate.Date <= previousMonthEnd).Sum(b => b.FinalAmount);
 
             var monthlyGrowthPercentage = previousMonthRevenue > 0 
                 ? (double)((monthRevenue - previousMonthRevenue) / previousMonthRevenue) * 100 
@@ -456,7 +457,7 @@ public class DashboardService : IDashboardService
 
         for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
         {
-            var dayBookings = bookings.Where(b => b.CreatedAt.Date == date && b.Status == BookingStatus.Completed).ToList();
+            var dayBookings = bookings.Where(b => b.StartDate.Date == date && b.Status == BookingStatus.Completed).ToList();
 
             dailyRevenue.Add(new DailyRevenueDto
             {
@@ -472,8 +473,8 @@ public class DashboardService : IDashboardService
     private List<MonthlyRevenueDto> GenerateMonthlyRevenue(List<Booking> bookings, DateTime startDate, DateTime endDate)
     {
         var monthlyRevenue = bookings
-            .Where(b => b.CreatedAt >= startDate && b.CreatedAt <= endDate && b.Status == BookingStatus.Completed)
-            .GroupBy(b => new { b.CreatedAt.Year, b.CreatedAt.Month })
+            .Where(b => b.StartDate >= startDate && b.StartDate <= endDate && b.Status == BookingStatus.Completed)
+            .GroupBy(b => new { b.StartDate.Year, b.StartDate.Month })
             .Select(g => new MonthlyRevenueDto
             {
                 Year = g.Key.Year,
@@ -513,7 +514,7 @@ public class DashboardService : IDashboardService
 
         for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
         {
-            var dayBookings = bookings.Where(b => b.CreatedAt.Date == date).ToList();
+            var dayBookings = bookings.Where(b => b.StartDate.Date == date).ToList();
 
             dailyBookings.Add(new DailyBookingDto
             {

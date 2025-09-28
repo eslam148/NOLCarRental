@@ -350,5 +350,11 @@ document.getElementById('uploadForm').addEventListener('submit', async (e) => {
 - Files are stored in `wwwroot/uploads/{folder}/` directory
 - Generated filenames use GUIDs to prevent conflicts
 - Original filenames are preserved in the response
-- File URLs are relative to the web root
+- File URLs are relative to the web root and served as static files
 - All operations are logged with user information
+- **Static file serving is enabled** - uploaded images can be accessed directly via browser
+
+## Accessing Uploaded Files
+Once uploaded, files can be accessed directly in the browser:
+- Upload URL: `/uploads/cars/abc123.jpg`
+- Full URL: `https://yourdomain.com/uploads/cars/abc123.jpg`

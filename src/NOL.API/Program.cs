@@ -255,6 +255,9 @@ var app = builder.Build();
 
 app.UseHttpsRedirection();
 
+// Static Files (for uploaded images/documents)
+app.UseStaticFiles();
+
 // CORS
 app.UseCors("AllowAll");
 
