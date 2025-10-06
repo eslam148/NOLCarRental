@@ -61,6 +61,8 @@ public partial class AdminManagementService : IAdminManagementService
         {
             var query = _userManager.Users.AsQueryable();
 
+            query = query.Where(u => u.UserRole == UserRole.Admin);
+
             // Apply filters
             if (!string.IsNullOrEmpty(filter.Name))
             {
@@ -141,7 +143,7 @@ public partial class AdminManagementService : IAdminManagementService
                 Email = createAdminDto.Email,
                 FullName = createAdminDto.FullName,
                 PhoneNumber = createAdminDto.PhoneNumber,
-                UserRole = createAdminDto.UserRole,
+                UserRole = UserRole.Admin,
                 PreferredLanguage = createAdminDto.PreferredLanguage,
                 IsActive = true,
                 EmailConfirmed = true,

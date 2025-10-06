@@ -59,7 +59,7 @@ public class AdminManagementController : ControllerBase
     /// <param name="createAdminDto">Admin creation data</param>
     /// <returns>Created admin user details</returns>
     [HttpPost]
-    [Authorize(Roles = "SuperAdmin")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<ApiResponse<AdminUserDto>>> CreateAdmin([FromBody] CreateAdminUserDto createAdminDto)
     {
         if (!ModelState.IsValid)

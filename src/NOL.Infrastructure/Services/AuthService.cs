@@ -110,7 +110,8 @@ public class AuthService : IAuthService
             PreferredLanguage = registerDto.PreferredLanguage,
             PhoneNumber = registerDto.PhoneNumber,
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            UpdatedAt = DateTime.UtcNow,
+            UserRole = UserRole.Customer
         };
 
         var result = await _userManager.CreateAsync(user, registerDto.Password);
@@ -119,6 +120,8 @@ public class AuthService : IAuthService
             var errors = result.Errors.Select(e => e.Description).ToList();
             return _responseService.Error<AuthRegisterResponseDto>("ValidationError", errors);
         }
+       var addRoleResut = await  _userManager.AddToRoleAsync(user, "Customer");
+       
        var responseResult =  await SendEmailVerificationAsync(new SendEmailVerificationDto
         {
             Email = user.Email!
