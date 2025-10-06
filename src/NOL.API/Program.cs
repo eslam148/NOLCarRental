@@ -34,6 +34,8 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Hangfire.Dashboard;
+using Refit;
+using NOL.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -239,6 +241,9 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+// External API clients (Refit)
+builder.Services.AddExternalApis(builder.Configuration);
 
 var app = builder.Build();
 
