@@ -7,6 +7,7 @@ using NOL.Application.DTOs.Admin;
 using NOL.Application.DTOs.Common;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 using NOL.Infrastructure.Data;
 
 namespace NOL.Infrastructure.Services;
@@ -707,7 +708,7 @@ public class BranchManagementService : IBranchManagementService
                 DailyPrice = c.DailyRate,
                 WeeklyPrice = c.WeeklyRate,
                 MonthlyPrice = c.MonthlyRate,
-                Status = c.Status,
+                Status = c.Status.GetDescription(),
                 ImageUrl = c.ImageUrl,
                 Description = c.DescriptionEn,
                 Mileage = c.Mileage,

@@ -4,6 +4,7 @@ using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 
 namespace NOL.Application.Features.Bookings;
 
@@ -328,7 +329,7 @@ public class BookingService : IBookingService
                 FuelType = booking.Car.FuelType,
                 DailyPrice = booking.Car.DailyRate,
                
-                Status = booking.Car.Status,
+                Status = booking.Car.Status.GetDescription(),
                 ImageUrl = booking.Car.ImageUrl
             },
             ReceivingBranch = new BranchDto

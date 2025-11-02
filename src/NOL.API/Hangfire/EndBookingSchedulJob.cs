@@ -16,8 +16,8 @@ public class EndBookingSchedulJob
     {
         try
         {
-           await _context.Bookings.Where(x => x.EndDate != null && x.EndDate < DateTime.UtcNow && x.Status <BookingStatus.InProgress )
-                .ExecuteUpdateAsync(x=>x.SetProperty((booking => booking.Status),BookingStatus.Closed));
+           // await _context.Bookings.Where(x => x.EndDate != null && x.EndDate < DateTime.UtcNow && x.Status <BookingStatus.InProgress )
+           //      .ExecuteUpdateAsync(x=>x.SetProperty((booking => booking.Status),BookingStatus.Closed));
         }
         catch (Exception ex)
         {

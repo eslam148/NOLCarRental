@@ -4,6 +4,7 @@ using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 
 namespace NOL.Application.Features.Favorites;
 
@@ -180,7 +181,7 @@ public class FavoriteService : IFavoriteService
                 FuelType = favorite.Car.FuelType,
                 DailyPrice = favorite.Car.DailyRate,
                 
-                Status = favorite.Car.Status,
+                Status = favorite.Car.Status.GetDescription(),
                 ImageUrl = favorite.Car.ImageUrl,
                 Description = isArabic ? favorite.Car.DescriptionAr : favorite.Car.DescriptionEn,
                 Mileage = favorite.Car.Mileage,

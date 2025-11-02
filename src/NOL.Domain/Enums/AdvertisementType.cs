@@ -1,13 +1,30 @@
+using NOL.Domain.Attributes;
+
 namespace NOL.Domain.Enums;
 
 public enum AdvertisementType
 {
-    Special = 1,        // خاص
-    Discount = 2,       // خصم
-    Seasonal = 3,       // موسمي
-    Flash = 4,          // فلاش
-    Weekend = 5,        // عطلة نهاية الأسبوع
-    Holiday = 6,        // عطلة
-    NewArrival = 7,     // جديد
-    Popular = 8         // شائع
+    [LocalizedDescription("Special", "خاص")]
+    Special = 1,
+    
+    [LocalizedDescription("Discount", "خصم")]
+    Discount = 2,
+    
+    [LocalizedDescription("Seasonal", "موسمي")]
+    Seasonal = 3,
+    
+    [LocalizedDescription("Flash", "فلاش")]
+    Flash = 4,
+    
+    [LocalizedDescription("Weekend", "عطلة نهاية الأسبوع")]
+    Weekend = 5,
+    
+    [LocalizedDescription("Holiday", "عطلة")]
+    Holiday = 6,
+    
+    [LocalizedDescription("New Arrival", "جديد")]
+    NewArrival = 7,
+    
+    [LocalizedDescription("Popular", "شائع")]
+    Popular = 8
 } 

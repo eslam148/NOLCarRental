@@ -8,6 +8,7 @@ using NOL.Application.DTOs.Admin;
 using NOL.Application.DTOs.Common;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 using NOL.Infrastructure.Data;
 
 namespace NOL.Infrastructure.Services;
@@ -1163,12 +1164,13 @@ public class CarManagementService : ICarManagementService
             NumberOfDoors = car.NumberOfDoors,
             MaxSpeed = car.MaxSpeed,
             Engine = car.Engine,
-            TransmissionType = car.TransmissionType.ToString(),
+            TransmissionType = car.TransmissionType.GetDescription(),
             FuelType = car.FuelType,
             DailyPrice = car.DailyRate,
             WeeklyPrice = car.WeeklyRate,
             MonthlyPrice = car.MonthlyRate,
-            Status = car.Status,
+            Status = car.Status.GetDescription(),
+            StatusName = car.Status,
             ImageUrl = car.ImageUrl,
             Description = car.DescriptionEn,
             Mileage = car.Mileage,

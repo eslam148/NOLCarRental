@@ -4,6 +4,7 @@ using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 
 namespace NOL.Application.Features.Advertisements;
 
@@ -311,7 +312,7 @@ public class AdvertisementService : IAdvertisementService
                 DailyPrice = advertisement.Car.DailyRate,
                 //WeeklyRate = advertisement.Car.WeeklyRate,
                 //MonthlyRate = advertisement.Car.MonthlyRate,
-                Status = advertisement.Car.Status,
+                Status = advertisement.Car.Status.GetDescription(),
                 ImageUrl = advertisement.Car.ImageUrl
             } : null,
             Category = advertisement.Category != null ? new CategoryDto

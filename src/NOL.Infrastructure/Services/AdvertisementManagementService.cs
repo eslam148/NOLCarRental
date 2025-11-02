@@ -7,6 +7,7 @@ using NOL.Application.DTOs.Admin;
 using NOL.Application.DTOs.Common;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 using NOL.Infrastructure.Data;
 
 namespace NOL.Infrastructure.Services;
@@ -1961,7 +1962,7 @@ public class AdvertisementManagementService : IAdvertisementManagementService
                 DailyPrice = advertisement.Car.DailyRate,
                 WeeklyPrice = advertisement.Car.WeeklyRate,
                 MonthlyPrice = advertisement.Car.MonthlyRate,
-                Status = advertisement.Car.Status,
+                Status = advertisement.Car.Status.GetDescription(),
                 ImageUrl = advertisement.Car.ImageUrl,
                 Description = advertisement.Car.DescriptionEn,
                 Mileage = advertisement.Car.Mileage,

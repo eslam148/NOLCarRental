@@ -20,7 +20,9 @@ public class CarDto
     public decimal WeeklyPrice { get; set; }
     public decimal MonthlyPrice { get; set; }
 
-    public CarStatus Status { get; set; }
+    public CarStatus StatusName{ get; set; }
+    public string Status { get; set; }
+    
     public string? ImageUrl { get; set; }
     public string? Description { get; set; }
     public int Mileage { get; set; }

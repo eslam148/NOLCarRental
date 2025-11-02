@@ -3,6 +3,7 @@ using NOL.Application.Common.Responses;
 using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 
 namespace NOL.Application.Features.Cars;
 
@@ -150,7 +151,7 @@ public class CarService : ICarService
             WeeklyPrice = car.WeeklyRate,
             MonthlyPrice = car.MonthlyRate,
             
-            Status = car.Status,
+            Status = car.Status.GetDescription(),
             ImageUrl = car.ImageUrl,
             Description = isArabic ? car.DescriptionAr : car.DescriptionEn,
             Mileage = car.Mileage,

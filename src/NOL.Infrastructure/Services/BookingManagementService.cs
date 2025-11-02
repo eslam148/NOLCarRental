@@ -8,6 +8,7 @@ using NOL.Application.DTOs;
 using NOL.Application.DTOs.Admin;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 using NOL.Infrastructure.Data;
 
 namespace NOL.Infrastructure.Services;
@@ -1203,7 +1204,7 @@ public class BookingManagementService : IBookingManagementService
                 DailyPrice = booking.Car?.DailyRate ?? 0,
                 WeeklyPrice = booking.Car?.WeeklyRate ?? 0,
                 MonthlyPrice = booking.Car?.MonthlyRate ?? 0,
-                Status = booking.Car?.Status ?? CarStatus.Available,
+                Status = booking.Car?.Status.GetDescription() ?? CarStatus.Available.GetDescription(),
                 ImageUrl = booking.Car?.ImageUrl,
                 Description = booking.Car?.DescriptionEn,
                 Mileage = booking.Car?.Mileage ?? 0

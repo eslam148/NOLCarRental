@@ -1,10 +1,21 @@
+using NOL.Domain.Attributes;
+
 namespace NOL.Domain.Enums;
 
 public enum AdvertisementStatus
 {
-    Draft = 1,          // مسودة
-    Active = 2,         // نشط
-    Paused = 3,         // متوقف مؤقتاً
-    Expired = 4,        // منتهي الصلاحية
-    Canceled = 5        // ملغي
+    [LocalizedDescription("Draft", "مسودة")]
+    Draft = 1,
+    
+    [LocalizedDescription("Active", "نشط")]
+    Active = 2,
+    
+    [LocalizedDescription("Paused", "متوقف مؤقتاً")]
+    Paused = 3,
+    
+    [LocalizedDescription("Expired", "منتهي الصلاحية")]
+    Expired = 4,
+    
+    [LocalizedDescription("Canceled", "ملغي")]
+    Canceled = 5
 } 
