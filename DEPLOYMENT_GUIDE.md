@@ -32,7 +32,7 @@ GitHub Secrets store sensitive information securely. You need to add your hostin
 | `FTP_SERVER` | `site29943.siteasp.net` | FTP server address |
 | `FTP_USERNAME` | `site29943` | FTP username |
 | `FTP_PASSWORD` | `sE_3J#5ptZ%8` | FTP password |
-| `FTP_SERVER_DIR` | `./` | Root directory (or specific path) |
+| `FTP_SERVER_DIR` | `./wwwroot/` | Web root directory (all files go here) |
 | `APP_URL` | `https://site29943.siteasp.net` | Your app URL |
 
 **Important:** Never commit passwords to GitHub! Always use Secrets.
@@ -101,18 +101,20 @@ git push
 
 ## 📁 Files Deployed
 
-The following files are deployed to your server:
+The following files are deployed to your server's `wwwroot` folder (web root):
 
 ```
-site29943.siteasp.net/
-├── NOL.API.dll
+site29943.siteasp.net/wwwroot/
+├── NOL.API.dll (main application)
 ├── appsettings.json
 ├── appsettings.Production.json
 ├── web.config (IIS configuration)
-├── wwwroot/ (static files)
+├── wwwroot/ (static files - images, uploads, etc.)
 ├── All dependencies (.dll files)
 └── logs/ (created automatically)
 ```
+
+**Important:** On SiteASP.NET, the `wwwroot` folder is the web root directory. All application files must be deployed there to be accessible.
 
 **Note:** `appsettings.Development.json` and `.pdb` files are **excluded** from deployment.
 
