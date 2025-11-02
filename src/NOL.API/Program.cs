@@ -36,6 +36,7 @@ using System.Text.Json.Serialization;
 using Hangfire.Dashboard;
 using Refit;
 using NOL.API.Extensions;
+using NOL.Application.Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -171,6 +172,9 @@ builder.Services.AddScoped<IDashboardService, NOL.Infrastructure.Services.Dashbo
 builder.Services.AddScoped<ISystemManagementService, NOL.Infrastructure.Services.SystemManagementService>();
 builder.Services.AddScoped<IExtraTypePriceManagementService, NOL.Infrastructure.Services.ExtraTypePriceManagementService>();
 
+// Hangfire Jobs
+builder.Services.AddScoped<NOL.Application.Hangfire.EndBookingSchedulJob>();
+
 // Additional Management Services (Interfaces created, implementations can be added later)
 // builder.Services.AddScoped<INotificationManagementService, NOL.Infrastructure.Services.NotificationManagementService>();
 // builder.Services.AddScoped<IAuditLogService, NOL.Infrastructure.Services.AuditLogService>();
@@ -299,6 +303,7 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedAsync(context, userManager, roleManager);
 }
 
+app.ScheduleJobs();
 app.Run();
 
 public class EnumSchemaFilter : ISchemaFilter
