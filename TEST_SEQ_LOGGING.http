@@ -1,0 +1,206 @@
+### 🧪 Seq Logging & Exception Handling Tests
+### Click "Send Request" above each test to execute it
+### Then check Seq: https://seq-production-43df.up.railway.app/
+
+@baseUrl = https://localhost:7001
+# or
+# @baseUrl = http://localhost:5000
+
+###############################################
+### 📋 Test Configuration
+###############################################
+
+### Get all available test endpoints
+GET {{baseUrl}}/api/logtest/config
+
+###############################################
+### ✅ BASIC LOGGING TESTS
+###############################################
+
+### Test 1: Simple Information Log
+GET {{baseUrl}}/api/logtest/test-info
+
+###
+
+### Test 2: User Activity Logging
+GET {{baseUrl}}/api/logtest/test-user-activity
+
+###
+
+### Test 3: Booking Activity Logging
+GET {{baseUrl}}/api/logtest/test-booking-activity
+
+###
+
+### Test 4: Payment Activity Logging
+GET {{baseUrl}}/api/logtest/test-payment-activity
+
+###
+
+### Test 5: Car Activity Logging
+GET {{baseUrl}}/api/logtest/test-car-activity
+
+###
+
+### Test 6: Authentication Logging
+GET {{baseUrl}}/api/logtest/test-authentication
+
+###
+
+### Test 7: Warning Logs
+GET {{baseUrl}}/api/logtest/test-warning
+
+###
+
+### Test 8: Performance Logging
+GET {{baseUrl}}/api/logtest/test-performance
+
+###
+
+### Test 9: Structured Logging (Objects)
+GET {{baseUrl}}/api/logtest/test-structured
+
+###
+
+### Test 10: All Log Levels
+GET {{baseUrl}}/api/logtest/test-all-levels
+
+###
+
+###############################################
+### 🔥 EXCEPTION HANDLING TESTS
+###############################################
+
+### Test 11: 404 Not Found Exception
+GET {{baseUrl}}/api/logtest/test-exception-notfound
+# Expected: 404 status code + error logged to Seq
+
+###
+
+### Test 12: 400 Bad Request Exception
+GET {{baseUrl}}/api/logtest/test-exception-badrequest
+# Expected: 400 status code + error logged to Seq
+
+###
+
+### Test 13: 401 Unauthorized Exception
+GET {{baseUrl}}/api/logtest/test-exception-unauthorized
+# Expected: 401 status code + error logged to Seq
+
+###
+
+### Test 14: 409 Conflict Exception
+GET {{baseUrl}}/api/logtest/test-exception-conflict
+# Expected: 409 status code + error logged to Seq
+
+###
+
+### Test 15: 500 Server Error Exception
+GET {{baseUrl}}/api/logtest/test-exception-servererror
+# Expected: 500 status code + error logged to Seq
+
+###
+
+###############################################
+### 🎯 COMPLETE FLOW TEST
+###############################################
+
+### Test 16: Complete Booking Flow (Multiple Logs)
+GET {{baseUrl}}/api/logtest/test-complete-flow
+# This will generate 7+ log entries showing a complete booking process
+
+###
+
+###############################################
+### 🔍 SEARCH IN SEQ
+###############################################
+
+# After running tests, go to Seq and try these searches:
+
+# All errors:
+# @Level = 'Error'
+
+# User activity:
+# UserId = 'user-123'
+
+# Booking activity:
+# BookingId = 1001
+
+# Payment logs:
+# @Message like '%Payment%'
+
+# Failed authentication:
+# @Level = 'Warning' and @Message like '%Authentication%'
+
+# Slow performance:
+# Milliseconds > 1000
+
+# Complete flow:
+# UserId = 'user-789'
+
+###############################################
+### 📊 WHAT TO CHECK IN SEQ
+###############################################
+
+# 1. Open: https://seq-production-43df.up.railway.app/
+# 2. You should see logs appearing in real-time
+# 3. Click on any log to see full details
+# 4. Use the search bar to filter logs
+# 5. Check the structured data (expand the log entries)
+
+###############################################
+### 🚦 STEP-BY-STEP TESTING GUIDE
+###############################################
+
+# Step 1: Start your API
+# cd "/media/eslam/New Volume/NOL Work/NOLCarRental/src/NOL.API"
+# dotnet run
+
+# Step 2: Open Seq in browser
+# https://seq-production-43df.up.railway.app/
+
+# Step 3: Run Test 1 (Simple Info Log)
+# Click "Send Request" above Test 1
+# Check Seq - you should see the log appear!
+
+# Step 4: Run Test 16 (Complete Flow)
+# This generates multiple logs showing a real scenario
+
+# Step 5: Test Exception Handling
+# Run any exception test (Test 11-15)
+# Check:
+#   - API returns proper error response
+#   - Exception is logged in Seq with full details
+#   - Stack trace is visible
+
+# Step 6: Search in Seq
+# Try the search queries mentioned above
+
+###############################################
+### 💡 TIPS
+###############################################
+
+# - Run tests one by one to see individual logs
+# - Use the "Complete Flow" test to see multiple related logs
+# - Exception tests will return errors - that's expected!
+# - All logs include TraceId for tracking
+# - Structured logs show full object details in Seq
+# - You can filter by any property in Seq
+
+###############################################
+### 🎨 BONUS: Real Request Logging
+###############################################
+
+### Make a real API call to see request logging
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: ar
+
+# This will log:
+# - HTTP request details
+# - Response time
+# - Status code
+# - User agent
+# - IP address
+
+###
+

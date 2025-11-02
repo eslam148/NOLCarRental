@@ -1,0 +1,68 @@
+### 🌐 Quick Test - Enum Localization
+### Just click "Send Request" above each section!
+
+@baseUrl = https://localhost:7001
+
+#########################################
+### 🇬🇧 TEST 1: Get Booking Statuses in ENGLISH
+#########################################
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: en
+
+###
+
+#########################################
+### 🇸🇦 TEST 2: Get Booking Statuses in ARABIC
+#########################################
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: ar
+
+###
+
+#########################################
+### 🚗 TEST 3: Get Car Statuses in ARABIC
+#########################################
+GET {{baseUrl}}/api/enums/car-statuses
+Accept-Language: ar
+
+###
+
+#########################################
+### ⛽ TEST 4: Get Fuel Types in ARABIC
+#########################################
+GET {{baseUrl}}/api/enums/fuel-types
+Accept-Language: ar
+
+###
+
+#########################################
+### 🔧 TEST 5: Get Transmission Types in ARABIC
+#########################################
+GET {{baseUrl}}/api/enums/transmission-types
+Accept-Language: ar
+
+###
+
+#########################################
+### 💳 TEST 6: Get Payment Methods in ARABIC
+#########################################
+GET {{baseUrl}}/api/enums/payment-methods
+Accept-Language: ar
+
+###
+
+#########################################
+### 📊 TEST 7: Example Endpoint (Mixed)
+#########################################
+GET {{baseUrl}}/api/enums/example
+Accept-Language: ar
+
+###
+
+#########################################
+### 🔗 TEST 8: Using Query String (Alternative)
+#########################################
+GET {{baseUrl}}/api/enums/booking-statuses?culture=ar
+
+###
+

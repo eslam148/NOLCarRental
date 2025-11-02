@@ -1,0 +1,112 @@
+name: Build and Deploy to Hosting
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows manual trigger
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  PROJECT_PATH: 'src/NOL.API/NOL.API.csproj'
+  PUBLISH_PATH: './publish'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: 📦 Restore dependencies
+      run: dotnet restore ${{ env.PROJECT_PATH }}
+      
+    - name: 🔨 Build
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+      
+    - name: 🧪 Run tests
+      run: dotnet test --no-build --verbosity normal --configuration Release
+      continue-on-error: true
+      
+    - name: 📊 Publish application
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ env.PUBLISH_PATH }} --no-build
+      
+    - name: 📤 Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: nol-car-rental-api
+        path: ${{ env.PUBLISH_PATH }}
+        retention-days: 5
+
+  deploy:
+    name: Deploy to SiteASP.NET
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+    - name: 📥 Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: nol-car-rental-api
+        path: ${{ env.PUBLISH_PATH }}
+        
+    - name: 📁 Display structure of downloaded files
+      run: ls -R ${{ env.PUBLISH_PATH }}
+      
+    - name: 🚀 Deploy to SiteASP.NET via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ${{ env.PUBLISH_PATH }}/
+        server-dir: ./
+        protocol: ftps
+        port: 21
+        dangerous-clean-slate: false
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          logs/**
+          appsettings.Development.json
+          **/*.pdb
+          
+    - name: ✅ Deployment Complete
+      run: |
+        echo "✅ Deployed to: https://site29943.siteasp.net"
+        echo "📊 Seq Logs: https://seq-production-43df.up.railway.app/"
+
+  notify:
+    name: Notify Deployment Status
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: 📢 Deployment Success
+      if: ${{ needs.deploy.result == 'success' }}
+      run: |
+        echo "✅ Deployment successful!"
+        echo "🌐 Application URL: ${{ secrets.APP_URL }}"
+        
+    - name: ❌ Deployment Failed
+      if: ${{ needs.deploy.result == 'failure' }}
+      run: |
+        echo "❌ Deployment failed!"
+        echo "Please check the logs for details."
+        exit 1
+

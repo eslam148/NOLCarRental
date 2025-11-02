@@ -1,0 +1,175 @@
+### Test Enum Localization with Different Languages
+### The API automatically detects language from Accept-Language header
+
+@baseUrl = https://localhost:7001
+# or
+# @baseUrl = http://localhost:5000
+
+### 1. Get Booking Statuses in ENGLISH (default)
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: en
+
+### Expected Response:
+# [
+#   { "value": 1, "name": "Open", "localizedName": "Open" },
+#   { "value": 2, "name": "Confirmed", "localizedName": "Confirmed" },
+#   { "value": 3, "name": "InProgress", "localizedName": "In Progress" },
+#   { "value": 4, "name": "Completed", "localizedName": "Completed" },
+#   { "value": 5, "name": "Canceled", "localizedName": "Canceled" },
+#   { "value": 6, "name": "Closed", "localizedName": "Closed" }
+# ]
+
+### 2. Get Booking Statuses in ARABIC
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: ar
+
+### Expected Response:
+# [
+#   { "value": 1, "name": "Open", "localizedName": "مفتوح" },
+#   { "value": 2, "name": "Confirmed", "localizedName": "مؤكد" },
+#   { "value": 3, "name": "InProgress", "localizedName": "قيد التنفيذ" },
+#   { "value": 4, "name": "Completed", "localizedName": "مكتمل" },
+#   { "value": 5, "name": "Canceled", "localizedName": "ملغي" },
+#   { "value": 6, "name": "Closed", "localizedName": "مغلق" }
+# ]
+
+### 3. Alternative: Use Query String for Arabic
+GET {{baseUrl}}/api/enums/booking-statuses?culture=ar
+
+### 4. Get Car Statuses in Arabic
+GET {{baseUrl}}/api/enums/car-statuses
+Accept-Language: ar
+
+### Expected Response:
+# [
+#   { "value": 1, "name": "Available", "localizedName": "متاح" },
+#   { "value": 2, "name": "Rented", "localizedName": "مؤجر" },
+#   { "value": 3, "name": "Maintenance", "localizedName": "صيانة" },
+#   { "value": 4, "name": "OutOfService", "localizedName": "خارج الخدمة" }
+# ]
+
+### 5. Get Fuel Types in Arabic
+GET {{baseUrl}}/api/enums/fuel-types
+Accept-Language: ar
+
+### Expected Response:
+# [
+#   { "value": 1, "name": "Gasoline", "localizedName": "بنزين" },
+#   { "value": 2, "name": "Diesel", "localizedName": "ديزل" },
+#   { "value": 3, "name": "Hybrid", "localizedName": "هجين" },
+#   { "value": 4, "name": "Electric", "localizedName": "كهربائي" },
+#   { "value": 5, "name": "PluginHybrid", "localizedName": "هجين قابل للشحن" }
+# ]
+
+### 6. Get Transmission Types in English
+GET {{baseUrl}}/api/enums/transmission-types
+Accept-Language: en
+
+### 7. Get Payment Methods in Arabic
+GET {{baseUrl}}/api/enums/payment-methods
+Accept-Language: ar
+
+### Expected Response:
+# [
+#   { "value": 1, "name": "Cash", "localizedName": "نقدي" },
+#   { "value": 2, "name": "CreditCard", "localizedName": "بطاقة ائتمان" },
+#   { "value": 3, "name": "DebitCard", "localizedName": "بطاقة خصم" },
+#   { "value": 4, "name": "BankTransfer", "localizedName": "تحويل بنكي" },
+#   { "value": 5, "name": "DigitalWallet", "localizedName": "محفظة رقمية" },
+#   { "value": 6, "name": "ApplePay", "localizedName": "آبل باي" },
+#   { "value": 7, "name": "GooglePay", "localizedName": "جوجل باي" },
+#   { "value": 8, "name": "STCPay", "localizedName": "اس تي سي باي" }
+# ]
+
+### 8. Get Payment Statuses in Arabic
+GET {{baseUrl}}/api/enums/payment-statuses
+Accept-Language: ar
+
+### 9. Get Extra Types in Arabic
+GET {{baseUrl}}/api/enums/extra-types
+Accept-Language: ar
+
+### 10. Get Advertisement Statuses in Arabic
+GET {{baseUrl}}/api/enums/advertisement-statuses
+Accept-Language: ar
+
+### 11. Get Advertisement Types in Arabic
+GET {{baseUrl}}/api/enums/advertisement-types
+Accept-Language: ar
+
+### 12. Get Loyalty Point Transaction Types in Arabic
+GET {{baseUrl}}/api/enums/loyalty-point-transaction-types
+Accept-Language: ar
+
+### 13. Get Loyalty Point Earn Reasons in Arabic
+GET {{baseUrl}}/api/enums/loyalty-point-earn-reasons
+Accept-Language: ar
+
+### 14. Get Notification Types in Arabic
+GET {{baseUrl}}/api/enums/notification-types
+Accept-Language: ar
+
+### 15. Get User Roles in Arabic
+GET {{baseUrl}}/api/enums/user-roles
+Accept-Language: ar
+
+### 16. Get Languages in Arabic
+GET {{baseUrl}}/api/enums/languages
+Accept-Language: ar
+
+### Expected Response:
+# [
+#   { "value": 1, "name": "Arabic", "localizedName": "العربية" },
+#   { "value": 2, "name": "English", "localizedName": "الإنجليزية" }
+# ]
+
+### 17. Test Example Endpoint (Shows all methods)
+GET {{baseUrl}}/api/enums/example
+Accept-Language: ar
+
+### 18. Test with Multiple Cultures in Header (ar preferred)
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: ar, en;q=0.9
+
+### 19. Test with Multiple Cultures in Header (en preferred)
+GET {{baseUrl}}/api/enums/booking-statuses
+Accept-Language: en, ar;q=0.9
+
+### 20. No Accept-Language Header (defaults to English)
+GET {{baseUrl}}/api/enums/booking-statuses
+
+###############################################
+# CURL Examples for Command Line Testing
+###############################################
+
+### English Request:
+# curl -H "Accept-Language: en" http://localhost:5000/api/enums/booking-statuses
+
+### Arabic Request:
+# curl -H "Accept-Language: ar" http://localhost:5000/api/enums/booking-statuses
+
+### Using Query String:
+# curl "http://localhost:5000/api/enums/booking-statuses?culture=ar"
+
+###############################################
+# Integration in Your Mobile/Web App
+###############################################
+
+### React/JavaScript Example:
+# fetch('/api/enums/booking-statuses', {
+#   headers: {
+#     'Accept-Language': 'ar'  // or 'en'
+#   }
+# })
+
+### Flutter/Dart Example:
+# http.get(
+#   Uri.parse('https://api.example.com/api/enums/booking-statuses'),
+#   headers: {'Accept-Language': 'ar'}
+# )
+
+### Axios Example:
+# axios.get('/api/enums/booking-statuses', {
+#   headers: { 'Accept-Language': 'ar' }
+# })
+
