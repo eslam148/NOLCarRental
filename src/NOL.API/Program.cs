@@ -10,6 +10,8 @@ using NOL.API.Middleware;
 using NOL.API.Resources;
 using NOL.API.Services;
 using NOL.Application.Common.Interfaces;
+using Serilog;
+using Serilog.Events;
 using NOL.Application.Common.Interfaces.Admin;
 using NOL.Application.Common.Models;
 using NOL.Application.Common.Services;
@@ -38,7 +40,27 @@ using Refit;
 using NOL.API.Extensions;
 using NOL.Application.Hangfire;
 
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json")
+        .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", true)
+        .Build())
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("Application", "NOL Car Rental API")
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .Enrich.WithEnvironmentName()
+    .CreateLogger();
+
+try
+{
+    Log.Information("Starting NOL Car Rental API application");
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Use Serilog for logging
+builder.Host.UseSerilog();
 
 // Database Configuration
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -262,6 +284,28 @@ var app = builder.Build();
     });
 //}
 
+// Add Serilog request logging
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.GetLevel = (httpContext, elapsed, ex) => ex != null
+        ? LogEventLevel.Error
+        : httpContext.Response.StatusCode > 499
+            ? LogEventLevel.Error
+            : LogEventLevel.Information;
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("RequestScheme", httpContext.Request.Scheme);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
+        diagnosticContext.Set("RemoteIP", httpContext.Connection.RemoteIpAddress?.ToString());
+        diagnosticContext.Set("User", httpContext.User?.Identity?.Name ?? "Anonymous");
+    };
+});
+
+// Global exception handler (must be early in pipeline)
+app.UseGlobalExceptionHandler();
+
 app.UseHttpsRedirection();
 
 // Static Files (for uploaded images/documents)
@@ -304,7 +348,18 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.ScheduleJobs();
-app.Run();
+
+    Log.Information("NOL Car Rental API started successfully");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 
 public class EnumSchemaFilter : ISchemaFilter
 {
