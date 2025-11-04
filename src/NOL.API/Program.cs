@@ -257,15 +257,25 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS
+// CORS Configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .WithExposedHeaders("Content-Disposition", "Content-Length");
     });
+    
+    // If you need credentials (cookies, auth headers), use this instead:
+    // options.AddPolicy("AllowAll", policy =>
+    // {
+    //     policy.WithOrigins("https://your-frontend-domain.com")
+    //           .AllowAnyMethod()
+    //           .AllowAnyHeader()
+    //           .AllowCredentials();
+    // });
 });
 
 // External API clients (Refit)
