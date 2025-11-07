@@ -18,7 +18,7 @@ public class EmailService : IEmailService
         _emailSettings = emailSettings.Value;
 
     }
-    private async void sendAsync(string email, string subject, string body)
+    private async Task sendAsync(string email, string subject, string body)
     {
         //var client = new SmtpClient("sandbox.smtp.mailtrap.io", 2525)
         //{
@@ -129,7 +129,7 @@ public class EmailService : IEmailService
             _logger.LogInformation($"Welcome email sent to {email} ({firstName})");
 
 
-            sendAsync(email, "Password Reset OTP", $"Welcome email sent to {email} ({firstName})");
+          await  sendAsync(email, "Password Reset OTP", $"Welcome email sent to {email} ({firstName})");
 
 
 
@@ -262,7 +262,7 @@ public class EmailService : IEmailService
                 </body>
                 </html>";
 
-            sendAsync(email, subject, body);
+           await sendAsync(email, subject, body);
             return true;
         }
         catch (Exception ex)
@@ -373,7 +373,7 @@ public class EmailService : IEmailService
                 </body>
                 </html>";
 
-            sendAsync(email, subject, body);
+           await sendAsync(email, subject, body);
             return true;
         }
         catch (Exception ex)
@@ -385,7 +385,7 @@ public class EmailService : IEmailService
 
 
 
-    public   void SendOtpEmailAsync(string email, string otp, bool isPasswordReset)
+    public async  Task SendOtpEmailAsync(string email, string otp, bool isPasswordReset)
     {
         string subject = isPasswordReset ? "Password Reset OTP" : "Email Verification OTP";
         string purpose = isPasswordReset ? "reset your password" : "verify your email";
@@ -485,7 +485,7 @@ public class EmailService : IEmailService
                                      </body>
                                      </html>";
 
-          sendAsync(email, subject, body);
+         await sendAsync(email, subject, body);
     }
 
     public async Task<bool> SendPasswordChangeNotificationAsync(string email, string firstName)
@@ -583,7 +583,7 @@ public class EmailService : IEmailService
                 </body>
                 </html>";
 
-            sendAsync(email, subject, body);
+          await  sendAsync(email, subject, body);
             return true;
         }
         catch (Exception ex)
@@ -702,7 +702,7 @@ public class EmailService : IEmailService
                 </body>
                 </html>";
 
-            sendAsync(email, subject, body);
+           await sendAsync(email, subject, body);
             return true;
         }
         catch (Exception ex)
@@ -809,7 +809,7 @@ public class EmailService : IEmailService
                 </body>
                 </html>";
 
-            sendAsync(email, subject, body);
+          await  sendAsync(email, subject, body);
             return true;
         }
         catch (Exception ex)
