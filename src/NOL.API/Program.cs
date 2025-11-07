@@ -316,6 +316,9 @@ app.UseSerilogRequestLogging(options =>
 // Global exception handler (must be early in pipeline)
 app.UseGlobalExceptionHandler();
 
+// Request logging with cURL commands
+app.UseRequestLogging();
+
 app.UseHttpsRedirection();
 
 // Static Files (for uploaded images/documents)
