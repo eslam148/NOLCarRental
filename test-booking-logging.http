@@ -1,0 +1,207 @@
+### Test Booking Request Body Logging in Seq
+### After running these tests, check Seq: https://seq-production-43df.up.railway.app/
+
+@baseUrl = https://nolrental.runasp.net
+@token = YOUR_JWT_TOKEN_HERE
+
+###############################################
+### 🔐 Step 1: Login to Get Token
+###############################################
+
+### Login and get JWT token
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "your-email@example.com",
+  "password": "YourPassword123"
+}
+
+# Copy the token from response and paste it in @token variable above
+
+###############################################
+### 📋 Step 2: Test CreateBooking with Logging
+###############################################
+
+### Test 1: Create Booking (Full Request Body Logged)
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "carId": 1,
+  "startDate": "2024-12-20T10:00:00Z",
+  "endDate": "2024-12-25T10:00:00Z",
+  "pickupBranchId": 1,
+  "returnBranchId": 1,
+  "extras": [1, 2, 3],
+  "paymentMethod": "CreditCard",
+  "notes": "Need GPS and child seat"
+}
+
+# What gets logged:
+# 1. Full request body with all fields
+# 2. User ID from token
+# 3. Processing steps
+# 4. Success with BookingId
+# OR Error with exception details
+
+###
+
+### Test 2: Create Booking (Different Data)
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "carId": 5,
+  "startDate": "2024-12-15T14:00:00Z",
+  "endDate": "2024-12-18T14:00:00Z",
+  "pickupBranchId": 2,
+  "returnBranchId": 3,
+  "extras": [],
+  "paymentMethod": "Cash",
+  "notes": "Airport pickup required"
+}
+
+###
+
+### Test 3: Invalid Booking (To Test Error Logging)
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "carId": 99999,
+  "startDate": "2024-12-20T10:00:00Z",
+  "endDate": "2024-12-25T10:00:00Z",
+  "pickupBranchId": 1,
+  "returnBranchId": 1,
+  "extras": [],
+  "paymentMethod": "CreditCard"
+}
+
+# This should fail (invalid carId) and log error with full request details
+
+###
+
+### Test 4: Unauthorized Request (No Token)
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+
+{
+  "carId": 1,
+  "startDate": "2024-12-20T10:00:00Z",
+  "endDate": "2024-12-25T10:00:00Z",
+  "pickupBranchId": 1,
+  "returnBranchId": 1
+}
+
+# This should log: "Unauthorized attempt. No UserId found in token"
+
+###
+
+###############################################
+### 🔍 Step 3: Search in Seq
+###############################################
+
+# After running the tests above, go to Seq and try these queries:
+
+# Query 1: All CreateBooking requests
+# @Message like '%CreateBooking Request%'
+
+# Query 2: Successful bookings
+# @Message like '%Booking created successfully%'
+
+# Query 3: Failed bookings
+# @Message like '%Failed to create booking%' or (@Message like '%CreateBooking%' and @Level = 'Error')
+
+# Query 4: Specific user's bookings
+# UserId = 'your-user-id' and @Message like '%CreateBooking%'
+
+# Query 5: Bookings for specific car
+# CarId = 501 and @Message like '%CreateBooking%'
+
+# Query 6: Unauthorized attempts
+# @Message like '%CreateBooking - Unauthorized%'
+
+# Query 7: Last hour's booking requests
+# @Timestamp > Now() - 1h and @Message like '%CreateBooking%'
+
+# Query 8: Bookings with specific payment method
+# CreateBookingDto.PaymentMethod = 'CreditCard'
+
+###############################################
+### 📊 What You'll See in Seq
+###############################################
+
+# For a successful booking, you'll see 3 logs:
+
+# Log 1: Request Received
+# {
+#   "Message": "CreateBooking Request",
+#   "UserId": "user-123",
+#   "CreateBookingDto": {
+#     "carId": 501,
+#     "startDate": "2024-12-20",
+#     ...all fields...
+#   }
+# }
+
+# Log 2: Processing
+# {
+#   "Message": "Creating booking for User...",
+#   "UserId": "user-123",
+#   "CarId": 501,
+#   "StartDate": "2024-12-20",
+#   "EndDate": "2024-12-25"
+# }
+
+# Log 3: Success
+# {
+#   "Message": "Booking created successfully",
+#   "BookingId": 1001,
+#   "UserId": "user-123",
+#   "CarId": 501
+# }
+
+###############################################
+### 💡 Tips
+###############################################
+
+# 1. Click on any log in Seq to see full details
+# 2. Use the @ prefix to see structured data
+# 3. Create saved queries for common searches
+# 4. Set up alerts for failed bookings
+# 5. Export logs for analysis if needed
+
+###############################################
+### 🎯 Frontend Testing
+###############################################
+
+# After verifying logs work, test from your frontend:
+
+# JavaScript/React:
+# ```javascript
+# fetch('https://nolrental.runasp.net/api/bookings', {
+#   method: 'POST',
+#   headers: {
+#     'Content-Type': 'application/json',
+#     'Authorization': 'Bearer ' + token,
+#     'Accept-Language': 'ar'
+#   },
+#   body: JSON.stringify({
+#     carId: 1,
+#     startDate: '2024-12-20T10:00:00Z',
+#     endDate: '2024-12-25T10:00:00Z',
+#     pickupBranchId: 1,
+#     returnBranchId: 1
+#   })
+# })
+# .then(r => r.json())
+# .then(data => console.log('Booking created:', data))
+# .catch(e => console.error('Error:', e));
+# ```
+
+###
+
