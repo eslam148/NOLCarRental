@@ -1,0 +1,214 @@
+### Test cURL Command Logging in Seq
+### After each request, check Seq to see the cURL command
+### Seq: https://seq-production-43df.up.railway.app/
+### Search: @Message like '%HTTP Request%'
+
+@baseUrl = https://nolrental.runasp.net
+@token = YOUR_JWT_TOKEN_HERE
+
+###############################################
+### 🧪 Test 1: Simple GET Request
+###############################################
+
+### Simple GET - Check cURL in Seq
+GET {{baseUrl}}/api/enums/booking-statuses
+
+# Expected in Seq:
+# CurlCommand: curl -X GET 'https://nolrental.runasp.net/api/enums/booking-statuses' -H 'Content-Type: application/json'
+
+###
+
+###############################################
+### 🧪 Test 2: GET with Query Parameters
+###############################################
+
+### GET with query params - cURL will include them
+GET {{baseUrl}}/api/admin/cars?sortBy=createdAt&sortOrder=desc&page=1&pageSize=10
+
+# Expected in Seq:
+# CurlCommand: curl -X GET 'https://nolrental.runasp.net/api/admin/cars?sortBy=createdAt&sortOrder=desc&page=1&pageSize=10' ...
+
+###
+
+###############################################
+### 🧪 Test 3: GET with Custom Headers
+###############################################
+
+### GET with Accept-Language header
+GET {{baseUrl}}/api/enums/fuel-types
+Accept-Language: ar
+Content-Type: application/json
+
+# Expected in Seq:
+# CurlCommand: curl -X GET 'https://nolrental.runasp.net/api/enums/fuel-types' -H 'Accept-Language: ar' -H 'Content-Type: application/json'
+
+###
+
+###############################################
+### 🧪 Test 4: POST with JSON Body
+###############################################
+
+### POST request with body - Full cURL with -d flag
+POST {{baseUrl}}/api/test
+Content-Type: application/json
+
+{
+  "test": "data",
+  "number": 123,
+  "array": [1, 2, 3]
+}
+
+# Expected in Seq:
+# CurlCommand: curl -X POST 'https://nolrental.runasp.net/api/test' -H 'Content-Type: application/json' -d '{"test":"data","number":123,"array":[1,2,3]}'
+# RequestBody: {"test":"data","number":123,"array":[1,2,3]}
+
+###
+
+###############################################
+### 🧪 Test 5: POST with Authorization
+###############################################
+
+### POST with auth token - Token will be partially redacted
+POST {{baseUrl}}/api/bookings
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Accept-Language: ar
+
+{
+  "carId": 1,
+  "startDate": "2024-12-20T10:00:00Z",
+  "endDate": "2024-12-25T10:00:00Z",
+  "pickupBranchId": 1,
+  "returnBranchId": 1,
+  "extras": [1, 2],
+  "paymentMethod": "CreditCard",
+  "notes": "Weekend rental"
+}
+
+# Expected in Seq:
+# CurlCommand: curl -X POST 'https://nolrental.runasp.net/api/bookings' -H 'Content-Type: application/json' -H 'Authorization: Bearer eyJhbGc...***REDACTED***' -H 'Accept-Language: ar' -d '{...}'
+# RequestBody: Full JSON body
+# Plus CreateBooking-specific logs from BookingsController
+
+###
+
+###############################################
+### 🧪 Test 6: Multiple Headers
+###############################################
+
+### Request with multiple custom headers
+GET {{baseUrl}}/api/enums/payment-methods
+Accept-Language: ar
+Content-Type: application/json
+User-Agent: MyTestApp/1.0
+Accept: application/json
+
+# Expected in Seq:
+# CurlCommand with all headers: curl -X GET '...' -H 'Accept-Language: ar' -H 'Content-Type: application/json' -H 'User-Agent: MyTestApp/1.0' -H 'Accept: application/json'
+
+###
+
+###############################################
+### 🧪 Test 7: PUT Request
+###############################################
+
+### PUT request
+PUT {{baseUrl}}/api/test/123
+Content-Type: application/json
+
+{
+  "id": 123,
+  "name": "Updated Name",
+  "status": "Active"
+}
+
+# Expected in Seq:
+# CurlCommand: curl -X PUT 'https://nolrental.runasp.net/api/test/123' -H 'Content-Type: application/json' -d '{"id":123,"name":"Updated Name","status":"Active"}'
+
+###
+
+###############################################
+### 🧪 Test 8: DELETE Request
+###############################################
+
+### DELETE request
+DELETE {{baseUrl}}/api/test/456
+Authorization: Bearer {{token}}
+
+# Expected in Seq:
+# CurlCommand: curl -X DELETE 'https://nolrental.runasp.net/api/test/456' -H 'Authorization: Bearer ...***REDACTED***'
+
+###
+
+###############################################
+### 🔍 Seq Search Queries to Try
+###############################################
+
+# After running the tests, try these in Seq:
+
+# 1. All requests:
+# @Message like '%HTTP Request%'
+
+# 2. All POST requests:
+# Method = 'POST'
+
+# 3. Requests with bodies:
+# RequestBody != null
+
+# 4. Get cURL commands:
+# @Message like '%HTTP Request%' | select Method, Path, CurlCommand
+
+# 5. Today's requests:
+# @Timestamp > Now() - 1d and @Message like '%HTTP Request%'
+
+# 6. Requests to specific endpoint:
+# Path like '%/api/bookings%'
+
+# 7. Failed requests with cURL:
+# Status >= 400 | select Status, Path, CurlCommand
+
+# 8. Slow requests:
+# Duration > 1000 | select Duration, Path, CurlCommand
+
+# 9. Export cURL commands:
+# Method = 'POST' | select CurlCommand
+
+###############################################
+### 💡 How to Use cURL Commands
+###############################################
+
+# 1. Make a request (any of the above)
+# 2. Go to Seq: https://seq-production-43df.up.railway.app/
+# 3. Search: @Message like '%HTTP Request%'
+# 4. Click on your request
+# 5. Find "CurlCommand" property
+# 6. Copy the value
+# 7. Paste in terminal and run!
+
+# Example from Seq:
+# CurlCommand: curl -X POST 'https://nolrental.runasp.net/api/bookings' -H 'Content-Type: application/json' -d '{...}'
+
+# Run it:
+# [Paste the command here]
+
+###############################################
+### 🎯 Real-World Scenario
+###############################################
+
+# Scenario: User reports "My booking failed"
+
+# Step 1: Get user's email/ID
+# Step 2: Search in Seq:
+# User = 'user@example.com' and Path like '%/api/bookings%'
+
+# Step 3: Find the failed request
+# Step 4: Copy cURL command from log
+# Step 5: Run locally to reproduce:
+# curl -X POST 'https://nolrental.runasp.net/api/bookings' ...
+
+# Step 6: Debug with exact same data
+# Step 7: Fix the issue
+# Step 8: Verify with cURL command again
+
+###
+

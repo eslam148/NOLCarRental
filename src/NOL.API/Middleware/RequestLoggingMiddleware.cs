@@ -120,15 +120,15 @@ public class RequestLoggingMiddleware
         // Capture headers
         foreach (var header in context.Request.Headers)
         {
-            // Skip sensitive headers from logging
-            if (!header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase) &&
-                !header.Key.Equals("Cookie", StringComparison.OrdinalIgnoreCase))
+            // Log all headers including Authorization (useful for debugging)
+            // Only redact Cookie for security
+            if (header.Key.Equals("Cookie", StringComparison.OrdinalIgnoreCase))
             {
-                headers[header.Key] = header.Value.ToString();
+                headers[header.Key] = "***REDACTED***";
             }
             else
             {
-                headers[header.Key] = "***REDACTED***";
+                headers[header.Key] = header.Value.ToString();
             }
         }
 
@@ -180,17 +180,11 @@ public class RequestLoggingMiddleware
                 continue;
             }
 
-            // Redact sensitive headers but keep in curl for reproduction
+            // Log all headers including Authorization token for debugging
             var headerValue = header.Value.ToString();
-            if (header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase))
-            {
-                // Keep first few characters for identification
-                if (headerValue.Length > 20)
-                {
-                    headerValue = headerValue.Substring(0, 20) + "...***REDACTED***";
-                }
-            }
-            else if (header.Key.Equals("Cookie", StringComparison.OrdinalIgnoreCase))
+            
+            // Only redact cookies for security
+            if (header.Key.Equals("Cookie", StringComparison.OrdinalIgnoreCase))
             {
                 headerValue = "***REDACTED***";
             }
