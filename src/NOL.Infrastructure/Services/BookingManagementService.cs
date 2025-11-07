@@ -201,9 +201,10 @@ public class BookingManagementService : IBookingManagementService
 
     public async Task<ApiResponse<AdminBookingDto>> CreateBookingAsync(AdminCreateBookingDto createBookingDto, string adminId)
     {
+           var tran= await _context.Database.BeginTransactionAsync();      // Validate user exists
+        
         try
         {
-            // Validate user exists
             var user = await _userManager.FindByIdAsync(createBookingDto.UserId);
             if (user == null)
             {
@@ -308,6 +309,8 @@ public class BookingManagementService : IBookingManagementService
             await _context.Bookings.AddAsync(booking);
             await _context.SaveChangesAsync();
 
+            await tran.CommitAsync();      // Validate user exists
+
             // Get the created booking with includes
             var createdBooking = await _context.Bookings
                 .Include(b => b.User)
@@ -326,6 +329,7 @@ public class BookingManagementService : IBookingManagementService
         }
         catch (Exception ex)
         {
+            await tran.RollbackAsync();
             _logger.LogError(ex, "Error creating booking by admin {AdminId}", adminId);
             return ApiResponse<AdminBookingDto>.Error("An error occurred while creating booking", (string?)null, ApiStatusCode.InternalServerError);
         }
