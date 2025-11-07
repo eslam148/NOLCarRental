@@ -13,10 +13,12 @@ namespace NOL.API.Controllers;
 public class BookingsController : ControllerBase
 {
     private readonly IBookingService _bookingService;
+    private readonly ILogger<BookingsController> _logger;
 
-    public BookingsController(IBookingService bookingService)
+    public BookingsController(IBookingService bookingService, ILogger<BookingsController> logger)
     {
         _bookingService = bookingService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -64,8 +66,8 @@ public class BookingsController : ControllerBase
             
             var result = await _bookingService.CreateBookingAsync(createBookingDto, userId);
             
-            _logger.LogInformation("Booking created successfully - BookingId: {BookingId}, UserId: {UserId}, CarId: {CarId}", 
-                result.Id, userId, createBookingDto.CarId);
+            _logger.LogInformation("Booking created successfully - BookingId: {BookingId}, UserId: {UserId}, CarId: {CarId}, Result: {@Result}", 
+                result.Data?.Id, userId, createBookingDto.CarId, result);
             
             return Ok(result);
         }
