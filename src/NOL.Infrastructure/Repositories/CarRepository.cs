@@ -21,7 +21,7 @@ public class CarRepository : Repository<Car>, ICarRepository
             .Include(c => c.Category)
             .Include(c => c.Branch)
             .Include(c => c.Reviews)
-            .Where(c => c.IsActive);
+            .Where(c => c.IsActive && c.Status == CarStatus.Available);
 
         // Apply brand filtering (search in both Arabic and English brand names)
         if (!string.IsNullOrEmpty(brand))
