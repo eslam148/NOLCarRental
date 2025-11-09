@@ -29,22 +29,15 @@ public class FavoriteService : IFavoriteService
 
     public async Task<ApiResponse<List<FavoriteDto>>> GetUserFavoritesAsync(string userId)
     {
-        try
-        {
-            var favorites = await _favoriteRepository.GetUserFavoritesAsync(userId);
+       var favorites = await _favoriteRepository.GetUserFavoritesAsync(userId);
             var favoriteDtos = favorites.Select(MapToFavoriteDto).ToList();
-            return _responseService.Success(favoriteDtos, "FavoritesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<FavoriteDto>>("InternalServerError");
-        }
+            return _responseService.Success(favoriteDtos, ResponseCode.FavoritesRetrieved);
+      
     }
 
     public async Task<ApiResponse<PaginatedFavoritesDto>> GetUserFavoritesPagedAsync(string userId, int page = 1, int pageSize = 10)
     {
-        try
-        {
+        
             // Validate pagination parameters
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
@@ -73,30 +66,25 @@ public class FavoriteService : IFavoriteService
                 HasNextPage = hasNextPage
             };
 
-            return _responseService.Success(paginatedResult, "FavoritesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<PaginatedFavoritesDto>("InternalServerError");
-        }
+            return _responseService.Success(paginatedResult, ResponseCode.FavoritesRetrieved);
+        
     }
 
     public async Task<ApiResponse<FavoriteDto>> AddToFavoritesAsync(string userId, AddFavoriteDto addFavoriteDto)
     {
-        try
-        {
+        
             // Check if car exists
             var car = await _carRepository.GetCarWithIncludesAsync(addFavoriteDto.CarId);
             if (car == null)
             {
-                return _responseService.NotFound<FavoriteDto>("CarNotFound");
+                return _responseService.NotFound<FavoriteDto>(ResponseCode.CarNotFound);
             }
 
             // Check if already in favorites
             var existingFavorite = await _favoriteRepository.IsFavoriteAsync(userId, addFavoriteDto.CarId);
             if (existingFavorite)
             {
-                return _responseService.Error<FavoriteDto>("CarAlreadyInFavorites");
+                return _responseService.Error<FavoriteDto>(ResponseCode.CarAlreadyInFavorites);
             }
 
             // Create new favorite
@@ -119,44 +107,30 @@ public class FavoriteService : IFavoriteService
             }
 
             var favoriteDto = MapToFavoriteDto(createdFavorite!);
-            return _responseService.Success(favoriteDto, "FavoriteAdded");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<FavoriteDto>("InternalServerError");
-        }
+            return _responseService.Success(favoriteDto, ResponseCode.FavoriteAdded);
+        
     }
 
     public async Task<ApiResponse<bool>> RemoveFromFavoritesAsync(string userId, int carId)
     {
-        try
-        {
+        
             var existingFavorite = await _favoriteRepository.IsFavoriteAsync(userId, carId);
             if (!existingFavorite)
             {
-                return _responseService.NotFound<bool>("FavoriteNotFound");
+                return _responseService.NotFound<bool>(ResponseCode.FavoriteNotFound);
             }
 
             await _favoriteRepository.RemoveFavoriteAsync(userId, carId);
-            return _responseService.Success(true, "FavoriteRemoved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(true, ResponseCode.FavoriteRemoved);
+       
     }
 
     public async Task<ApiResponse<bool>> IsFavoriteAsync(string userId, int carId)
     {
-        try
-        {
+        
             var isFavorite = await _favoriteRepository.IsFavoriteAsync(userId, carId);
-            return _responseService.Success(isFavorite, "FavoriteStatusRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(isFavorite, ResponseCode.FavoriteStatusRetrieved);
+        
     }
 
     private FavoriteDto MapToFavoriteDto(Favorite favorite)
@@ -177,7 +151,7 @@ public class FavoriteService : IFavoriteService
                 Year = favorite.Car.Year,
                 Color = isArabic ? favorite.Car.ColorAr : favorite.Car.ColorEn,
                 SeatingCapacity = favorite.Car.SeatingCapacity,
-                TransmissionType = GetLocalizedTransmissionType(favorite.Car.TransmissionType, isArabic),
+                TransmissionType = favorite.Car.TransmissionType.GetDescription(),
                 FuelType = favorite.Car.FuelType,
                 DailyPrice = favorite.Car.DailyRate,
                 
@@ -214,14 +188,5 @@ public class FavoriteService : IFavoriteService
         };
     }
 
-    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
-    {
-        return transmissionType switch
-        {
-            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
-            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
-            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
-            _ => isArabic ? "غير محدد" : "Unknown"
-        };
-    }
+   
 } 

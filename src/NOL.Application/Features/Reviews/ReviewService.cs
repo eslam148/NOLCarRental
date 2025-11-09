@@ -82,7 +82,7 @@ public class ReviewService : IReviewService
                     PointsAwarded = 0, // No points for updates
                     NewCarAverageRating = updatedStats.averageRating,
                     TotalCarReviews = updatedStats.totalReviews
-                }, "RatingUpdated");
+                }, ResponseCode.None);
             }
 
             // 3. Verify car exists
@@ -142,7 +142,7 @@ public class ReviewService : IReviewService
                 PointsAwarded = pointsForRating,
                 NewCarAverageRating = carStats.averageRating,
                 TotalCarReviews = carStats.totalReviews
-            }, "CarRatedSuccessfully");
+            }, ResponseCode.None);
         }
         catch (Exception)
         {
@@ -190,8 +190,7 @@ public class ReviewService : IReviewService
     // Basic implementations for interface compliance
     public async Task<ApiResponse<List<ReviewDto>>> GetReviewsByCarIdAsync(int carId)
     {
-        try
-        {
+        
             var reviews = await _reviewRepository.GetReviewsByCarIdAsync(carId);
             var reviewDtos = reviews.Select(r => new ReviewDto
             {
@@ -206,18 +205,13 @@ public class ReviewService : IReviewService
                 CarModel = r.Car.ModelEn
             }).ToList();
 
-            return _responseService.Success(reviewDtos, "ReviewsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<ReviewDto>>("InternalServerError");
-        }
+            return _responseService.Success(reviewDtos, ResponseCode.ReviewsRetrieved);
+        
     }
 
     public async Task<ApiResponse<List<ReviewDto>>> GetReviewsByUserIdAsync(string userId)
     {
-        try
-        {
+        
             var reviews = await _reviewRepository.GetReviewsByUserIdAsync(userId);
             var reviewDtos = reviews.Select(r => new ReviewDto
             {
@@ -232,22 +226,17 @@ public class ReviewService : IReviewService
                 CarModel = r.Car.ModelEn
             }).ToList();
 
-            return _responseService.Success(reviewDtos, "UserReviewsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<ReviewDto>>("InternalServerError");
-        }
+            return _responseService.Success(reviewDtos, ResponseCode.UserReviewsRetrieved);
+       
     }
 
     public async Task<ApiResponse<ReviewDto>> GetReviewByIdAsync(int id)
     {
-        try
-        {
+       
             var review = await _reviewRepository.GetByIdAsync(id);
             if (review == null)
             {
-                return _responseService.NotFound<ReviewDto>("ReviewNotFound");
+                return _responseService.NotFound<ReviewDto>(ResponseCode.ReviewNotFound);
             }
 
             var reviewDto = new ReviewDto
@@ -263,18 +252,13 @@ public class ReviewService : IReviewService
                 CarModel = review.Car.ModelEn
             };
 
-            return _responseService.Success(reviewDto, "ReviewRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<ReviewDto>("InternalServerError");
-        }
+            return _responseService.Success(reviewDto, ResponseCode.ReviewsRetrieved);
+        
     }
 
     public async Task<ApiResponse<CarRatingDto>> GetCarRatingAsync(int carId)
     {
-        try
-        {
+        
             var reviews = await _reviewRepository.GetReviewsByCarIdAsync(carId);
             var reviewDtos = reviews.Select(r => new ReviewDto
             {
@@ -299,47 +283,41 @@ public class ReviewService : IReviewService
                 Reviews = reviewDtos
             };
 
-            return _responseService.Success(carRatingDto, "CarRatingRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<CarRatingDto>("InternalServerError");
-        }
+            return _responseService.Success(carRatingDto, ResponseCode.CarRatingRetrieved);
+         
     }
 
     public async Task<ApiResponse<ReviewDto>> CreateReviewAsync(string userId, CreateReviewDto createReviewDto)
     {
         // Basic implementation - can be enhanced later
-        return _responseService.Error<ReviewDto>("NotImplemented");
+        return _responseService.Error<ReviewDto>(ResponseCode.NotImplemented);
     }
 
     public async Task<ApiResponse<ReviewDto>> UpdateReviewAsync(int id, string userId, UpdateReviewDto updateReviewDto)
     {
         // Basic implementation - can be enhanced later
-        return _responseService.Error<ReviewDto>("NotImplemented");
+        return _responseService.Error<ReviewDto>(ResponseCode.NotImplemented);
     }
 
     public async Task<ApiResponse<bool>> DeleteReviewAsync(int id, string userId)
     {
         // Basic implementation - can be enhanced later
-        return _responseService.Error<bool>("NotImplemented");
+        return _responseService.Error<bool>(ResponseCode.NotImplemented);
     }
 
     public async Task<ApiResponse<bool>> CanUserReviewCarAsync(string userId, int carId)
     {
-        try
-        {
-            // Check if user has completed a booking for this car
-            var bookings = await _bookingRepository.GetUserBookingsAsync(userId);
-            var hasCompletedBooking = bookings.Any(b =>
-                b.CarId == carId &&
-                b.Status == Domain.Enums.BookingStatus.Completed);
 
-            return _responseService.Success(hasCompletedBooking, hasCompletedBooking ? "CanReview" : "MustCompleteBookingToReview");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+        // Check if user has completed a booking for this car
+        var bookings = await _bookingRepository.GetUserBookingsAsync(userId);
+        var hasCompletedBooking = bookings.Any(b =>
+            b.CarId == carId &&
+            b.Status == Domain.Enums.BookingStatus.Completed);
+
+        return _responseService.Success(hasCompletedBooking,
+            hasCompletedBooking ? ResponseCode.CanReview : ResponseCode.MustCompleteBookingToReview);
+
+
     }
 }
+

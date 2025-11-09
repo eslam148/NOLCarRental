@@ -24,64 +24,44 @@ public class ExtraService : IExtraService
 
     public async Task<ApiResponse<List<ExtraDto>>> GetExtrasAsync()
     {
-        try
-        {
+      
             var extras = await _extraRepository.GetAllAsync();
             var extraDtos = extras.Select(MapToExtraDto).ToList();
-            return _responseService.Success(extraDtos, "ExtrasRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<ExtraDto>>("InternalServerError");
-        }
+            return _responseService.Success(extraDtos, ResponseCode.ExtrasRetrieved);
+        
     }
 
     public async Task<ApiResponse<ExtraDto>> GetExtraByIdAsync(int id)
     {
-        try
-        {
+       
             var extra = await _extraRepository.GetByIdAsync(id);
 
             if (extra == null)
             {
-                return _responseService.NotFound<ExtraDto>("ResourceNotFound");
+                return _responseService.NotFound<ExtraDto>(ResponseCode.ExtraServiceNotFound);
             }
 
             var extraDto = MapToExtraDto(extra);
-            return _responseService.Success(extraDto, "ExtraRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<ExtraDto>("InternalServerError");
-        }
+            return _responseService.Success(extraDto, ResponseCode.ExtraRetrieved);
+       
     }
 
     public async Task<ApiResponse<List<ExtraDto>>> GetExtrasByTypeAsync(ExtraType type)
     {
-        try
-        {
+         
             var extras = await _extraRepository.GetExtrasByTypeAsync(type);
             var extraDtos = extras.Select(MapToExtraDto).ToList();
-            return _responseService.Success(extraDtos, "ExtrasRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<ExtraDto>>("InternalServerError");
-        }
+            return _responseService.Success(extraDtos, ResponseCode.ExtraRetrieved);
+        
     }
 
     public async Task<ApiResponse<List<ExtraDto>>> GetActiveExtrasAsync()
     {
-        try
-        {
+        
             var extras = await _extraRepository.GetActiveExtrasAsync();
             var extraDtos = extras.Select(MapToExtraDto).ToList();
-            return _responseService.Success(extraDtos, "ExtrasRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<ExtraDto>>("InternalServerError");
-        }
+            return _responseService.Success(extraDtos, ResponseCode.ExtraRetrieved);
+        
     }
 
     private ExtraDto MapToExtraDto(Domain.Entities.ExtraTypePrice extra)

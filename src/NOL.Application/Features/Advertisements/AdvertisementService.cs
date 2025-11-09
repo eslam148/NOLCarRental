@@ -26,100 +26,75 @@ public class AdvertisementService : IAdvertisementService
 
     public async Task<ApiResponse<List<AdvertisementDto>>> GetActiveAdvertisementsAsync()
     {
-        try
-        {
+        
             var advertisements = await _advertisementRepository.GetActiveAdvertisementsAsync();
             var advertisementDtos = advertisements.Select(MapToAdvertisementDto).ToList();
-            return _responseService.Success(advertisementDtos, "AdvertisementsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<AdvertisementDto>>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDtos, ResponseCode.AdvertisementsRetrieved);
     }
 
     public async Task<ApiResponse<List<AdvertisementDto>>> GetAdvertisementsByCarIdAsync(int carId)
     {
-        try
-        {
+        
             var advertisements = await _advertisementRepository.GetAdvertisementsByCarIdAsync(carId);
             var advertisementDtos = advertisements.Select(MapToAdvertisementDto).ToList();
-            return _responseService.Success(advertisementDtos, "AdvertisementsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<AdvertisementDto>>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDtos, ResponseCode.AdvertisementsRetrieved);
+        
+      
     }
 
     public async Task<ApiResponse<List<AdvertisementDto>>> GetAdvertisementsByCategoryIdAsync(int categoryId)
     {
-        try
-        {
+        
             var advertisements = await _advertisementRepository.GetAdvertisementsByCategoryIdAsync(categoryId);
             var advertisementDtos = advertisements.Select(MapToAdvertisementDto).ToList();
-            return _responseService.Success(advertisementDtos, "AdvertisementsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<AdvertisementDto>>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDtos, ResponseCode.AdvertisementsRetrieved);
+       
     }
 
     public async Task<ApiResponse<List<AdvertisementDto>>> GetFeaturedAdvertisementsAsync()
     {
-        try
-        {
+       
             var advertisements = await _advertisementRepository.GetFeaturedAdvertisementsAsync();
             var advertisementDtos = advertisements.Select(MapToAdvertisementDto).ToList();
-            return _responseService.Success(advertisementDtos, "FeaturedAdvertisementsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<AdvertisementDto>>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDtos, ResponseCode.FeaturedAdvertisementsRetrieved);
+        
+       
     }
 
     public async Task<ApiResponse<AdvertisementDto>> GetAdvertisementByIdAsync(int id)
     {
-        try
-        {
+       
             var advertisement = await _advertisementRepository.GetAdvertisementByIdAsync(id);
             if (advertisement == null)
             {
-                return _responseService.NotFound<AdvertisementDto>("AdvertisementNotFound");
+                return _responseService.NotFound<AdvertisementDto>(ResponseCode.AdvertisementNotFound);
             }
 
             // Increment view count
             await _advertisementRepository.IncrementViewCountAsync(id);
 
             var advertisementDto = MapToAdvertisementDto(advertisement);
-            return _responseService.Success(advertisementDto, "AdvertisementRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<AdvertisementDto>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDto,ResponseCode.AdvertisementsRetrieved);
+       
     }
 
     public async Task<ApiResponse<AdvertisementDto>> CreateAdvertisementAsync(CreateAdvertisementDto createDto, string userId)
     {
-        try
-        {
+        
             // Validate business rules
             if (createDto.StartDate >= createDto.EndDate)
             {
-                return _responseService.ValidationError<AdvertisementDto>("InvalidDateRange");
+                return _responseService.ValidationError<AdvertisementDto>(ResponseCode.InvalidDateRange);
             }
 
             if (createDto.CarId.HasValue && createDto.CategoryId.HasValue)
             {
-                return _responseService.Error<AdvertisementDto>("CannotSetBothCarAndCategory");
+                return _responseService.Error<AdvertisementDto>(ResponseCode.CannotSetBothCarAndCategory);
             }
 
             if (!createDto.CarId.HasValue && !createDto.CategoryId.HasValue)
             {
-                return _responseService.Error<AdvertisementDto>("MustSetEitherCarOrCategory");
+                return _responseService.Error<AdvertisementDto>(ResponseCode.MustSetEitherCarOrCategory);
             }
 
             // Calculate discount percentage if discount price is provided
@@ -155,28 +130,23 @@ public class AdvertisementService : IAdvertisementService
             var createdAdvertisement = await _advertisementRepository.CreateAdvertisementAsync(advertisement);
             var advertisementDto = MapToAdvertisementDto(createdAdvertisement);
 
-            return _responseService.Success(advertisementDto, "AdvertisementCreated");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<AdvertisementDto>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDto, ResponseCode.AdvertisementCreated);
+       
     }
 
     public async Task<ApiResponse<AdvertisementDto>> UpdateAdvertisementAsync(int id, UpdateAdvertisementDto updateDto)
     {
-        try
-        {
+        
             var advertisement = await _advertisementRepository.GetAdvertisementByIdAsync(id);
             if (advertisement == null)
             {
-                return _responseService.NotFound<AdvertisementDto>("AdvertisementNotFound");
+                return _responseService.NotFound<AdvertisementDto>(ResponseCode.AdvertisementNotFound);
             }
 
             // Validate business rules
             if (updateDto.StartDate >= updateDto.EndDate)
             {
-                return _responseService.ValidationError<AdvertisementDto>("InvalidDateRange");
+                return _responseService.ValidationError<AdvertisementDto>(ResponseCode.InvalidDateRange);
             }
 
             // Calculate discount percentage if discount price is provided
@@ -207,74 +177,49 @@ public class AdvertisementService : IAdvertisementService
             var updatedAdvertisement = await _advertisementRepository.UpdateAdvertisementAsync(advertisement);
             var advertisementDto = MapToAdvertisementDto(updatedAdvertisement);
 
-            return _responseService.Success(advertisementDto, "AdvertisementUpdated");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<AdvertisementDto>("InternalServerError");
-        }
+            return _responseService.Success(advertisementDto, ResponseCode.AdvertisementUpdated);
+      
     }
 
     public async Task<ApiResponse<bool>> DeleteAdvertisementAsync(int id)
     {
-        try
-        {
+       
             var result = await _advertisementRepository.DeleteAdvertisementAsync(id);
             if (!result)
             {
-                return _responseService.NotFound<bool>("AdvertisementNotFound");
+                return _responseService.NotFound<bool>(ResponseCode.AdvertisementNotFound);
             }
 
-            return _responseService.Success(true, "AdvertisementDeleted");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(true, ResponseCode.AdvertisementDeleted);
+       
     }
 
     public async Task<ApiResponse<bool>> IncrementViewCountAsync(int id)
-    {
-        try
-        {
+    { 
             var result = await _advertisementRepository.IncrementViewCountAsync(id);
-            return _responseService.Success(result, "ViewCountIncremented");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(result, ResponseCode.ViewCountIncremented);
+        
     }
 
     public async Task<ApiResponse<bool>> IncrementClickCountAsync(int id)
     {
-        try
-        {
+        
             var result = await _advertisementRepository.IncrementClickCountAsync(id);
-            return _responseService.Success(result, "ClickCountIncremented");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(result, ResponseCode.ClickCountIncremented);
+        
     }
 
     public async Task<ApiResponse<bool>> UpdateAdvertisementStatusAsync(int id, AdvertisementStatus status)
     {
-        try
-        {
+        
             var result = await _advertisementRepository.UpdateAdvertisementStatusAsync(id, status);
             if (!result)
             {
-                return _responseService.NotFound<bool>("AdvertisementNotFound");
+                return _responseService.NotFound<bool>(ResponseCode.AdvertisementNotFound);
             }
 
-            return _responseService.Success(true, "AdvertisementStatusUpdated");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(true, ResponseCode.AdvertisementStatusUpdated);
+        
     }
 
     private AdvertisementDto MapToAdvertisementDto(Advertisement advertisement)
@@ -307,7 +252,7 @@ public class AdvertisementService : IAdvertisementService
                 Year = advertisement.Car.Year,
                 Color = isArabic ? advertisement.Car.ColorAr : advertisement.Car.ColorEn,
                 SeatingCapacity = advertisement.Car.SeatingCapacity,
-                TransmissionType = GetLocalizedTransmissionType(advertisement.Car.TransmissionType, isArabic),
+                TransmissionType = advertisement.Car.TransmissionType.GetDescription(),
                 FuelType = advertisement.Car.FuelType,
                 DailyPrice = advertisement.Car.DailyRate,
                 //WeeklyRate = advertisement.Car.WeeklyRate,
@@ -326,14 +271,5 @@ public class AdvertisementService : IAdvertisementService
         };
     }
 
-    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
-    {
-        return transmissionType switch
-        {
-            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
-            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
-            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
-            _ => isArabic ? "غير محدد" : "Unknown"
-        };
-    }
+   
 } 

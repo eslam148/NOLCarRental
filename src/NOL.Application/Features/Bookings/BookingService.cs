@@ -32,60 +32,45 @@ public class BookingService : IBookingService
 
     public async Task<ApiResponse<List<BookingDto>>> GetUserBookingsAsync(string userId)
     {
-        try
-        {
+        
             var bookings = await _bookingRepository.GetUserBookingsAsync(userId);
             var bookingDtos = bookings.Select(MapToBookingDto).ToList();
-            return _responseService.Success(bookingDtos, "BookingsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<BookingDto>>("InternalServerError");
-        }
+            return _responseService.Success(bookingDtos, ResponseCode.BookingsRetrieved);
+         
+      
     }
 
     public async Task<ApiResponse<List<BookingDto>>> GetUserBookingsByStatusAsync(string userId, BookingStatus status)
     {
-        try
-        {
+         
             var bookings = await _bookingRepository.GetUserBookingsByStatusAsync(userId, status);
             var bookingDtos = bookings.Select(MapToBookingDto).ToList();
-            return _responseService.Success(bookingDtos, "BookingsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<BookingDto>>("InternalServerError");
-        }
+            return _responseService.Success(bookingDtos, ResponseCode.BookingsRetrieved);
+        
     }
 
     public async Task<ApiResponse<BookingDto>> GetBookingByIdAsync(int id)
     {
-        try
-        {
+        
             var booking = await _bookingRepository.GetBookingByIdAsync(id);
             if (booking == null)
             {
-                return _responseService.NotFound<BookingDto>("BookingNotFound");
+                return _responseService.NotFound<BookingDto>(ResponseCode.BookingNotFound);
             }
 
             var bookingDto = MapToBookingDto(booking);
-            return _responseService.Success(bookingDto, "BookingRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<BookingDto>("InternalServerError");
-        }
+            return _responseService.Success(bookingDto, ResponseCode.BookingsRetrieved);
+     
     }
 
     public async Task<ApiResponse<BookingDto>> CreateBookingAsync(CreateBookingDto createDto, string userId)
     {
-        try
-        {
+       
             // Validate car exists and is available
             var car = await _carRepository.GetByIdAsync(createDto.CarId);
             if (car == null)
             {
-                return _responseService.NotFound<BookingDto>("CarNotFound");
+                return _responseService.NotFound<BookingDto>(ResponseCode.CarNotFound);
             }
 
             // Check car availability for the requested dates
@@ -96,27 +81,27 @@ public class BookingService : IBookingService
 
             if (!isAvailable)
             {
-                return _responseService.Error<BookingDto>("CarNotAvailable");
+                return _responseService.Error<BookingDto>(ResponseCode.CarNotAvailable);
             }
 
             // Validate branches exist and are active
             var isReceivingBranchAvailable = await _bookingRepository.IsBranchAvailableAsync(createDto.ReceivingBranchId);
             if (!isReceivingBranchAvailable)
             {
-                return _responseService.Error<BookingDto>("ReceivingBranchNotAvailable");
+                return _responseService.Error<BookingDto>(ResponseCode.ReceivingBranchNotAvailable);
             }
 
             var isDeliveryBranchAvailable = await _bookingRepository.IsBranchAvailableAsync(createDto.DeliveryBranchId);
             if (!isDeliveryBranchAvailable)
             {
-                return _responseService.Error<BookingDto>("DeliveryBranchNotAvailable");
+                return _responseService.Error<BookingDto>(ResponseCode.DeliveryBranchNotAvailable);
             }
 
             // Calculate rental period and costs
             var totalDays = (createDto.EndDate - createDto.StartDate).Days;
             if (totalDays <= 0)
             {
-                return _responseService.ValidationError<BookingDto>("InvalidDateRange");
+                return _responseService.ValidationError<BookingDto>(ResponseCode.InvalidDateRange);
             }
 
             // Calculate rental cost using the optimized rate calculation service
@@ -185,47 +170,44 @@ public class BookingService : IBookingService
             }
 
             await _bookingRepository.UpdateBookingAsync(createdBooking);
+            
+            await _carRepository.UpdateCarStatusAsync(createDto.CarId,CarStatus.Rented); 
 
             // Retrieve the complete booking with all relations
             var completeBooking = await _bookingRepository.GetBookingByIdAsync(createdBooking.Id);
             var bookingDto = MapToBookingDto(completeBooking!);
 
-            return _responseService.Success(bookingDto, "BookingCreated");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<BookingDto>("InternalServerError");
-        }
+            return _responseService.Success(bookingDto, ResponseCode.BookingCreated);
+       
     }
 
     public async Task<ApiResponse<BookingDto>> CancelBookingAsync(int bookingId, string userId)
     {
-        try
-        {
+        
             // Get the booking with all related data
             var booking = await _bookingRepository.GetBookingByIdAsync(bookingId);
             if (booking == null)
             {
-                return _responseService.NotFound<BookingDto>("BookingNotFound");
+                return _responseService.NotFound<BookingDto>(ResponseCode.BookingNotFound);
             }
 
             // Check if the user owns this booking
             if (booking.UserId != userId)
             {
-                return _responseService.Forbidden<BookingDto>("UnauthorizedToModifyBooking");
+                return _responseService.Forbidden<BookingDto>(ResponseCode.UnauthorizedToModifyBooking);
             }
 
             // Check if booking can be canceled
             var cancellableStatuses = new[] { BookingStatus.Open, BookingStatus.Confirmed };
             if (!cancellableStatuses.Contains(booking.Status))
             {
-                return _responseService.Error<BookingDto>("BookingCannotBeCanceled");
+                return _responseService.Error<BookingDto>(ResponseCode.BookingCannotBeCanceled);
             }
 
             // Check cancellation policy (can't cancel if already started)
             if (booking.StartDate <= DateTime.UtcNow)
             {
-                return _responseService.Error<BookingDto>("CannotCancelStartedBooking");
+                return _responseService.Error<BookingDto>(ResponseCode.CannotCancelStartedBooking);
             }
 
             // Update booking status and add cancellation reason
@@ -238,12 +220,8 @@ public class BookingService : IBookingService
 
             // Map to DTO and return
             var bookingDto = MapToBookingDto(updatedBooking);
-            return _responseService.Success(bookingDto, "BookingCanceledSuccessfully");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<BookingDto>("InternalServerError");
-        }
+            return _responseService.Success(bookingDto, ResponseCode.BookingCanceledSuccessfully);
+      
     }
 
     private decimal CalculateRentalCost(Car car, int totalDays)
@@ -325,7 +303,7 @@ public class BookingService : IBookingService
                 Year = booking.Car.Year,
                 Color = isArabic ? booking.Car.ColorAr : booking.Car.ColorEn,
                 SeatingCapacity = booking.Car.SeatingCapacity,
-                TransmissionType = GetLocalizedTransmissionType(booking.Car.TransmissionType, isArabic),
+                TransmissionType = booking.Car.TransmissionType.GetDescription(),
                 FuelType = booking.Car.FuelType,
                 DailyPrice = booking.Car.DailyRate,
                
@@ -371,14 +349,5 @@ public class BookingService : IBookingService
         };
     }
 
-    private string GetLocalizedTransmissionType(TransmissionType transmissionType, bool isArabic)
-    {
-        return transmissionType switch
-        {
-            TransmissionType.Manual => isArabic ? "يدوي" : "Manual",
-            TransmissionType.Automatic => isArabic ? "أوتوماتيكي" : "Automatic", 
-            TransmissionType.CVT => isArabic ? "متغير مستمر" : "CVT",
-            _ => isArabic ? "غير محدد" : "Unknown"
-        };
-    }
+   
 } 

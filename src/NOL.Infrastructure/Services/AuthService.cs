@@ -10,6 +10,7 @@ using NOL.Application.Common.Services;
 using NOL.Application.DTOs;
 using NOL.Domain.Entities;
 using NOL.Domain.Enums;
+using NOL.Domain.Extensions;
 
 namespace NOL.Infrastructure.Services;
 
@@ -40,7 +41,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(loginDto.Email);
         if (user == null)
         {
-            return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
+            return _responseService.Error<AuthResponseDto>(ResponseCode.InvalidEmailOrPassword);
         }
   
         if (!user.EmailConfirmed)
@@ -52,13 +53,13 @@ public class AuthService : IAuthService
             });
 
             // Return error response indicating email verification is required
-            return _responseService.Error<AuthResponseDto>("EmailNotVerified",
+            return _responseService.Error<AuthResponseDto>(ResponseCode.EmailNotVerified,
                 statusCode: ApiStatusCode.Unauthorized);
         }
         var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, false);
         if (!result.Succeeded)
         {
-            return _responseService.Error<AuthResponseDto>("InvalidEmailORPassword");
+            return _responseService.Error<AuthResponseDto>(ResponseCode.InvalidDateRange);
         }
 
      
@@ -79,7 +80,7 @@ public class AuthService : IAuthService
             }
         };
 
-        return _responseService.Success(response, "LoginSuccessful");
+        return _responseService.Success(response, ResponseCode.LoginSuccessful);
     }
 
     public async Task<ApiResponse<AuthRegisterResponseDto>> RegisterAsync(RegisterDto registerDto)
@@ -87,19 +88,19 @@ public class AuthService : IAuthService
         // Validate required fields first
         if (string.IsNullOrEmpty(registerDto.Password) || string.IsNullOrEmpty(registerDto.ConfirmPassword))
         {
-            return _responseService.ValidationError<AuthRegisterResponseDto>("PasswordRequired");
+            return _responseService.ValidationError<AuthRegisterResponseDto>(ResponseCode.PasswordRequired);
         }
 
         // Validate password confirmation (trim whitespace for comparison)
         if (registerDto.Password.Trim() != registerDto.ConfirmPassword.Trim())
         {
-            return _responseService.ValidationError<AuthRegisterResponseDto>("PasswordsDoNotMatch");
+            return _responseService.ValidationError<AuthRegisterResponseDto>(ResponseCode.PasswordsDoNotMatch);
         }
 
         var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
         if (existingUser != null)
         {
-            return _responseService.Error<AuthRegisterResponseDto>("EmailAlreadyExists");
+            return _responseService.Error<AuthRegisterResponseDto>(ResponseCode.EmailAlreadyExists);
         }
 
         var user = new ApplicationUser
@@ -117,10 +118,10 @@ public class AuthService : IAuthService
         var result = await _userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            return _responseService.Error<AuthRegisterResponseDto>("ValidationError", errors);
+            // var errors = result.Errors.Select(e => e.Description).ToList();
+            return _responseService.Error<AuthRegisterResponseDto>(ResponseCode.ValidationError);
         }
-       var addRoleResut = await  _userManager.AddToRoleAsync(user, "Customer");
+       var addRoleResut = await  _userManager.AddToRoleAsync(user, UserRole.Customer.GetDescription());
        
        var responseResult =  await SendEmailVerificationAsync(new SendEmailVerificationDto
         {
@@ -128,7 +129,7 @@ public class AuthService : IAuthService
         });
         if(!responseResult.Succeeded)
         {
-            return _responseService.Error<AuthRegisterResponseDto>(responseResult.Message, responseResult.Errors);
+            return _responseService.Error<AuthRegisterResponseDto>(ResponseCode.ValidationError);
         }
         
         var response = new AuthRegisterResponseDto
@@ -136,13 +137,13 @@ public class AuthService : IAuthService
              Message = "RegistrationSuccessful",
         };
 
-        return _responseService.Success(response, "UserRegistered");
+        return _responseService.Success(response, ResponseCode.UserRegistered);
     }
 
     public async Task<ApiResponse> LogoutAsync()
     {
         await _signInManager.SignOutAsync();
-        return _responseService.Success("OperationSuccessful");
+        return _responseService.Success(ResponseCode.OperationSuccessful);
     }
 
     private string GenerateJwtToken(ApplicationUser user)
@@ -178,12 +179,12 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         if (user.EmailConfirmed)
         {
-            return _responseService.ValidationError("EmailAlreadyConfirmed");
+            return _responseService.ValidationError(ResponseCode.EmailAlreadyConfirmed);
         }
 
         var otpCode = GenerateOtpCode();
@@ -193,16 +194,16 @@ public class AuthService : IAuthService
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
         {
-            return _responseService.Error("InternalServerError");
+            return _responseService.Error(ResponseCode.InternalServerError);
         }
 
         var emailSent = await _emailService.SendEmailVerificationOtpAsync(user.Email!, user.FullName, otpCode);
         if (!emailSent)
         {
-            return _responseService.Error("EmailSendingFailed");
+            //return _responseService.Error("EmailSendingFailed");
         }
 
-        return _responseService.Success("EmailVerificationSent");
+        return _responseService.Success(ResponseCode.EmailVerificationSent);
     }
 
     public async Task<ApiResponse> VerifyEmailAsync(VerifyEmailDto dto)
@@ -210,24 +211,24 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         if (user.EmailConfirmed)
         {
-            return _responseService.Error("EmailAlreadyConfirmed");
+            return _responseService.Error(ResponseCode.EmailAlreadyConfirmed);
         }
 
         if (string.IsNullOrEmpty(user.EmailVerificationOtp) ||
             user.EmailVerificationOtpExpiry == null ||
             user.EmailVerificationOtpExpiry < DateTime.UtcNow)
         {
-            return _responseService.Error("OtpExpired");
+            return _responseService.Error(ResponseCode.OtpExpired);
         }
 
         if (user.EmailVerificationOtp != dto.OtpCode)
         {
-            return _responseService.Error("InvalidOtp");
+            return _responseService.Error(ResponseCode.InvalidOtp);
         }
 
         user.EmailConfirmed = true;
@@ -237,10 +238,10 @@ public class AuthService : IAuthService
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
         {
-            return _responseService.Error("InternalServerError");
+            return _responseService.Error(ResponseCode.InternalServerError);
         }
 
-        return _responseService.Success("EmailVerified");
+        return _responseService.Success(ResponseCode.EmailVerified);
     }
 
     public async Task<ApiResponse> ResendEmailVerificationAsync(ResendOtpDto dto)
@@ -255,7 +256,7 @@ public class AuthService : IAuthService
         if (user == null)
         {
             // Don't reveal that user doesn't exist
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         var otpCode = GenerateOtpCode();
@@ -265,41 +266,41 @@ public class AuthService : IAuthService
         var updateResult = await _userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
         {
-            return _responseService.Error("InternalServerError");
+            return _responseService.Error(ResponseCode.InternalServerError);
         }
 
         var emailSent = await _emailService.SendPasswordResetOtpAsync(user.Email!, user.FullName , otpCode);
         if (!emailSent)
         {
-            return _responseService.Error("EmailSendingFailed");
+           // return _responseService.Error("EmailSendingFailed");
         }
 
-        return _responseService.Success("PasswordResetEmailSent");
+        return _responseService.Success(ResponseCode.PasswordResetEmailSent);
     }
 
     public async Task<ApiResponse> ResetPasswordAsync(ResetPasswordDto dto)
     {
         if (dto.NewPassword.Trim() != dto.ConfirmPassword.Trim())
         {
-            return _responseService.ValidationError("PasswordsDoNotMatch");
+            return _responseService.ValidationError(ResponseCode.PasswordsDoNotMatch);
         }
 
         var user = await _userManager.FindByEmailAsync(dto.Email);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         if (string.IsNullOrEmpty(user.PasswordResetOtp) ||
             user.PasswordResetOtpExpiry == null ||
             user.PasswordResetOtpExpiry < DateTime.UtcNow)
         {
-            return _responseService.Error("OtpExpired");
+            return _responseService.Error(ResponseCode.OtpExpired);
         }
 
         if (user.PasswordResetOtp != dto.OtpCode)
         {
-            return _responseService.Error("InvalidOtp");
+            return _responseService.Error(ResponseCode.InvalidOtp);
         }
 
         var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -308,37 +309,36 @@ public class AuthService : IAuthService
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => e.Description).ToList();
-            return _responseService.Error("PasswordResetFailed", errors);
+            return _responseService.Error(ResponseCode.PasswordResetFailed);
         }
 
         user.PasswordResetOtp = null;
         user.PasswordResetOtpExpiry = null;
         await _userManager.UpdateAsync(user);
 
-        return _responseService.Success("PasswordResetSuccessful");
+        return _responseService.Success(ResponseCode.PasswordResetSuccessful);
     }
 
     public async Task<ApiResponse> ChangePasswordAsync(string userId, ChangePasswordDto dto)
     {
         if (dto.NewPassword.Trim() != dto.ConfirmPassword.Trim())
         {
-            return _responseService.ValidationError("PasswordsDoNotMatch");
+            return _responseService.ValidationError(ResponseCode.PasswordsDoNotMatch);
         }
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
         if (!result.Succeeded)
         {
-            var errors = result.Errors.Select(e => e.Description).ToList();
-            return _responseService.Error("PasswordChangeFailed", errors);
+             return _responseService.Error(ResponseCode.PasswordChangeFailed);
         }
 
-        return _responseService.Success("PasswordChanged");
+        return _responseService.Success(ResponseCode.PasswordChanged);
     }
 
     // Account Management Methods - Three-step deletion process
@@ -347,18 +347,17 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         // Verify current password
         var passwordCheck = await _userManager.CheckPasswordAsync(user, dto.CurrentPassword);
         if (!passwordCheck)
         {
-            return _responseService.ValidationError("InvalidPassword");
+            return _responseService.ValidationError(ResponseCode.InvalidPassword);
         }
 
-        try
-        {
+         
             // Generate OTP for account deletion
             var otpCode = GenerateOtpCode();
             user.AccountDeletionOtp = otpCode;
@@ -370,22 +369,18 @@ public class AuthService : IAuthService
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
-                return _responseService.Error("InternalServerError");
+                return _responseService.Error(ResponseCode.InternalServerError);
             }
 
             // Send account deletion OTP email
             var emailSent = await _emailService.SendAccountDeletionOtpAsync(user.Email!, user.FullName, otpCode);
             if (!emailSent)
             {
-                return _responseService.Error("EmailSendingFailed");
+                return _responseService.Error(ResponseCode.EmailSendingFailed);
             }
 
-            return _responseService.Success("AccountDeletionOtpSent");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error("InternalServerError");
-        }
+            return _responseService.Success(ResponseCode.AccountDeletionOtpSent);
+        
     }
 
     public async Task<ApiResponse> ConfirmAccountDeletionAsync(string userId, ConfirmAccountDeletionDto dto)
@@ -393,13 +388,13 @@ public class AuthService : IAuthService
         // Validate confirmation text
         if (dto.ConfirmationText?.Trim().ToUpper() != "DELETE")
         {
-            return _responseService.ValidationError("InvalidConfirmationText");
+            return _responseService.ValidationError(ResponseCode.InvalidConfirmationText);
         }
 
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         // Validate OTP
@@ -407,16 +402,15 @@ public class AuthService : IAuthService
             user.AccountDeletionOtpExpiry == null ||
             user.AccountDeletionOtpExpiry < DateTime.UtcNow)
         {
-            return _responseService.Error("OtpExpired");
+            return _responseService.Error(ResponseCode.OtpExpired);
         }
 
         if (user.AccountDeletionOtp != dto.OtpCode)
         {
-            return _responseService.Error("InvalidOtp");
+            return _responseService.Error(ResponseCode.OtpExpired);
         }
 
-        try
-        {
+       
             // Store user info for confirmation email before deletion
             var userEmail = user.Email!;
             var userFullName = user.FullName;
@@ -428,8 +422,8 @@ public class AuthService : IAuthService
             var deleteResult = await _userManager.DeleteAsync(user);
             if (!deleteResult.Succeeded)
             {
-                var errors = deleteResult.Errors.Select(e => e.Description).ToList();
-                return _responseService.Error("AccountDeletionFailed", errors);
+                // 0  var errors = deleteResult.Errors.Select(e => e.Description).ToList();
+                return _responseService.Error(ResponseCode.AccountDeletionFailed);
             }
 
             // Send account deletion confirmation email
@@ -442,12 +436,8 @@ public class AuthService : IAuthService
                 // Don't fail the deletion if email sending fails
             }
 
-            return _responseService.Success("AccountDeletedSuccessfully");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error("InternalServerError");
-        }
+            return _responseService.Success(ResponseCode.AccountDeletedSuccessfully);
+         
     }
 
     public async Task<ApiResponse> ResendDeletionOtpAsync(string userId)
@@ -455,7 +445,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return _responseService.NotFound("UserNotFound");
+            return _responseService.NotFound(ResponseCode.UserNotFound);
         }
 
         // Check rate limiting - max 3 resends per hour
@@ -464,7 +454,7 @@ public class AuthService : IAuthService
             var timeSinceLastResend = DateTime.UtcNow - user.LastAccountDeletionOtpResendTime.Value;
             if (timeSinceLastResend.TotalHours < 1 && user.AccountDeletionOtpResendCount >= 3)
             {
-                return _responseService.Error("TooManyResendAttempts");
+                return _responseService.Error(ResponseCode.TooManyResendAttempts);
             }
 
             // Reset count if more than an hour has passed
@@ -479,11 +469,10 @@ public class AuthService : IAuthService
             user.AccountDeletionOtpExpiry == null ||
             user.AccountDeletionOtpExpiry < DateTime.UtcNow)
         {
-            return _responseService.Error("NoDeletionRequestFound");
+            return _responseService.Error(ResponseCode.NoDeletionRequestFound);
         }
 
-        try
-        {
+       
             // Generate new OTP
             var otpCode = GenerateOtpCode();
             user.AccountDeletionOtp = otpCode;
@@ -495,32 +484,27 @@ public class AuthService : IAuthService
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
-                return _responseService.Error("InternalServerError");
+                return _responseService.Error(ResponseCode.InternalServerError);
             }
 
             // Send new OTP email
             var emailSent = await _emailService.SendAccountDeletionOtpAsync(user.Email!, user.FullName, otpCode);
             if (!emailSent)
             {
-                return _responseService.Error("EmailSendingFailed");
+                return _responseService.Error(ResponseCode.EmailSendingFailed);
             }
 
-            return _responseService.Success("AccountDeletionOtpResent");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error("InternalServerError");
-        }
+            return _responseService.Success(ResponseCode.AccountDeletionOtpResent);
+        
     }
 
     public async Task<ApiResponse> EditProfile(string userId, ProfileEditDto profileDto)
     {
-        try
-        {
+         
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return _responseService.NotFound("UserNotFound");
+                return _responseService.NotFound(ResponseCode.UserNotFound);
             }
 
             // Update user profile fields (excluding email)
@@ -532,16 +516,12 @@ public class AuthService : IAuthService
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
-                var errors = result.Errors.Select(e => e.Description).ToList();
-                return _responseService.Error("ProfileUpdateFailed", errors);
+              //  var errors = result.Errors.Select(e => e.Description).ToList();
+                return _responseService.Error(ResponseCode.ProfileUpdateFailed);
             }
 
-            return _responseService.Success("ProfileUpdatedSuccessfully");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error("InternalServerError");
-        }
+            return _responseService.Success(ResponseCode.ProfileUpdatedSuccessfully);
+        
     }
 
     private string GenerateOtpCode()

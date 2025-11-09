@@ -14,18 +14,8 @@ public interface ICarService
     Task<ApiResponse<List<CarDto>>> GetCarsByBranchAsync(int branchId, string? userId = null);
 
     // Car management operations (Admin only)
-    Task<ApiResponse<CarDto>> CreateCarAsync(CreateCarDto createCarDto);
-    Task<ApiResponse<CarDto>> UpdateCarAsync(int id, UpdateCarDto updateCarDto);
-    Task<ApiResponse<bool>> DeleteCarAsync(int id);
-    Task<ApiResponse<bool>> ToggleCarStatusAsync(int id, CarStatus status);
-
-    // Rate management operations (Admin only)
-    Task<ApiResponse<CarRatesDto>> UpdateCarRatesAsync(int id, UpdateCarRatesDto updateRatesDto);
-    Task<ApiResponse<List<CarRatesDto>>> GetAllCarRatesAsync(int page = 1, int pageSize = 10);
     Task<ApiResponse<CarRatesDto>> GetCarRatesAsync(int id);
-    Task<ApiResponse<List<CarRatesDto>>> BulkUpdateRatesAsync(BulkUpdateRatesDto bulkUpdateDto);
-
+ 
     // Utility operations
     Task<ApiResponse<List<CarDto>>> SearchCarsAsync(string searchTerm, int page = 1, int pageSize = 10);
-    Task<ApiResponse<bool>> ValidateCarExistsAsync(int id);
-}
+ }

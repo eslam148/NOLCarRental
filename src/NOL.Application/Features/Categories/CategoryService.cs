@@ -23,50 +23,35 @@ public class CategoryService : ICategoryService
 
     public async Task<ApiResponse<List<CategoryDto>>> GetCategoriesAsync()
     {
-        try
-        {
+       
             var categories = await _categoryRepository.GetCategoriesOrderedAsync();
             var categoryDtos = categories.Select(MapToCategoryDto).ToList();
-            return _responseService.Success(categoryDtos, "CategoriesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<CategoryDto>>("InternalServerError");
-        }
+            return _responseService.Success(categoryDtos, ResponseCode.CategoriesRetrieved);
+       
     }
 
     public async Task<ApiResponse<CategoryDto>> GetCategoryByIdAsync(int id)
     {
-        try
-        {
+       
             var category = await _categoryRepository.GetByIdAsync(id);
 
             if (category == null)
             {
-                return _responseService.NotFound<CategoryDto>("ResourceNotFound");
+                return _responseService.NotFound<CategoryDto>(ResponseCode.CategoryNotFound);
             }
 
             var categoryDto = MapToCategoryDto(category);
-            return _responseService.Success(categoryDto, "CategoryRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<CategoryDto>("InternalServerError");
-        }
+            return _responseService.Success(categoryDto, ResponseCode.CategoryRetrieved);
+       
     }
 
     public async Task<ApiResponse<List<CategoryDto>>> GetActiveCategoriesAsync()
     {
-        try
-        {
+        
             var categories = await _categoryRepository.GetActiveCategoriesAsync();
             var categoryDtos = categories.Select(MapToCategoryDto).ToList();
-            return _responseService.Success(categoryDtos, "CategoriesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<CategoryDto>>("InternalServerError");
-        }
+            return _responseService.Success(categoryDtos, ResponseCode.CategoriesRetrieved);
+         
     }
 
     private CategoryDto MapToCategoryDto(Domain.Entities.Category category)

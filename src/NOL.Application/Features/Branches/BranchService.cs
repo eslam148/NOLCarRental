@@ -23,22 +23,15 @@ public class BranchService : IBranchService
 
     public async Task<ApiResponse<List<BranchDto>>> GetBranchesAsync()
     {
-        try
-        {
-            var branches = await _branchRepository.GetActiveBranchesAsync();
+          var branches = await _branchRepository.GetActiveBranchesAsync();
             var branchDtos = branches.Select(MapToBranchDto).ToList();
-            return _responseService.Success(branchDtos, "BranchesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<BranchDto>>("InternalServerError");
-        }
+            return _responseService.Success(branchDtos, ResponseCode.BranchesRetrieved);
+         
     }
 
     public async Task<ApiResponse<PaginatedBranchesDto>> GetBranchesPagedAsync(int page = 1, int pageSize = 10)
     {
-        try
-        {
+        
             // Validate pagination parameters
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
@@ -67,66 +60,46 @@ public class BranchService : IBranchService
                 HasNextPage = hasNextPage
             };
 
-            return _responseService.Success(paginatedResult, "BranchesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<PaginatedBranchesDto>("InternalServerError");
-        }
+            return _responseService.Success(paginatedResult, ResponseCode.BranchesRetrieved);
+       
     }
 
     public async Task<ApiResponse<BranchDto>> GetBranchByIdAsync(int id)
     {
-        try
-        {
+        
             var branch = await _branchRepository.GetActiveBranchByIdAsync(id);
 
             if (branch == null)
             {
-                return _responseService.NotFound<BranchDto>("ResourceNotFound");
+                return _responseService.NotFound<BranchDto>(ResponseCode.BranchNotFound);
             }
 
             var branchDto = MapToBranchDto(branch);
-            return _responseService.Success(branchDto, "BranchRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<BranchDto>("InternalServerError");
-        }
+            return _responseService.Success(branchDto, ResponseCode.BranchesRetrieved);
+      
     }
 
     public async Task<ApiResponse<List<BranchDto>>> GetBranchesByCountryAsync(string country)
     {
-        try
-        {
+         
             var branches = await _branchRepository.GetBranchesByCountryAsync(country);
             var branchDtos = branches.Select(MapToBranchDto).ToList();
-            return _responseService.Success(branchDtos, "BranchesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<BranchDto>>("InternalServerError");
-        }
+            return _responseService.Success(branchDtos, ResponseCode.BranchesRetrieved);
+       
     }
 
     public async Task<ApiResponse<List<BranchDto>>> GetBranchesByCityAsync(string city)
     {
-        try
-        {
+         
             var branches = await _branchRepository.GetBranchesByCityAsync(city);
             var branchDtos = branches.Select(MapToBranchDto).ToList();
-            return _responseService.Success(branchDtos, "BranchesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<BranchDto>>("InternalServerError");
-        }
+            return _responseService.Success(branchDtos, ResponseCode.BranchesRetrieved);
+       
     }
 
     public async Task<ApiResponse<PaginatedBranchesDto>> GetBranchesNearbyAsync(decimal latitude, decimal longitude, double radiusKm = 50, int page = 1, int pageSize = 10)
     {
-        try
-        {
+         
             // Validate pagination parameters
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
@@ -135,7 +108,7 @@ public class BranchService : IBranchService
             // Validate coordinates
             if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
             {
-                return _responseService.Error<PaginatedBranchesDto>("InvalidCoordinates");
+                return _responseService.Error<PaginatedBranchesDto>(ResponseCode.InvalidCoordinates);
             }
 
             // Validate radius
@@ -173,12 +146,8 @@ public class BranchService : IBranchService
                 HasNextPage = hasNextPage
             };
 
-            return _responseService.Success(paginatedResult, "NearbyBranchesRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<PaginatedBranchesDto>("InternalServerError");
-        }
+            return _responseService.Success(paginatedResult, ResponseCode.NearbyBranchesRetrieved);
+         
     }
 
     private BranchDto MapToBranchDto(Domain.Entities.Branch branch)

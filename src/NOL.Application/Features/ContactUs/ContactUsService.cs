@@ -21,15 +21,14 @@ public class ContactUsService : IContactUsService
 
     public async Task<ApiResponse<PublicContactUsDto>> GetActiveContactUsAsync()
     {
-        try
-        {
+        
             var activeContactUs = await _contactUsRepository.GetActiveContactUsAsync();
             
             if (activeContactUs == null)
             {
                 // Return empty contact info if none is active
                 var emptyContactUs = new PublicContactUsDto();
-                return _responseService.Success(emptyContactUs, "NoActiveContactUsFound");
+                return _responseService.Success(emptyContactUs, ResponseCode.NoActiveContactUsFound);
             }
 
             var publicContactUsDto = new PublicContactUsDto
@@ -43,18 +42,13 @@ public class ContactUsService : IContactUsService
                 TikTok = activeContactUs.TikTok
             };
 
-            return _responseService.Success(publicContactUsDto, "ActiveContactUsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<PublicContactUsDto>("InternalServerError");
-        }
+            return _responseService.Success(publicContactUsDto, ResponseCode.ActiveContactUsRetrieved);
+        
     }
 
     public async Task<ApiResponse<List<ContactUsDto>>> GetAllContactUsAsync()
     {
-        try
-        {
+         
             var contactUsList = await _contactUsRepository.GetAllContactUsAsync();
             
             var contactUsDtos = contactUsList.Select(c => new ContactUsDto
@@ -72,23 +66,18 @@ public class ContactUsService : IContactUsService
                 IsActive = c.IsActive
             }).ToList();
 
-            return _responseService.Success(contactUsDtos, "ContactUsListRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<ContactUsDto>>("InternalServerError");
-        }
+            return _responseService.Success(contactUsDtos, ResponseCode.ContactUsListRetrieved);
+        
     }
 
     public async Task<ApiResponse<ContactUsDto>> GetContactUsByIdAsync(int id)
     {
-        try
-        {
+         
             var contactUs = await _contactUsRepository.GetContactUsByIdAsync(id);
             
             if (contactUs == null)
             {
-                return _responseService.NotFound<ContactUsDto>("ContactUsNotFound");
+                return _responseService.NotFound<ContactUsDto>(ResponseCode.NoActiveContactUsFound);
             }
 
             var contactUsDto = new ContactUsDto
@@ -106,18 +95,13 @@ public class ContactUsService : IContactUsService
                 IsActive = contactUs.IsActive
             };
 
-            return _responseService.Success(contactUsDto, "ContactUsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<ContactUsDto>("InternalServerError");
-        }
+            return _responseService.Success(contactUsDto, ResponseCode.ActiveContactUsRetrieved);
+        
     }
 
     public async Task<ApiResponse<ContactUsDto>> CreateContactUsAsync(CreateContactUsDto createContactUsDto)
     {
-        try
-        {
+        
             var contactUs = new Domain.Entities.ContactUs
             {
                 Email = createContactUsDto.Email,
@@ -161,23 +145,18 @@ public class ContactUsService : IContactUsService
                 IsActive = createdContactUs.IsActive
             };
 
-            return _responseService.Success(contactUsDto, "ContactUsCreated");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<ContactUsDto>("InternalServerError");
-        }
+            return _responseService.Success(contactUsDto, ResponseCode.ContactUsCreated);
+       
     }
 
     public async Task<ApiResponse<ContactUsDto>> UpdateContactUsAsync(int id, UpdateContactUsDto updateContactUsDto)
     {
-        try
-        {
+        
             var existingContactUs = await _contactUsRepository.GetContactUsByIdAsync(id);
             
             if (existingContactUs == null)
             {
-                return _responseService.NotFound<ContactUsDto>("ContactUsNotFound");
+                return _responseService.NotFound<ContactUsDto>(ResponseCode.NoActiveContactUsFound);
             }
 
             // Update only provided fields
@@ -222,80 +201,61 @@ public class ContactUsService : IContactUsService
                 IsActive = updatedContactUs.IsActive
             };
 
-            return _responseService.Success(contactUsDto, "ContactUsUpdated");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<ContactUsDto>("InternalServerError");
-        }
+            return _responseService.Success(contactUsDto, ResponseCode.ContactUsUpdated);
+      
     }
 
     public async Task<ApiResponse<bool>> DeleteContactUsAsync(int id)
     {
-        try
-        {
+        
             var contactUs = await _contactUsRepository.GetContactUsByIdAsync(id);
             
             if (contactUs == null)
             {
-                return _responseService.NotFound<bool>("ContactUsNotFound");
+                return _responseService.NotFound<bool>(ResponseCode.NoActiveContactUsFound);
             }
 
             var deleted = await _contactUsRepository.DeleteContactUsAsync(id);
             
             if (deleted)
             {
-                return _responseService.Success(true, "ContactUsDeleted");
+                return _responseService.Success(true, ResponseCode.ContactUsDeleted);
             }
             else
             {
-                return _responseService.Error<bool>("ContactUsDeletionFailed");
+                return _responseService.Error<bool>(ResponseCode.ContactUsDeletionFailed);
             }
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+        
     }
 
     public async Task<ApiResponse<bool>> SetActiveContactUsAsync(int id)
     {
-        try
-        {
+       
             var contactUs = await _contactUsRepository.GetContactUsByIdAsync(id);
             
             if (contactUs == null)
             {
-                return _responseService.NotFound<bool>("ContactUsNotFound");
+                return _responseService.NotFound<bool>(ResponseCode.NoActiveContactUsFound);
             }
 
             var result = await _contactUsRepository.SetActiveContactUsAsync(id);
             
             if (result)
             {
-                return _responseService.Success(true, "ContactUsSetAsActive");
+                return _responseService.Success(true, ResponseCode.ActiveContactUsRetrieved);
             }
             else
             {
-                return _responseService.Error<bool>("ContactUsActivationFailed");
+                return _responseService.Error<bool>(ResponseCode.ContactUsActivationFailed);
             }
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+        
     }
 
     public async Task<ApiResponse<int>> GetTotalContactUsCountAsync()
     {
-        try
-        {
+        
             var count = await _contactUsRepository.GetTotalContactUsCountAsync();
-            return _responseService.Success(count, "ContactUsCountRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<int>("InternalServerError");
-        }
+            return _responseService.Success(count, ResponseCode.None);
+        
     }
 }

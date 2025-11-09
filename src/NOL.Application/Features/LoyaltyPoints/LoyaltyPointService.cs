@@ -34,8 +34,7 @@ public class LoyaltyPointService : ILoyaltyPointService
 
     public async Task<ApiResponse<LoyaltyPointSummaryDto>> GetUserLoyaltyPointSummaryAsync(string userId)
     {
-        try
-        {
+         
             var availablePoints = await _loyaltyPointRepository.GetUserAvailablePointsAsync(userId);
             var totalPoints = await _loyaltyPointRepository.GetUserTotalPointsAsync(userId);
             var recentTransactions = await _loyaltyPointRepository.GetUserTransactionsAsync(userId, 1, 5);
@@ -65,33 +64,23 @@ public class LoyaltyPointService : ILoyaltyPointService
                 RecentTransactions = recentTransactions.Select(MapToTransactionDto).ToList()
             };
 
-            return _responseService.Success(summary, "LoyaltyPointSummaryRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<LoyaltyPointSummaryDto>("InternalServerError");
-        }
+            return _responseService.Success(summary, ResponseCode.LoyaltyPointSummaryRetrieved);
+         
     }
 
     public async Task<ApiResponse<List<LoyaltyPointTransactionDto>>> GetUserTransactionsAsync(string userId, int page = 1, int pageSize = 10)
     {
-        try
-        {
+        
             var transactions = await _loyaltyPointRepository.GetUserTransactionsAsync(userId, page, pageSize);
             var transactionDtos = transactions.Select(MapToTransactionDto).ToList();
             
-            return _responseService.Success(transactionDtos, "LoyaltyPointTransactionsRetrieved");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<List<LoyaltyPointTransactionDto>>("InternalServerError");
-        }
+            return _responseService.Success(transactionDtos, ResponseCode.LoyaltyPointTransactionsRetrieved);
+       
     }
 
     public async Task<ApiResponse<LoyaltyPointTransactionDto>> AwardPointsAsync(AwardPointsDto awardDto)
     {
-        try
-        {
+        
             var expiryDate = awardDto.ExpiryDate ?? DateTime.UtcNow.AddMonths(POINTS_EXPIRY_MONTHS);
             
             var transaction = new LoyaltyPointTransaction
@@ -112,27 +101,22 @@ public class LoyaltyPointService : ILoyaltyPointService
             await UpdateUserLoyaltyTotalsAsync(awardDto.UserId);
 
             var transactionDto = MapToTransactionDto(createdTransaction);
-            return _responseService.Success(transactionDto, "LoyaltyPointsAwarded");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<LoyaltyPointTransactionDto>("InternalServerError");
-        }
+            return _responseService.Success(transactionDto, ResponseCode.LoyaltyPointsAwarded);
+        
     }
 
     public async Task<ApiResponse<LoyaltyPointTransactionDto>> RedeemPointsAsync(string userId, RedeemPointsDto redeemDto)
     {
-        try
-        {
+         
             if (redeemDto.PointsToRedeem < MIN_REDEMPTION_POINTS)
             {
-                return _responseService.Error<LoyaltyPointTransactionDto>("MinimumRedemptionNotMet");
+                return _responseService.Error<LoyaltyPointTransactionDto>(ResponseCode.MinimumRedemptionNotMet);
             }
 
             var availablePoints = await _loyaltyPointRepository.GetUserAvailablePointsAsync(userId);
             if (availablePoints < redeemDto.PointsToRedeem)
             {
-                return _responseService.Error<LoyaltyPointTransactionDto>("InsufficientLoyaltyPoints");
+                return _responseService.Error<LoyaltyPointTransactionDto>(ResponseCode.InsufficientLoyaltyPoints);
             }
 
             var transaction = new LoyaltyPointTransaction
@@ -151,23 +135,18 @@ public class LoyaltyPointService : ILoyaltyPointService
             await UpdateUserLoyaltyTotalsAsync(userId);
 
             var transactionDto = MapToTransactionDto(createdTransaction);
-            return _responseService.Success(transactionDto, "LoyaltyPointsRedeemed");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<LoyaltyPointTransactionDto>("InternalServerError");
-        }
+            return _responseService.Success(transactionDto, ResponseCode.LoyaltyPointsRedeemed);
+       
     }
 
     public async Task<ApiResponse<bool>> ProcessBookingPointsAsync(string userId, int bookingId, decimal bookingAmount)
     {
-        try
-        {
+         
             // Check if points already awarded for this booking
             var alreadyAwarded = await _loyaltyPointRepository.HasUserEarnedPointsForBookingAsync(userId, bookingId);
             if (alreadyAwarded)
             {
-                return _responseService.Success(true, "PointsAlreadyAwarded");
+                return _responseService.Success(true, ResponseCode.PointsAlreadyAwarded);
             }
 
             var pointsToAward = CalculatePointsForAmount(bookingAmount);
@@ -185,19 +164,13 @@ public class LoyaltyPointService : ILoyaltyPointService
                 await AwardPointsAsync(awardDto);
             }
 
-            return _responseService.Success(true, "BookingPointsProcessed");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(true, ResponseCode.BookingPointsProcessed);
+         
     }
 
     public async Task<ApiResponse<bool>> ExpireOldPointsAsync()
     {
-        try
-        {
-            // This would typically be called by a background job
+        // This would typically be called by a background job
             var allUsers = await _loyaltyPointRepository.GetUserTransactionsAsync("", 1, int.MaxValue);
             var userIds = allUsers.Select(t => t.UserId).Distinct();
 
@@ -214,12 +187,8 @@ public class LoyaltyPointService : ILoyaltyPointService
                 }
             }
 
-            return _responseService.Success(true, "ExpiredPointsProcessed");
-        }
-        catch (Exception)
-        {
-            return _responseService.Error<bool>("InternalServerError");
-        }
+            return _responseService.Success(true, ResponseCode.ExpiredPointsProcessed);
+       
     }
 
     public int CalculatePointsForAmount(decimal amount)

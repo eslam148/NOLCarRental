@@ -4,18 +4,18 @@ namespace NOL.Domain.Enums;
 
 public enum UserRole
 {
-    [LocalizedDescription("Customer", "عميل")]
+    [LocalizedDescription("Customer", "Customer")]
     Customer = 1,
     
-    [LocalizedDescription("Employee", "موظف")]
+    [LocalizedDescription("Employee", "Employee")]
     Employee = 2,
     
-    [LocalizedDescription("Branch Manager", "مدير فرع")]
+    [LocalizedDescription("BranchManager", "BranchManager")]
     BranchManager = 3,
     
-    [LocalizedDescription("Admin", "مسؤول")]
+    [LocalizedDescription("Admin", "Admin")]
     Admin = 4,
     
-    [LocalizedDescription("Super Admin", "مسؤول أعلى")]
+    [LocalizedDescription("SuperAdmin", "SuperAdmin")]
     SuperAdmin = 5
 } 
