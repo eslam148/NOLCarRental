@@ -25,6 +25,24 @@ public enum ResponseCode
     [LocalizedDescription("غير مطبق", "Not implemented")]
     NotImplemented = 6,
     
+    [LocalizedDescription("طلب غير صالح", "Invalid request")]
+    InvalidRequest = 7,
+    
+    [LocalizedDescription("غير مصرح", "Unauthorized")]
+    Unauthorized = 8,
+    
+    [LocalizedDescription("المورد غير موجود", "Resource not found")]
+    ResourceNotFound = 9,
+    
+    [LocalizedDescription("العملية غير صالحة", "Operation not valid")]
+    OperationNotValid = 10,
+    
+    [LocalizedDescription("الميزة غير مطبقة", "Feature not implemented")]
+    FeatureNotImplemented = 11,
+    
+    [LocalizedDescription("انتهت مهلة الطلب", "Request timeout")]
+    RequestTimeout = 12,
+    
     #region Advertisements
 
     [LocalizedDescription("تم استرجاع الإعلانات بنجاح", "Advertisements retrieved successfully")]

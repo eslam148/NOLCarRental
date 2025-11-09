@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using NOL.Application.Common.Responses;
+using NOL.Domain.Extensions;
 
 namespace NOL.API.Middleware;
 
@@ -47,18 +49,21 @@ public class GlobalExceptionHandlerMiddleware
             context.Connection.RemoteIpAddress?.ToString(),
             context.TraceIdentifier);
 
-        // Determine status code based on exception type
-        var (statusCode, title) = exception switch
+        // Determine status code and response code based on exception type
+        var (statusCode, responseCode) = exception switch
         {
-            ArgumentNullException => (HttpStatusCode.BadRequest, "Invalid Request"),
-            ArgumentException => (HttpStatusCode.BadRequest, "Invalid Request"),
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized"),
-            KeyNotFoundException => (HttpStatusCode.NotFound, "Resource Not Found"),
-            InvalidOperationException => (HttpStatusCode.Conflict, "Operation Not Valid"),
-            NotImplementedException => (HttpStatusCode.NotImplemented, "Feature Not Implemented"),
-            TimeoutException => (HttpStatusCode.RequestTimeout, "Request Timeout"),
-            _ => (HttpStatusCode.InternalServerError, "Internal Server Error")
+            ArgumentNullException => (HttpStatusCode.BadRequest, ResponseCode.InvalidRequest),
+            ArgumentException => (HttpStatusCode.BadRequest, ResponseCode.InvalidRequest),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, ResponseCode.Unauthorized),
+            KeyNotFoundException => (HttpStatusCode.NotFound, ResponseCode.ResourceNotFound),
+            InvalidOperationException => (HttpStatusCode.Conflict, ResponseCode.OperationNotValid),
+            NotImplementedException => (HttpStatusCode.NotImplemented, ResponseCode.FeatureNotImplemented),
+            TimeoutException => (HttpStatusCode.RequestTimeout, ResponseCode.RequestTimeout),
+            _ => (HttpStatusCode.InternalServerError, ResponseCode.InternalServerError)
         };
+        
+        // Get localized title from ResponseCode
+        var title = responseCode.GetDescription();
 
         // Build error response
         var problemDetails = new ProblemDetails
@@ -70,9 +75,11 @@ public class GlobalExceptionHandlerMiddleware
             Type = $"https://httpstatuses.com/{(int)statusCode}"
         };
 
-        // Add trace ID for tracking
+        // Add trace ID and response code for tracking
         problemDetails.Extensions["traceId"] = context.TraceIdentifier;
         problemDetails.Extensions["timestamp"] = DateTime.UtcNow;
+        problemDetails.Extensions["responseCode"] = responseCode.ToString();
+        problemDetails.Extensions["responseCodeValue"] = (int)responseCode;
 
         // In development, include stack trace
         if (_env.IsDevelopment())
