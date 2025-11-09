@@ -6,7 +6,7 @@ public class LocalizedDescriptionAttribute : Attribute
     public string EnglishName { get; set; }
     public string ArabicName { get; set; }
 
-    public LocalizedDescriptionAttribute(string englishName, string arabicName)
+    public LocalizedDescriptionAttribute(string arabicName,string englishName, )
     {
         EnglishName = englishName;
         ArabicName = arabicName;
