@@ -13,6 +13,9 @@ public class Car
     public string ColorAr { get; set; } = string.Empty;
     public string ColorEn { get; set; } = string.Empty;
     public string PlateNumber { get; set; } = string.Empty;
+    public string? SequenceNumber { get; set; } // Plate sequence number for WASL
+    public string? ChassisNumber { get; set; } // VIN/Chassis number for WASL
+    public string? WaslVehicleId { get; set; } // WASL system vehicle ID
     public int SeatingCapacity { get; set; }
     public int NumberOfDoors { get; set; }
     public int MaxSpeed { get; set; } // Maximum speed in km/h

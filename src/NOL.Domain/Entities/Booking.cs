@@ -17,6 +17,7 @@ public class Booking
     public BookingStatus Status { get; set; } = BookingStatus.Open;
     public string? Notes { get; set; }
     public string? CancellationReason { get; set; }
+    public string? WaslContractId { get; set; } // WASL system contract ID
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
