@@ -19,7 +19,7 @@ public static class ScheduleJobsExtensions
         // Cron: "*/15 * * * *" = Every 15 minutes
         recurringJobs.AddOrUpdate<EndBookingSchedulJob>(
             "close-ended-bookings",
-            job => job.Execute(),
+            job => job.Execute(),                    
             "*/15 * * * *",
             new RecurringJobOptions
             {

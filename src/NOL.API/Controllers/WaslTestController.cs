@@ -1,39 +1,35 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using NOL.Application.Common.Interfaces;
 using NOL.Application.ExternalServices.WASL;
-using NOL.Domain.Entities;
 
 namespace NOL.API.Controllers;
 
 /// <summary>
-/// Controller for testing WASL API integration
+/// Controller for testing WASL API authentication and connectivity
 /// WASL = Saudi Arabia Fleet Management and Tracking System
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize(Roles = "Admin,SuperAdmin")]
+[AllowAnonymous] // For testing authentication - remove in production
 public class WaslTestController : ControllerBase
 {
     private readonly IWaslService _waslService;
-    private readonly IWaslApiService _waslApiService;
-    private readonly ICarRepository _carRepository;
     private readonly ILogger<WaslTestController> _logger;
     private readonly IConfiguration _configuration;
+    private readonly IWaslApiService _waslApiService;
 
     public WaslTestController(
         IWaslService waslService,
-        IWaslApiService waslApiService,
-        ICarRepository carRepository,
         ILogger<WaslTestController> logger,
-        IConfiguration configuration)
+        IConfiguration configuration, IWaslApiService waslApiService)
     {
         _waslService = waslService;
-        _waslApiService = waslApiService;
-        _carRepository = carRepository;
         _logger = logger;
         _configuration = configuration;
+        _waslApiService = waslApiService;
     }
+
+    #region  Health
 
     /// <summary>
     /// Check WASL API health and connectivity
@@ -44,14 +40,48 @@ public class WaslTestController : ControllerBase
     {
         try
         {
+            var clientId = _configuration["ExternalApis:WASL:ClientId"] ?? "";
+            var appId = _configuration["ExternalApis:WASL:AppId"] ?? "";
+            var appKey = _configuration["ExternalApis:WASL:AppKey"] ?? "";
+            
+            var hasClientId = !string.IsNullOrEmpty(clientId) && !clientId.StartsWith("YOUR_");
+            var hasAppId = !string.IsNullOrEmpty(appId) && !appId.StartsWith("YOUR_");
+            var hasAppKey = !string.IsNullOrEmpty(appKey) && !appKey.StartsWith("YOUR_");
+            var isConfigured = hasClientId && hasAppId && hasAppKey;
+
+            if (!isConfigured)
+            {
+                return Ok(new
+                {
+                    success = false,
+                    waslApiHealthy = false,
+                    message = "WASL credentials not fully configured",
+                    missing = new
+                    {
+                        clientId = !hasClientId,
+                        appId = !hasAppId,
+                        appKey = !hasAppKey
+                    },
+                    note = "Please set client-id, app-id, and app-key in appsettings.json under ExternalApis:WASL",
+                    baseUrl = _configuration["ExternalApis:WASL:BaseUrl"],
+                    timestamp = DateTime.UtcNow
+                });
+            }
+
             var isHealthy = await _waslService.IsWaslApiHealthyAsync();
             
             return Ok(new
             {
                 success = true,
                 waslApiHealthy = isHealthy,
-                message = isHealthy ? "WASL API is healthy" : "WASL API is not responding",
+                message = isHealthy ? "✅ WASL API is healthy and authenticated" : "⚠️ WASL API responded but returned non-healthy status",
                 baseUrl = _configuration["ExternalApis:WASL:BaseUrl"],
+                authentication = new
+                {
+                    clientId = "Configured",
+                    appId = "Configured",
+                    appKey = "Configured"
+                },
                 timestamp = DateTime.UtcNow
             });
         }
@@ -61,260 +91,69 @@ public class WaslTestController : ControllerBase
             return StatusCode(500, new
             {
                 success = false,
-                message = "Error checking WASL health",
-                error = ex.Message
-            });
-        }
-    }
-
-    /// <summary>
-    /// Register a car in WASL system
-    /// </summary>
-    [HttpPost("register-car/{carId}")]
-    public async Task<IActionResult> RegisterCar(int carId)
-    {
-        try
-        {
-            var car = await _carRepository.GetByIdAsync(carId);
-            if (car == null)
-            {
-                return NotFound(new { success = false, message = "Car not found" });
-            }
-
-            var companyId = _configuration["ExternalApis:WASL:CompanyId"] ?? "NOL-RENTAL-001";
-            var result = await _waslService.RegisterCarAsync(car, companyId);
-
-            if (result.Success && result.Data != null)
-            {
-                // Update car with WASL ID
-                car.WaslVehicleId = result.Data.WaslVehicleId;
-                await _carRepository.UpdateAsync(car);
-            }
-
-            return Ok(new
-            {
-                success = result.Success,
-                message = result.Message,
-                waslVehicleId = result.Data?.WaslVehicleId,
-                carId = carId,
-                plateNumber = car.PlateNumber,
-                timestamp = DateTime.UtcNow
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error registering car {CarId} in WASL", carId);
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "Error registering car in WASL",
-                error = ex.Message
-            });
-        }
-    }
-
-    /// <summary>
-    /// Send location update for a car
-    /// </summary>
-    [HttpPost("send-location/{carId}")]
-    public async Task<IActionResult> SendLocation(
-        int carId,
-        [FromBody] LocationTestRequest request)
-    {
-        try
-        {
-            var car = await _carRepository.GetByIdAsync(carId);
-            if (car == null)
-            {
-                return NotFound(new { success = false, message = "Car not found" });
-            }
-
-            if (string.IsNullOrEmpty(car.WaslVehicleId))
-            {
-                return BadRequest(new
+                message = "❌ Error checking WASL health",
+                error = ex.Message,
+                errorType = ex.GetType().Name,
+                possibleCauses = new[]
                 {
-                    success = false,
-                    message = "Car is not registered in WASL. Please register it first."
-                });
-            }
-
-            var result = await _waslService.SendCarLocationAsync(
-                car.WaslVehicleId,
-                request.Latitude,
-                request.Longitude,
-                request.Speed);
-
-            return Ok(new
-            {
-                success = result.Success,
-                message = result.Message,
-                carId = carId,
-                waslVehicleId = car.WaslVehicleId,
-                location = new { request.Latitude, request.Longitude, request.Speed },
-                timestamp = DateTime.UtcNow
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending location for car {CarId}", carId);
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "Error sending location to WASL",
-                error = ex.Message
+                    "1. Invalid client-id, app-id, or app-key",
+                    "2. Network connectivity issue",
+                    "3. WASL API is down or unreachable",
+                    "4. Credentials don't have proper permissions"
+                }
             });
         }
     }
 
-    /// <summary>
-    /// Get vehicle information from WASL
-    /// </summary>
-    [HttpGet("vehicle-info/{carId}")]
-    public async Task<IActionResult> GetVehicleInfo(int carId)
+    #endregion
+
+
+    #region Main Endpoints
+
+    [HttpPost("CreateCar")]
+    public async Task<IActionResult> CreateCarWasl()
     {
-        try
+        var response = await _waslApiService.VehicleRegistration(new VehicleRegistrationRequest
         {
-            var car = await _carRepository.GetByIdAsync(carId);
-            if (car == null)
-            {
-                return NotFound(new { success = false, message = "Car not found" });
-            }
 
-            if (string.IsNullOrEmpty(car.WaslVehicleId))
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = "Car is not registered in WASL"
-                });
-            }
-
-            var apiKey = _configuration["ExternalApis:WASL:ApiKey"] ?? "";
-            var authorization = $"Bearer {apiKey}";
-
-            var result = await _waslApiService.GetVehicleInfoAsync(car.WaslVehicleId, authorization);
-
-            return Ok(new
-            {
-                success = result.Success,
-                message = result.Message,
-                data = result.Data,
-                carId = carId,
-                timestamp = DateTime.UtcNow
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting vehicle info for car {CarId}", carId);
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "Error getting vehicle info from WASL",
-                error = ex.Message
-            });
-        }
-    }
-
-    /// <summary>
-    /// Test registering a driver
-    /// </summary>
-    [HttpPost("register-driver")]
-    public async Task<IActionResult> RegisterDriver([FromBody] DriverTestRequest request)
-    {
-        try
-        {
-            var driverRequest = new DriverRegistrationRequest
-            {
-                IdentityNumber = request.IdentityNumber,
-                NameAr = request.NameAr,
-                NameEn = request.NameEn,
-                MobileNumber = request.MobileNumber,
-                Email = request.Email,
-                DrivingLicenseNumber = request.DrivingLicenseNumber,
-                LicenseExpiryDate = request.LicenseExpiryDate,
-                DateOfBirth = request.DateOfBirth,
-                CompanyId = _configuration["ExternalApis:WASL:CompanyId"] ?? "NOL-RENTAL-001",
-                ReferenceKey = request.ReferenceKey
-            };
-
-            var apiKey = _configuration["ExternalApis:WASL:ApiKey"] ?? "";
-            var authorization = $"Bearer {apiKey}";
-
-            var result = await _waslApiService.RegisterDriverAsync(driverRequest, authorization);
-
-            return Ok(new
-            {
-                success = result.Success,
-                message = result.Message,
-                data = result.Data,
-                timestamp = DateTime.UtcNow
-            });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error registering driver in WASL");
-            return StatusCode(500, new
-            {
-                success = false,
-                message = "Error registering driver in WASL",
-                error = ex.Message
-            });
-        }
-    }
-
-    /// <summary>
-    /// Get WASL configuration info
-    /// </summary>
-    [HttpGet("config")]
-    [AllowAnonymous]
-    public IActionResult GetConfiguration()
-    {
-        var isEnabled = _configuration.GetValue<bool>("ExternalApis:WASL:Enabled");
-        var baseUrl = _configuration["ExternalApis:WASL:BaseUrl"];
-        var hasApiKey = !string.IsNullOrEmpty(_configuration["ExternalApis:WASL:ApiKey"]) &&
-                        _configuration["ExternalApis:WASL:ApiKey"] != "YOUR_WASL_API_KEY_HERE";
-
-        return Ok(new
-        {
-            enabled = isEnabled,
-            baseUrl = baseUrl,
-            hasValidApiKey = hasApiKey,
-            message = isEnabled
-                ? "WASL integration is enabled"
-                : "WASL integration is disabled. Enable it in appsettings.json",
-            endpoints = new
-            {
-                health = "/api/wasltest/health",
-                registerCar = "/api/wasltest/register-car/{carId}",
-                sendLocation = "/api/wasltest/send-location/{carId}",
-                getVehicleInfo = "/api/wasltest/vehicle-info/{carId}",
-                registerDriver = "/api/wasltest/register-driver"
-            }
         });
+        return Ok(response);
     }
+
+    [HttpPost("UpdateCar")]
+    public async Task<IActionResult> Locations()
+    {
+        var response = await _waslApiService.Location(new LocationRequest
+        {
+
+        });
+        return Ok(response);
+    }
+    
+    
+    [HttpPost("RentalOperation")]
+    public async Task<IActionResult> RentalOperation()
+    {
+        var response = await _waslApiService.RentalOperation(new RentalOperationRequest
+        {
+
+        });
+        return Ok(response);
+    }
+    
+    
+    [HttpGet("VehicleEligibilityInquiryService")]
+    public async Task<IActionResult> VehicleEligibilityInquiryService()
+    {
+        var response = await _waslApiService.VehicleEligibilityInquiryService("sss","234567");
+        return Ok(response);
+    }
+
+    #endregion
+ 
+
+    
+    
+    
 }
-
-#region Request DTOs
-
-public class LocationTestRequest
-{
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
-    public double? Speed { get; set; }
-}
-
-public class DriverTestRequest
-{
-    public string IdentityNumber { get; set; } = string.Empty;
-    public string NameAr { get; set; } = string.Empty;
-    public string? NameEn { get; set; }
-    public string MobileNumber { get; set; } = string.Empty;
-    public string? Email { get; set; }
-    public string DrivingLicenseNumber { get; set; } = string.Empty;
-    public DateTime LicenseExpiryDate { get; set; }
-    public DateTime DateOfBirth { get; set; }
-    public string? ReferenceKey { get; set; }
-}
-
-#endregion
 
