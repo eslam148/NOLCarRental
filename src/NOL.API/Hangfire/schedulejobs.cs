@@ -20,7 +20,7 @@ public static class ScheduleJobsExtensions
         recurringJobs.AddOrUpdate<EndBookingSchedulJob>(
             "close-ended-bookings",
             job => job.Execute(),
-            "* * * * *",
+            "*/15 * * * *",
             new RecurringJobOptions
             {
                 TimeZone = TimeZoneInfo.Utc
