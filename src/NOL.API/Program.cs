@@ -177,6 +177,7 @@ builder.Services.AddScoped<IBranchService, NOL.Application.Features.Branches.Bra
 builder.Services.AddScoped<ICategoryService, NOL.Application.Features.Categories.CategoryService>();
 builder.Services.AddScoped<IExtraService, NOL.Application.Features.Extras.ExtraService>();
 builder.Services.AddScoped<IBookingService, NOL.Application.Features.Bookings.BookingService>();
+builder.Services.AddScoped<IBookingCleanupService, NOL.Infrastructure.Services.BookingCleanupService>();
 builder.Services.AddScoped<IAdvertisementService, NOL.Application.Features.Advertisements.AdvertisementService>();
 builder.Services.AddScoped<ILoyaltyPointService, NOL.Application.Features.LoyaltyPoints.LoyaltyPointService>();
 builder.Services.AddScoped<IFavoriteService, NOL.Application.Features.Favorites.FavoriteService>();
@@ -341,9 +342,6 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 {
     Authorization = new[] { new HangfireAuthorizationFilter() }
 });
-
-// Sample Recurring Job (hourly)
-RecurringJob.AddOrUpdate("sample-cleanup", () => Console.WriteLine($"Cleanup job ran at {DateTime.UtcNow:o}"), Cron.Hourly);
 
 app.MapControllers();
 
