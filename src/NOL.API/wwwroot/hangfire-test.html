@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangfire Job Testing Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .response {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .response.success {
+            border-left: 4px solid #38ef7d;
+        }
+
+        .response.error {
+            border-left: 4px solid #f5576c;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 200px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .link-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .warning-box strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Hangfire Job Testing Dashboard</h1>
+            <p>Test and monitor your background jobs locally</p>
+        </div>
+
+        <div class="content">
+            <div class="warning-box">
+                <strong>⚠️ Security Notice:</strong> This testing interface is for local development only. 
+                Make sure to secure or remove it in production!
+            </div>
+
+            <!-- Quick Links -->
+            <div class="card">
+                <h2>📚 Quick Links</h2>
+                <div class="links">
+                    <a href="/hangfire" target="_blank" class="link-btn">
+                        📊 Hangfire Dashboard
+                    </a>
+                    <a href="/swagger" target="_blank" class="link-btn">
+                        📖 API Documentation
+                    </a>
+                    <a href="/api/hangfiretest/job-info" target="_blank" class="link-btn">
+                        ℹ️ Job Info (JSON)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Test Service Directly -->
+            <div class="card">
+                <h2>
+                    🎯 Test Service Directly
+                    <span class="badge">RECOMMENDED</span>
+                </h2>
+                <p>Execute the booking cleanup service synchronously and see immediate results.</p>
+                <button class="btn btn-success" onclick="testServiceDirect()">
+                    ▶️ Run Service Now
+                </button>
+                <div id="response-direct" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Trigger Job Immediately -->
+            <div class="card">
+                <h2>⚡ Trigger Job Immediately</h2>
+                <p>Enqueue the job in Hangfire to run as soon as possible (fire-and-forget).</p>
+                <button class="btn" onclick="triggerJob()">
+                    🔥 Enqueue Job
+                </button>
+                <div id="response-trigger" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Schedule Delayed Job -->
+            <div class="card">
+                <h2>⏱️ Schedule Delayed Job</h2>
+                <p>Schedule the job to run after a specified delay.</p>
+                <div class="input-group">
+                    <label for="delaySeconds">Delay (seconds):</label>
+                    <input type="number" id="delaySeconds" value="30" min="5" max="300">
+                </div>
+                <button class="btn btn-warning" onclick="scheduleDelayed()">
+                    ⏳ Schedule Job
+                </button>
+                <div id="response-delayed" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Trigger Recurring Job -->
+            <div class="card">
+                <h2>🔄 Trigger Recurring Job</h2>
+                <p>Manually trigger the recurring job that normally runs every 15 minutes.</p>
+                <button class="btn btn-info" onclick="triggerRecurring()">
+                    🔁 Trigger Recurring
+                </button>
+                <div id="response-recurring" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Health Check -->
+            <div class="card">
+                <h2>💚 Health Check</h2>
+                <p>Verify that Hangfire is connected and working properly.</p>
+                <button class="btn" onclick="healthCheck()">
+                    🏥 Check Health
+                </button>
+                <div id="response-health" class="response" style="display: none;"></div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Executing...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = window.location.origin;
+
+        async function makeRequest(endpoint, method = 'POST') {
+            const loading = document.getElementById('loading');
+            loading.classList.add('active');
+
+            try {
+                const response = await fetch(`${baseUrl}${endpoint}`, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                loading.classList.remove('active');
+
+                return {
+                    success: response.ok,
+                    data: data,
+                    status: response.status
+                };
+            } catch (error) {
+                loading.classList.remove('active');
+                return {
+                    success: false,
+                    data: { error: error.message },
+                    status: 0
+                };
+            }
+        }
+
+        function displayResponse(elementId, result) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.className = result.success ? 'response success' : 'response error';
+            element.textContent = JSON.stringify(result.data, null, 2);
+        }
+
+        async function testServiceDirect() {
+            const result = await makeRequest('/api/hangfiretest/test-service-direct', 'POST');
+            displayResponse('response-direct', result);
+        }
+
+        async function triggerJob() {
+            const result = await makeRequest('/api/hangfiretest/trigger-close-bookings', 'POST');
+            displayResponse('response-trigger', result);
+        }
+
+        async function scheduleDelayed() {
+            const seconds = document.getElementById('delaySeconds').value;
+            const result = await makeRequest(`/api/hangfiretest/schedule-delayed?delaySeconds=${seconds}`, 'POST');
+            displayResponse('response-delayed', result);
+        }
+
+        async function triggerRecurring() {
+            const result = await makeRequest('/api/hangfiretest/trigger-recurring-job', 'POST');
+            displayResponse('response-recurring', result);
+        }
+
+        async function healthCheck() {
+            const result = await makeRequest('/api/hangfiretest/health', 'GET');
+            displayResponse('response-health', result);
+        }
+
+        // Auto health check on load
+        window.addEventListener('load', () => {
+            console.log('🚀 Hangfire Testing Dashboard Loaded');
+            console.log('Base URL:', baseUrl);
+        });
+    </script>
+</body>
+</html>
+
