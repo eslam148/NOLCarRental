@@ -6,6 +6,7 @@ on:
       - main
       - develop
       - Nafs_v1
+      - master
     tags:
       - 'v*.*.*'
   pull_request:
